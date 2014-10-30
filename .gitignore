@@ -1,0 +1,4 @@
+/keuze/platforms
+/keuze/.cordova
+/keuze/plugins
+*.pyc
