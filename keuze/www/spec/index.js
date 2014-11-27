@@ -4,7 +4,7 @@
 */
 describe('app', function() {
     describe('initialize', function() {
-        emulateDeviceReady = function(callback) {
+        var emulateDeviceReady = function(callback) {
             app.initialize();
             helper.trigger(window.document, 'deviceready');
             callback();
