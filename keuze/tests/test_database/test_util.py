@@ -24,12 +24,12 @@ class TableArgsMetaTestCase (TestCase):
             __table_args__ = ()
             id = self.db.Column(self.db.Integer, primary_key=True)
         instance = Derived()
-        self.assertEqual(instance.__table_args__['mysql_engine'], 'InnoDB')
+        self.assertEqual(instance.__table_args__[-1]['mysql_engine'], 'InnoDB')
 
     def test_tuple_trailingdict (self):
         class Derived (self.db.Model):
             __table_args__ = ({},)
             id = self.db.Column(self.db.Integer, primary_key=True)
         instance = Derived()
-        self.assertEqual(instance.__table_args__['mysql_engine'], 'InnoDB')
+        self.assertEqual(instance.__table_args__[-1]['mysql_engine'], 'InnoDB')
 
