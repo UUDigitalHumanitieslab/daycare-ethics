@@ -10,9 +10,14 @@ from flask import Flask
 from .database import db, models
 from .server import public, views
 
-def create_app (config):
+def create_app (config_file=None, config_obj=None):
     app = Flask(__name__, static_folder = 'www', static_url_path = '')
-    app.config.from_object(config)
+    if config_file is not None:
+        app.config.from_pyfile(config_file)
+    elif config_obj is not None:
+        app.config.from_object(config_obj)
+    else:
+        raise TypeError('no configuration argument provided')
     
     db.init_app(app)
     db.create_all(app = app)  # pass app because of Flask-SQLAlchemy contexts

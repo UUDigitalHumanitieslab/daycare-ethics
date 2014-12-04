@@ -13,6 +13,6 @@ class Config:
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
 
 if __name__ == '__main__':
-    app = create_app(Config)
+    app = create_app(config_obj=Config)
     app.debug = True
     app.run()
