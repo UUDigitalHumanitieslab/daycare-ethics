@@ -6,7 +6,6 @@
 """
 
 from datetime import datetime
-import unittest
 
 from ..common_fixtures import BaseFixture
 
@@ -25,6 +24,3 @@ class ViewsTestCase (BaseFixture):
             'If-Modified-Since': next.strftime('%a, %d %b %Y %H:%M:%S %z%Z'),
         })
         self.assertEqual(response.status_code, 304)
-
-if __name__ == '__main__':
-    unittest.main()
