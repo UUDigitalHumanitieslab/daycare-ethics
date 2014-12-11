@@ -30,3 +30,33 @@ iframe {
     padding:    0;
     margin:     0;
 }
+
+@media all and (min-width: 48em) {
+    html {
+        display:        block;
+        width:          48em;
+        position:       absolute;
+        left:           calc(50% - 24em);
+    }
+}
+
+@media all and (min-height: 64em) {
+    html {
+        display:        block;
+        height:         64em;
+        position:       absolute;
+        top:            calc(50% - 18em);
+    }
+
+    body, [data-role="page"] {
+        height:     64em;
+    }
+
+    [data-role="page"] .ui-content {
+        height: calc(64em - 89px);
+    }
+
+    #home .ui-content {
+        height: 64em;
+    }
+}
