@@ -13,7 +13,7 @@ class ViewsTestCase (BaseFixture):
     def test_index(self):
         response = self.app.get('/')
         self.assertIn(
-            '<script type="text/javascript" src="js/index.js"></script>',
+            '<script src="js/index.js"></script>',
             response.data   )
         self.assertEqual(response.status_code, 200)
 
