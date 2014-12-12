@@ -7,7 +7,7 @@
 
 import unittest
 
-from keuze.tests import suite
+from daycare_ethics.tests import suite
 
 if __name__ == '__main__':
     unittest.TextTestRunner().run(suite)

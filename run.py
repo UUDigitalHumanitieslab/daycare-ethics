@@ -7,7 +7,7 @@
 
 """
 
-from keuze import create_app
+from daycare_ethics import create_app
 
 class Config:
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
