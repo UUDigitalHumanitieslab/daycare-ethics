@@ -9,9 +9,11 @@ from unittest import TestCase
 
 from .. import create_app
 
+
 class FixtureConfiguration (object):
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
     TESTING = True
+
 
 class BaseFixture (TestCase):
     def setUp(self):

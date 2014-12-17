@@ -12,6 +12,7 @@ from sqlalchemy.ext.declarative import declared_attr
 
 from . import db
 
+
 class Picture (db.Model):
     """ Image or video for illustration of a case or brain teaser.
     """
@@ -19,6 +20,7 @@ class Picture (db.Model):
     mime_type   = db.Column(db.String(30), nullable=False)
     name        = db.Column(db.String(40), nullable=False)
     path        = db.Column(db.String(50), unique=True, nullable=False)
+
 
 class PublicationItem (object):
     """ Common properties of things that are published periodically.
@@ -35,6 +37,7 @@ class PublicationItem (object):
     def picture(cls):
         return db.relationship('Picture', backref=cls.__tablename__+'s')
 
+
 class Case (PublicationItem, db.Model):
     """ Weekly moral issue with a proposition that users can vote on.
     """
@@ -42,6 +45,7 @@ class Case (PublicationItem, db.Model):
     proposition     = db.Column(db.Text)
     yes_votes       = db.Column(db.Integer, default=0)
     no_votes        = db.Column(db.Integer, default=0)
+
 
 class Vote (db.Model):
     """ Vote on a case proposition, either agree (True) or don't agree (False).
@@ -52,10 +56,12 @@ class Vote (db.Model):
     agree       = db.Column(db.Boolean, nullable=False)
     case        = db.relationship('Case', backref='votes')
 
+
 class BrainTeaser (PublicationItem, db.Model):
     """ Periodic reflection item that users may discuss publicly.
     """
     __tablename__   = 'brain_teaser'
+
 
 class Response (db.Model):
     """ Response to the discussion associated with a brain teaser.
@@ -68,6 +74,7 @@ class Response (db.Model):
     downvotes       = db.Column(db.Integer, default=0)
     message         = db.Column(db.Text)
     brain_teaser    = db.relationship('BrainTeaser', backref='responses')
+
 
 class Link (db.Model):
     """ Any hyperlink that the content provider opts to share with users.

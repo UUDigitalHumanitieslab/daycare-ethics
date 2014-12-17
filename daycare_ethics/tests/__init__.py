@@ -7,7 +7,8 @@
 
 import unittest
 
-import test_server, test_database
+import test_server
+import test_database
 
 suite = unittest.TestSuite([
     test_server.suite,

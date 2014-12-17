@@ -9,8 +9,10 @@
 
 from daycare_ethics import create_app
 
+
 class Config:
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
+
 
 if __name__ == '__main__':
     app = create_app(config_obj=Config)

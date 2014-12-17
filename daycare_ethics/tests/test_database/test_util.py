@@ -13,20 +13,20 @@ class TableArgsMetaTestCase (TestCase):
     def setUp(self):
         self.db = InnoDBSQLAlchemy()
 
-    def test_dictionary (self):
+    def test_dictionary(self):
         class Derived (self.db.Model):
             id = self.db.Column(self.db.Integer, primary_key=True)
         instance = Derived()
         self.assertEqual(instance.__table_args__['mysql_engine'], 'InnoDB')
 
-    def test_tuple_notrailingdict (self):
+    def test_tuple_notrailingdict(self):
         class Derived (self.db.Model):
             __table_args__ = ()
             id = self.db.Column(self.db.Integer, primary_key=True)
         instance = Derived()
         self.assertEqual(instance.__table_args__[-1]['mysql_engine'], 'InnoDB')
 
-    def test_tuple_trailingdict (self):
+    def test_tuple_trailingdict(self):
         class Derived (self.db.Model):
             __table_args__ = ({},)
             id = self.db.Column(self.db.Integer, primary_key=True)

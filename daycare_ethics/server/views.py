@@ -9,6 +9,7 @@ from flask import send_from_directory
 
 from . import public
 
+
 @public.route('/')
-def index ( ):
+def index():
     return send_from_directory(public.static_folder, 'index.html')

@@ -7,6 +7,7 @@
 
 import flask.ext.sqlalchemy as fsqla
 
+
 def TableArgsMeta(parent_class, table_args):
     """
         Metaclass generator to set global defaults for __table_args__.
@@ -44,14 +45,15 @@ def TableArgsMeta(parent_class, table_args):
 
     return _TableArgsMeta
 
+
 class InnoDBSQLAlchemy (fsqla.SQLAlchemy):
     """ Subclass in order to enable TableArgsMeta. """
     def make_declarative_base(self):
         """Creates the declarative base."""
         base = fsqla.declarative_base(
-            cls = fsqla.Model,
-            name = 'Model',
-            metaclass = TableArgsMeta(
+            cls=fsqla.Model,
+            name='Model',
+            metaclass=TableArgsMeta(
                 fsqla._BoundDeclarativeMeta,
                 {'mysql_engine': 'InnoDB'} ) )
         base.query = fsqla._QueryProperty(self)

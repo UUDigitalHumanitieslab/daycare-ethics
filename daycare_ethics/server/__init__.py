@@ -10,5 +10,5 @@ import flask
 public = flask.Blueprint(
     'public',
     __name__,
-    static_folder = '../www',
-    static_url_path = ''        )
+    static_folder='../www',
+    static_url_path=''        )

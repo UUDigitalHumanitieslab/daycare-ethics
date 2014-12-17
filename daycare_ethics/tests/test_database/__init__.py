@@ -7,7 +7,8 @@
 
 import unittest
 
-import test_util, test_models
+import test_util
+import test_models
 
 suite = unittest.TestSuite([
     unittest.TestLoader().loadTestsFromModule(test_util),
