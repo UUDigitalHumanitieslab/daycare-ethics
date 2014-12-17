@@ -1,10 +1,6 @@
 # (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
-"""
-
-"""
-
 from datetime import datetime
 
 from ..common_fixtures import BaseFixture

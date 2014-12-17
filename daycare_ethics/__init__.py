@@ -2,7 +2,9 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
+    Head of the serverside application package.
 
+    This module provides the WSGI application factory.
 """
 
 from flask import Flask

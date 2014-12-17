@@ -2,7 +2,7 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
-
+    Combined test suite for all modules in the database package.
 """
 
 import unittest

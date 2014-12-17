@@ -2,7 +2,7 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
-
+    Top-level test suite to rule them all.
 """
 
 import unittest

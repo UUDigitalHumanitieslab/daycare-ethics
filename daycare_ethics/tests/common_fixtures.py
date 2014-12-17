@@ -2,7 +2,7 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
-
+    Non-trivial fixtures that may be used across multiple suites.
 """
 
 from unittest import TestCase

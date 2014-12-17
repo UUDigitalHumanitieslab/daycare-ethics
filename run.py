@@ -4,7 +4,7 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
-
+    Run a local test server with the serverside application.
 """
 
 from daycare_ethics import create_app

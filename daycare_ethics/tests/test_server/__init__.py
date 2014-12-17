@@ -2,7 +2,7 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
-
+    Combined test suite for the modules of the server package.
 """
 
 import unittest

@@ -2,7 +2,7 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
-
+    This package implements the public part of the server side.
 """
 
 import flask
