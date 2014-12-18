@@ -11,6 +11,7 @@ from flask import Flask
 
 from .database import db, models
 from .server import public, views
+from .admin import create_admin
 
 
 def create_app(config_file=None, config_obj=None):
@@ -25,5 +26,6 @@ def create_app(config_file=None, config_obj=None):
     db.init_app(app)
     db.create_all(app=app)  # pass app because of Flask-SQLAlchemy contexts
     app.register_blueprint(public)
+    create_admin(app)
 
     return app
