@@ -2,13 +2,10 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
+    Head of the server subpackage, wraps side-effectful imports.
+
     This package implements the public part of the server side.
 """
 
-import flask
-
-public = flask.Blueprint(
-    'public',
-    __name__,
-    static_folder='../www',
-    static_url_path=''        )
+from blueprint import public
+import views

@@ -2,8 +2,9 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
-    Head of the database subpackage, wraps side-effectful imports.
+    Database object for use throughout the Flask side of the project.
 """
 
-from db import db
-import models
+import util
+
+db = util.InnoDBSQLAlchemy()

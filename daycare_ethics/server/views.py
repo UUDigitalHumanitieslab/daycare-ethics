@@ -7,7 +7,7 @@
 
 from flask import send_from_directory
 
-from . import public
+from blueprint import public
 
 
 @public.route('/')

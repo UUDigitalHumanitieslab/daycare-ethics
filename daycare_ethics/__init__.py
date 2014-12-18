@@ -9,8 +9,8 @@
 
 from flask import Flask
 
-from .database import db, models
-from .server import public, views
+from .database import db
+from .server import public
 
 
 def create_app(config_file=None, config_obj=None):

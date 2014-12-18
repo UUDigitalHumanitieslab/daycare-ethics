@@ -10,7 +10,7 @@
 
 from sqlalchemy.ext.declarative import declared_attr
 
-from . import db
+from db import db
 
 
 class Picture (db.Model):
