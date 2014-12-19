@@ -17,4 +17,5 @@ class FixtureConfiguration (object):
 
 class BaseFixture (TestCase):
     def setUp(self):
-        self.app = create_app(config_obj=FixtureConfiguration).test_client()
+        self.app = create_app(config_obj=FixtureConfiguration)
+        self.client = self.app.test_client()
