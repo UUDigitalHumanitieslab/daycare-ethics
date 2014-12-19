@@ -3,6 +3,8 @@
 
 from unittest import TestCase
 
+from ..common_fixtures import BaseFixture
+from ...database import db
 from ...database.models import *
 
 
@@ -14,3 +16,13 @@ class SQLADeclaredAttrTestCase(TestCase):
     def test_picture_backrefs(self):
         self.assertIn('cases', Picture.__dict__)
         self.assertIn('brain_teasers', Picture.__dict__)
+
+
+class ModelsAreCreatedTestCase(BaseFixture):
+    def test_picture_exists(self):
+        pic = Picture(mime_type='image/jpeg', name='Test', path='test/test.jpeg')
+        with self.app.test_request_context():
+            db.session.add(pic)
+            db.session.commit()
+            self.assertEqual(pic.id, 1)
+            self.assertEqual(Picture.query.first(), pic)
