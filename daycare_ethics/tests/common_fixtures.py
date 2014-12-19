@@ -19,3 +19,5 @@ class BaseFixture (TestCase):
     def setUp(self):
         self.app = create_app(config_obj=FixtureConfiguration)
         self.client = self.app.test_client()
+    def request_context(self):
+        return self.app.test_request_context()

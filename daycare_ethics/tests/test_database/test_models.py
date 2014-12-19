@@ -21,7 +21,7 @@ class SQLADeclaredAttrTestCase(TestCase):
 class ModelsAreCreatedTestCase(BaseFixture):
     def test_picture_exists(self):
         pic = Picture(mime_type='image/jpeg', name='Test', path='test/test.jpeg')
-        with self.app.test_request_context():
+        with self.request_context():
             db.session.add(pic)
             db.session.commit()
             self.assertEqual(pic.id, 1)
