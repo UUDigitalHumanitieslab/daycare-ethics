@@ -1,6 +1,7 @@
 # (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
+from datetime import datetime
 from unittest import TestCase
 
 from ..common_fixtures import BaseFixture
@@ -26,3 +27,40 @@ class ModelsAreCreatedTestCase(BaseFixture):
             db.session.commit()
             self.assertEqual(pic.id, 1)
             self.assertEqual(Picture.query.first(), pic)
+    def test_case_exists(self):
+        case = Case(title='Test')
+        with self.request_context():
+            db.session.add(case)
+            db.session.commit()
+            self.assertEqual(case.id, 1)
+            self.assertEqual(Case.query.first(), case)
+    def test_vote_exists(self):
+        case = Case(title='Test')
+        vote = Vote(submission=datetime.now(), agree=True, case=case)
+        with self.request_context():
+            db.session.add(vote)
+            db.session.commit()
+            self.assertEqual(vote.id, 1)
+            self.assertEqual(Vote.query.first(), vote)
+    def test_brain_teaser_exists(self):
+        bt = BrainTeaser(title='Test')
+        with self.request_context():
+            db.session.add(bt)
+            db.session.commit()
+            self.assertEqual(bt.id, 1)
+            self.assertEqual(BrainTeaser.query.first(), bt)
+    def test_response_exists(self):
+        bt = BrainTeaser(title='Test')
+        rsp = Response(submission=datetime.now(), pseudonym='test', brain_teaser=bt)
+        with self.request_context():
+            db.session.add(rsp)
+            db.session.commit()
+            self.assertEqual(rsp.id, 1)
+            self.assertEqual(Response.query.first(), rsp)
+    def test_link_exists(self):
+        lnk = Link(date=datetime.now(), href='http://www.test.org')
+        with self.request_context():
+            db.session.add(lnk)
+            db.session.commit()
+            self.assertEqual(lnk.id, 1)
+            self.assertEqual(Link.query.first(), lnk)
