@@ -77,3 +77,16 @@ class VotesView(ModelView, ActionsMixin):
     def __init__(self, session, name='Votes', **kwargs):
         super(VotesView, self).__init__(Vote, session, name, **kwargs)
         self.init_actions()
+
+
+class BrainTeasersView(ModelView):
+    column_list = ('title', 'publication', 'closure')
+    column_descriptions = {
+        'publication': 'Date when the case goes live.',
+        'closure': 'Date when the case is archived.',
+    }
+    column_default_sort = ('publication', True)
+    form_columns = ('title', 'publication', 'closure', 'text')
+
+    def __init__(self, session, name='Brain teasers', **kwargs):
+        super(BrainTeasersView, self).__init__(BrainTeaser, session, name, **kwargs)
