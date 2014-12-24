@@ -90,3 +90,22 @@ class BrainTeasersView(ModelView):
 
     def __init__(self, session, name='Brain teasers', **kwargs):
         super(BrainTeasersView, self).__init__(BrainTeaser, session, name, **kwargs)
+
+
+class ResponsesView(ModelView):
+    can_create = False
+    can_edit = False
+    column_sortable_list = (
+        ('brain_teaser', 'brain_teaser.title'),
+        'submission',
+        'pseudonym',
+        'upvotes',
+        'downvotes',
+    )
+    column_default_sort = ('submission', True)
+    column_searchable_list = ('pseudonym', 'message')
+    column_filters = ('brain_teaser', 'submission', 'pseudonym', 'upvotes', 'downvotes')
+    page_size = 100
+
+    def __init__(self, session, name='Responses', **kwargs):
+        super(ResponsesView, self).__init__(Response, session, name, **kwargs)
