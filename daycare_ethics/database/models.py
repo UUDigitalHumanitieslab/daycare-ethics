@@ -8,6 +8,10 @@
     database structure.
 """
 
+import os
+
+from flask import current_app
+from sqlalchemy.event import listens_for
 from sqlalchemy.ext.declarative import declared_attr
 
 from . import db
@@ -20,6 +24,17 @@ class Picture (db.Model):
     mime_type   = db.Column(db.String(30), nullable=False)
     name        = db.Column(db.String(40), nullable=False)
     path        = db.Column(db.String(50), unique=True, nullable=False)
+
+
+@listens_for(Picture, 'after_delete')
+def del_file(mapper, connection, target):
+    if target.path:
+        file_path = current_app.instance_path
+        try:
+            os.remove(os.path.join(file_path, target.path))
+        except OSError:
+            # Don't care if was not deleted because it does not exist
+            pass
 
 
 class PublicationItem (object):
