@@ -45,3 +45,16 @@ class CasesView(ModelView):
 
     def __init__(self, session, name='Cases', **kwargs):
         super(CasesView, self).__init__(Case, session, name, **kwargs)
+
+
+class VotesView(ModelView):
+    can_create = False
+    can_delete = False
+    can_edit = False
+    column_sortable_list = (('case', 'case.title'), 'submission', 'agree')
+    column_default_sort = ('submission', True)
+    column_filters = ('case', 'submission')
+    page_size = 100
+
+    def __init__(self, session, name='Votes', **kwargs):
+        super(VotesView, self).__init__(Vote, session, name, **kwargs)
