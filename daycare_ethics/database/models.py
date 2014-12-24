@@ -12,7 +12,6 @@ import os
 
 from flask import current_app
 from sqlalchemy.event import listens_for
-from sqlalchemy.ext.declarative import declared_attr
 
 from . import db
 
@@ -41,27 +40,21 @@ class PublicationItem (object):
     """ Common properties of things that are published periodically.
     """
     id          = db.Column(db.Integer, primary_key=True)
-
-    @declared_attr
-    def picture_id(cls):
-        return db.Column(db.ForeignKey('picture.id'))
     publication = db.Column(db.Date)
     closure     = db.Column(db.Date)
     title       = db.Column(db.Text, nullable=False)
     text        = db.Column(db.Text)
-
-    @declared_attr
-    def picture(cls):
-        return db.relationship('Picture', backref=cls.__tablename__ + 's')
 
 
 class Case (PublicationItem, db.Model):
     """ Weekly moral issue with a proposition that users can vote on.
     """
     __tablename__   = 'case'
+    picture_id      = db.Column(db.ForeignKey('picture.id'))
     proposition     = db.Column(db.Text)
     yes_votes       = db.Column(db.Integer, default=0)
     no_votes        = db.Column(db.Integer, default=0)
+    picture         = db.relationship('Picture', backref='cases')
 
 
 class Vote (db.Model):
