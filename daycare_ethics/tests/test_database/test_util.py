@@ -5,6 +5,7 @@ from unittest import TestCase
 
 from ...database.util import InnoDBSQLAlchemy
 
+
 class TableArgsMetaTestCase (TestCase):
     def setUp(self):
         self.db = InnoDBSQLAlchemy()
@@ -28,4 +29,3 @@ class TableArgsMetaTestCase (TestCase):
             id = self.db.Column(self.db.Integer, primary_key=True)
         instance = Derived()
         self.assertEqual(instance.__table_args__[-1]['mysql_engine'], 'InnoDB')
-

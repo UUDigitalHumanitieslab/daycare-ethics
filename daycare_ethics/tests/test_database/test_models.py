@@ -28,6 +28,7 @@ class ModelsAreCreatedTestCase(BaseFixture):
             first = db.session.query(Picture).first()
         self.assertEqual(pic.id, 1)
         self.assertEqual(first, pic)
+
     def test_case_exists(self):
         case = Case(title='Test')
         with self.request_context():
@@ -36,6 +37,7 @@ class ModelsAreCreatedTestCase(BaseFixture):
             first = db.session.query(Case).first()
         self.assertEqual(case.id, 1)
         self.assertEqual(first, case)
+
     def test_vote_exists(self):
         case = Case(title='Test')
         vote = Vote(submission=datetime.now(), agree=True, case=case)
@@ -45,6 +47,7 @@ class ModelsAreCreatedTestCase(BaseFixture):
             first = db.session.query(Vote).first()
         self.assertEqual(vote.id, 1)
         self.assertEqual(first, vote)
+
     def test_brain_teaser_exists(self):
         bt = BrainTeaser(title='Test')
         with self.request_context():
@@ -53,6 +56,7 @@ class ModelsAreCreatedTestCase(BaseFixture):
             first = db.session.query(BrainTeaser).first()
         self.assertEqual(bt.id, 1)
         self.assertEqual(first, bt)
+
     def test_response_exists(self):
         bt = BrainTeaser(title='Test')
         rsp = Response(submission=datetime.now(), pseudonym='test', brain_teaser=bt)
@@ -62,6 +66,7 @@ class ModelsAreCreatedTestCase(BaseFixture):
             first = db.session.query(Response).first()
         self.assertEqual(rsp.id, 1)
         self.assertEqual(first, rsp)
+
     def test_link_exists(self):
         lnk = Link(date=datetime.now(), href='http://www.test.org')
         with self.request_context():

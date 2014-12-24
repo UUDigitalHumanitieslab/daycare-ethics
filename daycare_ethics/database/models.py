@@ -26,6 +26,7 @@ class PublicationItem (object):
     """ Common properties of things that are published periodically.
     """
     id          = db.Column(db.Integer, primary_key=True)
+
     @declared_attr
     def picture_id(cls):
         return db.Column(db.ForeignKey('picture.id'))
@@ -33,9 +34,10 @@ class PublicationItem (object):
     closure     = db.Column(db.Date)
     title       = db.Column(db.Text, nullable=False)
     text        = db.Column(db.Text)
+
     @declared_attr
     def picture(cls):
-        return db.relationship('Picture', backref=cls.__tablename__+'s')
+        return db.relationship('Picture', backref=cls.__tablename__ + 's')
 
 
 class Case (PublicationItem, db.Model):
