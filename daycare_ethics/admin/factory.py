@@ -18,7 +18,7 @@ def create_admin(app):
     admin = Admin(name='Daycare Ethics')
     ses = db.session
     admin.add_view(MediaView(ses))
-    admin.add_view(ModelView(models.Case, ses, 'Cases'))
+    admin.add_view(CasesView(ses))
     admin.add_view(ModelView(models.Vote, ses, 'Votes'))
     admin.add_view(ModelView(models.BrainTeaser, ses, 'Brain teasers'))
     admin.add_view(ModelView(models.Response, ses, 'Discussion'))

@@ -28,3 +28,20 @@ class MediaView(ModelView):
 
     def __init__(self, session, name='Media', **kwargs):
         super(MediaView, self).__init__(Picture, session, name, **kwargs)
+
+
+class CasesView(ModelView):
+    column_list = ('title', 'publication', 'closure', 'yes_votes', 'no_votes')
+    column_labels = {
+        'yes_votes': 'Yes',
+        'no_votes': 'No',
+    }
+    column_descriptions = {
+        'publication': 'Date when the case goes live.',
+        'closure': 'Date when the case is archived.',
+    }
+    column_default_sort = ('publication', True)
+    form_columns = ('title', 'publication', 'closure', 'picture', 'text', 'proposition')
+
+    def __init__(self, session, name='Cases', **kwargs):
+        super(CasesView, self).__init__(Case, session, name, **kwargs)
