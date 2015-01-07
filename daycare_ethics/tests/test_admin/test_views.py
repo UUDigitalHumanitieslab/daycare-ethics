@@ -37,3 +37,36 @@ class VotesViewTestCase(BaseFixture):
             'Testcase;\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}(.\d+)?;True\\r\\n' +
             'Testcase;\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}(.\d+)?;False\\r\\n' +
             'Testcase;\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}(.\d+)?;True' )
+
+
+class TipsViewTestCase(BaseFixture):
+    def setUp(self):
+        super(TipsViewTestCase, self).setUp()
+        self.old_age = datetime(1968, 4, 4, 6, 1)
+        with self.request_context():
+            db.session.add(Tip(
+                title='some book',
+                what='book',
+                create=self.old_age,
+                update=self.old_age ))
+            db.session.add(Tip(
+                title='some website',
+                create=self.old_age,
+                update=self.old_age ))
+            db.session.commit()
+
+    def tearDown(self):
+        db.drop_all(app=self.app)
+
+    def test_bump(self):
+        response = self.client.post(
+            '/admin/tip/action/',
+            data = {
+                'action': 'Bump',
+                'rowid': '1',
+            },
+            follow_redirects=True )
+        self.assertIn(' tips have been bumped.', response.data)
+        with self.request_context():
+            self.assertNotEqual(Tip.query.filter_by(id=1).one().update, self.old_age)
+            self.assertEqual(Tip.query.filter_by(id=2).one().update, self.old_age)

@@ -12,6 +12,7 @@ from .. import create_app
 
 class FixtureConfiguration (object):
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
+    SECRET_KEY = 'psiodfnvpsdojfnvpaosihrgt'
     TESTING = True
 
 

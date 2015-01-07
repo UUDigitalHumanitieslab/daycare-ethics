@@ -6,7 +6,7 @@ import csv
 from datetime import datetime
 
 from wtforms import validators, widgets
-from flask import current_app, make_response
+from flask import current_app, make_response, flash
 from flask.ext.admin import form
 from flask.ext.admin.actions import action, ActionsMixin
 from flask.ext.admin.contrib.sqla import ModelView
@@ -133,6 +133,13 @@ class TipsView(ModelView):
         model.update = datetime.now()
         if is_created:
             model.create = model.update
+
+    @action('Bump', 'Mark as updated')
+    def bump(self, ids):
+        now = datetime.now()
+        count = Tip.query.filter(Tip.id.in_(ids)).update({Tip.update: now}, False)
+        db.session.commit()
+        flash('{} tips have been bumped.'.format(count))
 
     def __init__(self, session, name='Tips', **kwargs):
         super(TipsView, self).__init__(Tip, session, name, **kwargs)
