@@ -6,7 +6,6 @@
 """
 
 from flask.ext.admin import Admin
-from flask.ext.admin.contrib.sqla import ModelView
 
 from ..database import models, db
 from .views import *
@@ -22,6 +21,6 @@ def create_admin(app):
     admin.add_view(VotesView(ses))
     admin.add_view(BrainTeasersView(ses))
     admin.add_view(ResponsesView(ses))
-    admin.add_view(ModelView(models.Tip, ses, 'Tips'))
+    admin.add_view(TipsView(ses))
     admin.init_app(app)
     return admin

@@ -3,7 +3,9 @@
 
 import StringIO
 import csv
+from datetime import datetime
 
+from wtforms import validators, widgets
 from flask import current_app, make_response
 from flask.ext.admin import form
 from flask.ext.admin.actions import action, ActionsMixin
@@ -109,3 +111,28 @@ class ResponsesView(ModelView):
 
     def __init__(self, session, name='Responses', **kwargs):
         super(ResponsesView, self).__init__(Response, session, name, **kwargs)
+
+
+class TipsView(ModelView):
+    column_list = ('what', 'author', 'title', 'update')
+    column_labels = {'update': 'Last update'}
+    form_columns = ('what', 'author', 'title', 'text', 'href')
+    form_args = {
+        'text': {
+            'label': 'Description',
+        },
+        'href': {
+            'label': 'Hyperlink',
+            'validators': [validators.URL(),],
+            'widget': widgets.TextInput(),
+        },
+    }
+    page_size = 50
+
+    def on_model_change(self, form, model, is_created=True):
+        model.update = datetime.now()
+        if is_created:
+            model.create = model.update
+
+    def __init__(self, session, name='Tips', **kwargs):
+        super(TipsView, self).__init__(Tip, session, name, **kwargs)
