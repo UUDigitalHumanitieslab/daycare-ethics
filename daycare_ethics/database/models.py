@@ -86,11 +86,14 @@ class Response (db.Model):
     brain_teaser    = db.relationship('BrainTeaser', backref='responses')
 
 
-class Link (db.Model):
-    """ Any hyperlink that the content provider opts to share with users.
+class Tip (db.Model):
+    """ Any reference that the content provider opts to share with users.
     """
-    id          = db.Column(db.Integer, primary_key=True)
-    date        = db.Column(db.DateTime, nullable=False)
-    text        = db.Column(db.Text)
-    title_tag   = db.Column(db.Text)
-    href        = db.Column(db.Text, nullable=False)
+    id      = db.Column(db.Integer, primary_key=True)
+    create  = db.Column(db.DateTime, nullable=False)
+    update  = db.Column(db.DateTime, nullable=False)
+    what    = db.Column(db.Enum('book', 'site'), default='site')
+    author  = db.Column(db.Text)
+    title   = db.Column(db.Text, nullable=False)
+    text    = db.Column(db.Text)
+    href    = db.Column(db.Text)

@@ -22,6 +22,6 @@ def create_admin(app):
     admin.add_view(VotesView(ses))
     admin.add_view(BrainTeasersView(ses))
     admin.add_view(ResponsesView(ses))
-    admin.add_view(ModelView(models.Link, ses, 'Links'))
+    admin.add_view(ModelView(models.Tip, ses, 'Tips'))
     admin.init_app(app)
     return admin
