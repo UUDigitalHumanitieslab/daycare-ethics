@@ -17,9 +17,6 @@ class VotesViewTestCase(BaseFixture):
             db.session.add(Vote(case=testcase, submission=datetime.now(), agree=True))
             db.session.commit()
 
-    def tearDown(self):
-        db.drop_all(app=self.app)
-
     def test_export_data(self):
         response = self.client.post(
             '/admin/vote/action/',
@@ -54,9 +51,6 @@ class TipsViewTestCase(BaseFixture):
                 create=self.old_age,
                 update=self.old_age ))
             db.session.commit()
-
-    def tearDown(self):
-        db.drop_all(app=self.app)
 
     def test_bump(self):
         response = self.client.post(
