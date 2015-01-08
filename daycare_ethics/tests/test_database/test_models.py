@@ -67,11 +67,12 @@ class ModelsAreCreatedTestCase(BaseFixture):
         self.assertEqual(rsp.id, 1)
         self.assertEqual(first, rsp)
 
-    def test_link_exists(self):
-        lnk = Link(date=datetime.now(), href='http://www.test.org')
+    def test_tip_exists(self):
+        now = datetime.now()
+        tip = Tip(create=now, update=now, title='test')
         with self.request_context():
-            db.session.add(lnk)
+            db.session.add(tip)
             db.session.commit()
-            first = db.session.query(Link).first()
-        self.assertEqual(lnk.id, 1)
-        self.assertEqual(first, lnk)
+            first = db.session.query(Tip).first()
+        self.assertEqual(tip.id, 1)
+        self.assertEqual(first, tip)
