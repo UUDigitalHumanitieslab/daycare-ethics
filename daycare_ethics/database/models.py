@@ -8,7 +8,10 @@
     database structure.
 """
 
-from sqlalchemy.ext.declarative import declared_attr
+import os
+
+from flask import current_app
+from sqlalchemy.event import listens_for
 
 from db import db
 
@@ -22,29 +25,36 @@ class Picture (db.Model):
     path        = db.Column(db.String(50), unique=True, nullable=False)
 
 
+@listens_for(Picture, 'after_delete')
+def del_file(mapper, connection, target):
+    if target.path:
+        file_path = current_app.instance_path
+        try:
+            os.remove(os.path.join(file_path, target.path))
+        except OSError:
+            # Don't care if was not deleted because it does not exist
+            pass
+
+
 class PublicationItem (object):
     """ Common properties of things that are published periodically.
     """
     id          = db.Column(db.Integer, primary_key=True)
-    @declared_attr
-    def picture_id(cls):
-        return db.Column(db.ForeignKey('picture.id'))
     publication = db.Column(db.Date)
     closure     = db.Column(db.Date)
     title       = db.Column(db.Text, nullable=False)
     text        = db.Column(db.Text)
-    @declared_attr
-    def picture(cls):
-        return db.relationship('Picture', backref=cls.__tablename__+'s')
 
 
 class Case (PublicationItem, db.Model):
     """ Weekly moral issue with a proposition that users can vote on.
     """
     __tablename__   = 'case'
+    picture_id      = db.Column(db.ForeignKey('picture.id'))
     proposition     = db.Column(db.Text)
     yes_votes       = db.Column(db.Integer, default=0)
     no_votes        = db.Column(db.Integer, default=0)
+    picture         = db.relationship('Picture', backref='cases')
 
 
 class Vote (db.Model):
@@ -76,11 +86,14 @@ class Response (db.Model):
     brain_teaser    = db.relationship('BrainTeaser', backref='responses')
 
 
-class Link (db.Model):
-    """ Any hyperlink that the content provider opts to share with users.
+class Tip (db.Model):
+    """ Any reference that the content provider opts to share with users.
     """
-    id          = db.Column(db.Integer, primary_key=True)
-    date        = db.Column(db.DateTime, nullable=False)
-    text        = db.Column(db.Text)
-    title_tag   = db.Column(db.Text)
-    href        = db.Column(db.Text, nullable=False)
+    id      = db.Column(db.Integer, primary_key=True)
+    create  = db.Column(db.DateTime, nullable=False)
+    update  = db.Column(db.DateTime, nullable=False)
+    what    = db.Column(db.Enum('book', 'site'), default='site')
+    author  = db.Column(db.Text)
+    title   = db.Column(db.Text, nullable=False)
+    text    = db.Column(db.Text)
+    href    = db.Column(db.Text)

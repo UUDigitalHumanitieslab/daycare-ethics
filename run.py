@@ -7,6 +7,8 @@
     Run a local test server with the serverside application.
 """
 
+from sys import argv
+
 from daycare_ethics import create_app
 
 
@@ -15,6 +17,9 @@ class Config:
 
 
 if __name__ == '__main__':
-    app = create_app(config_obj=Config)
+    if len(argv) >= 2:
+        app = create_app(config_file=argv[1])
+    else:
+        app = create_app(config_obj=Config)
     app.debug = True
     app.run()

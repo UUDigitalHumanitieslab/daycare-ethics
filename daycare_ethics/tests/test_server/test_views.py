@@ -8,7 +8,7 @@ from ..common_fixtures import BaseFixture
 
 class ViewsTestCase (BaseFixture):
     def test_index(self):
-        response = self.app.get('/')
+        response = self.client.get('/')
         self.assertIn(
             '<script src="js/index.js"></script>',
             response.data   )
@@ -17,7 +17,7 @@ class ViewsTestCase (BaseFixture):
     def test_index_cached(self):
         now = datetime.today()
         next_ = now.replace(hour=now.hour + 1)
-        response = self.app.get('/', headers={
+        response = self.client.get('/', headers={
             'If-Modified-Since': next_.strftime('%a, %d %b %Y %H:%M:%S %z%Z'),
         })
         self.assertEqual(response.status_code, 304)

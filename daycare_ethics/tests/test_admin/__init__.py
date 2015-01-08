@@ -2,19 +2,15 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
-    Top-level test suite to rule them all.
+    Combined test suite for all modules in the admin package.
 """
 
 import unittest
 
-import test_server
-import test_database
-import test_admin
+import test_views
 
 suite = unittest.TestSuite([
-    test_server.suite,
-    test_database.suite,
-    test_admin.suite,
+    unittest.TestLoader().loadTestsFromModule(test_views),
 ])
 
 if __name__ == '__main__':
