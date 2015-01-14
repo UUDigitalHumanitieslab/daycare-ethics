@@ -78,12 +78,9 @@ html, body, [data-role="page"] {
     top:        calc(50% - 177 * 0.0625em);
 }
 
-#plate {
+#plate .ui-content {
     background: fixed url(/img/table_0512.jpg) center / cover;
-}
-
-#plate div {
-    background: transparent;
+    height:     100%;
 }
 
 #mirror {
