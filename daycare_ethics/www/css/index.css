@@ -78,6 +78,14 @@ html, body, [data-role="page"] {
     top:        calc(50% - 177 * 0.0625em);
 }
 
+#plate {
+    background: fixed url(/img/table_0512.jpg) center / cover;
+}
+
+#plate div {
+    background: transparent;
+}
+
 iframe {
     width:      100%;
     height:     100%;
