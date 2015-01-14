@@ -68,7 +68,7 @@ html, body, [data-role="page"] {
 #shelf-button {
     display:        block;
     padding:        0;
-    background:     url('/img/ray_count_096.png') center;
+    background:     url(/img/ray_crown_096_shadow.png) center;
     width:          calc(96 * 0.0625em);
     height:         calc(96 * 0.0625em);
     text-align:     center;
