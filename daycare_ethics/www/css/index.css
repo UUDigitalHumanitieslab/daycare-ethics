@@ -86,6 +86,22 @@ html, body, [data-role="page"] {
     background: transparent;
 }
 
+#mirror {
+    background: fixed url(/img/mirror_0512.jpg) center / cover;
+}
+
+#mirror div {
+    background: transparent;
+}
+
+#shelf {
+    background: fixed url(/img/shelf_0512.jpg) center / cover;
+}
+
+#shelf div {
+    background: transparent;
+}
+
 iframe {
     width:      100%;
     height:     100%;
