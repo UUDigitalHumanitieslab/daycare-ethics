@@ -36,18 +36,18 @@ html, body, [data-role="page"] {
 }
 
 #plate-button {
-    left:       calc(50% - 0 * 0.0625em);
-    top:        calc(50% + 77 * 0.0625em);
+    left:       calc(50% - 19 * 0.0625em);
+    top:        calc(50% + 50 * 0.0625em);
 }
 
 #mirror-button {
-    left:       calc(50% - 142 * 0.0625em);
-    top:        calc(50% - 160 * 0.0625em);
+    left:       calc(50% - 148 * 0.0625em);
+    top:        calc(50% - 164 * 0.0625em);
 }
 
 #shelf-button {
-    left:       calc(50% + 13 * 0.0625em);
-    top:        calc(50% - 177 * 0.0625em);
+    left:       calc(50% - 2 * 0.0625em);
+    top:        calc(50% - 167 * 0.0625em);
 }
 
 iframe {
