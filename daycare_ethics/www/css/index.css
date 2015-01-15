@@ -10,11 +10,11 @@ html, body, [data-role="page"] {
 }
 
 #home {
-    background: url(/img/background_0512.jpg) center / cover;
+    background: url(/img/background_0512.jpg) center;
 }
 
 #shelf {
-    background: fixed url(/img/shelf_0512.jpg) center / cover;
+    background: fixed url(/img/shelf_0512.jpg) center;
 }
 
 .ui-link.click-hint, a.click-hint:link, a.click-hint:visited {
@@ -60,13 +60,13 @@ iframe {
 
 @media all and (min-width: 513px), all and (min-height: 513px) {
     #home {
-        background: url(/img/background_0724.jpg) center / cover;
+        background: url(/img/background_0724.jpg) center;
     }
 }
 
 @media all and (min-width: 725px), all and (min-height: 725px) {
     #home {
-        background: url(/img/background_1024.jpg) center / cover;
+        background: url(/img/background_1024.jpg) center;
     }
 }
 
