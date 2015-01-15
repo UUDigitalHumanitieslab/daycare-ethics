@@ -16,11 +16,10 @@ html, body, [data-role="page"] {
 }
 
 [data-role="page"] .ui-content {
-    height: calc(100% - 89px);
+    height: 100%;
 }
 
 #home .ui-content {
-    height:     100%;
     background: url(/img/background_0512.jpg) center / cover;
 }
 
@@ -61,7 +60,6 @@ html, body, [data-role="page"] {
 
 #plate .ui-content {
     background: fixed url(/img/table_0512.jpg) center / cover;
-    height:     100%;
 }
 
 #mirror {
@@ -122,10 +120,6 @@ iframe {
     }
 
     [data-role="page"] .ui-content {
-        height: calc(64em - 89px);
-    }
-
-    #home .ui-content {
         height: 64em;
     }
 }
