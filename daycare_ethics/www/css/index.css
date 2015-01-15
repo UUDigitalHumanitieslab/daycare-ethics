@@ -13,14 +13,6 @@ html, body, [data-role="page"] {
     background: url(/img/background_0512.jpg) center / cover;
 }
 
-#plate {
-    background: fixed url(/img/table_0512.jpg) center / cover;
-}
-
-#mirror {
-    background: fixed url(/img/mirror_0512.jpg) center / cover;
-}
-
 #shelf {
     background: fixed url(/img/shelf_0512.jpg) center / cover;
 }
