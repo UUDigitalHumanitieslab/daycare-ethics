@@ -24,10 +24,10 @@ html, body, [data-role="page"] {
     background: url(/img/background_0512.jpg) center / cover;
 }
 
-.ui-link, a, a:link, a:visited {
-    font-weight:    normal;
-    text-decoration: none;
-    color:          #000000;
+.ui-link.click-hint, a.click-hint:link, a.click-hint:visited {
+    font-weight:        200;
+    text-decoration:    none;
+    color:              #000000;
 }
 
 .click-hint {
