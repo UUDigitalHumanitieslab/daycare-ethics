@@ -36,6 +36,7 @@ html, body, [data-role="page"] {
     background:     url(/img/star_112.png) center / cover;
     width:          calc(112 * 0.0625em);
     height:         calc(112 * 0.0625em);
+    border-radius:  calc(56 * 0.0625em);
     text-align:     center;
     line-height:    calc(108 * 0.0625em);
 }
