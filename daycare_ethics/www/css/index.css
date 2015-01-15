@@ -33,14 +33,11 @@ html, body, [data-role="page"] {
 .click-hint {
     display:        block;
     padding:        0;
-    background-color: rgba(255, 255, 255, 0.25);
-    box-shadow:     0 0 calc(3 * 0.0625em) calc(2 * 0.0625em) rgba(255, 255, 255, 0.25);
-    border:         0.125em dashed #000000;
-    border-radius:  calc(40 * 0.0625em);
-    width:          calc(80 * 0.0625em);
-    height:         calc(80 * 0.0625em);
+    background:     url(/img/star_112.png) center / cover;
+    width:          calc(112 * 0.0625em);
+    height:         calc(112 * 0.0625em);
     text-align:     center;
-    line-height:    calc(76 * 0.0625em);
+    line-height:    calc(108 * 0.0625em);
 }
 
 #plate-button {
@@ -50,29 +47,12 @@ html, body, [data-role="page"] {
 }
 
 #mirror-button {
-    display:        block;
-    padding:        0;
-    background-color: rgba(0, 0, 0, 0.25);
-    box-shadow:     0 0 calc(3 * 0.0625em) calc(2 * 0.0625em) rgba(0, 0, 0, 0.25);
-    border:         0.125em dashed #ffffff;
-    border-radius:  calc(40 * 0.0625em);
-    width:          calc(80 * 0.0625em);
-    height:         calc(80 * 0.0625em);
-    text-align:     center;
-    line-height:    calc(76 * 0.0625em);
     position:   absolute;
     left:       calc(50% - 142 * 0.0625em);
     top:        calc(50% - 160 * 0.0625em);
 }
 
 #shelf-button {
-    display:        block;
-    padding:        0;
-    background:     url(/img/ray_crown_096_shadow.png) center;
-    width:          calc(96 * 0.0625em);
-    height:         calc(96 * 0.0625em);
-    text-align:     center;
-    line-height:    calc(90 * 0.0625em);
     position:   absolute;
     left:       calc(50% + 13 * 0.0625em);
     top:        calc(50% - 177 * 0.0625em);
