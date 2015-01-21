@@ -62,11 +62,19 @@ iframe {
     #home {
         background: url(/img/background_0724.jpg) center;
     }
+
+    #shelf {
+        background: url(/img/shelf_0724.jpg) center;
+    }
 }
 
 @media (min-width: 45.3em), (min-height: 45.3em) {
     #home {
         background: url(/img/background_1024.jpg) center;
+    }
+
+    #shelf {
+        background: url(/img/shelf_1024.jpg) center;
     }
 }
 
