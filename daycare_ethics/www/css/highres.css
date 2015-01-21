@@ -1,0 +1,24 @@
+/*
+    (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+    Author: Julian Gonggrijp, j.gonggrijp@uu.nl
+*/
+
+#home {
+    background: url(/img/background_1024.jpg) center / 32em;
+}
+
+#shelf {
+    background: fixed url(/img/shelf_1024.jpg) center / 32em;
+}
+
+@media (min-width: 32.05em), (min-height: 32.05em) {
+    #home {
+        background: url(/img/background_1448.jpg) center / 45.25em;
+    }
+}
+
+@media (min-width: 45.3em), (min-height: 45.3em) {
+    #home {
+        background: url(/img/background_2048.jpg) center / 64em;
+    }
+}
