@@ -66,6 +66,14 @@ iframe {
     #shelf {
         background: url(/img/shelf_0724.jpg) center;
     }
+
+    .click-hint {
+        background-image: url(/img/star_158.png);
+        width:          calc(158 * 0.0625em);
+        height:         calc(158 * 0.0625em);
+        border-radius:  calc(79 * 0.0625em);
+        line-height:    calc(153 * 0.0625em);
+    }
 }
 
 @media (min-width: 45.3em), (min-height: 45.3em) {
@@ -75,6 +83,14 @@ iframe {
 
     #shelf {
         background: url(/img/shelf_1024.jpg) center;
+    }
+
+    .click-hint {
+        background-image: url(/img/star_224.png);
+        width:          calc(224 * 0.0625em);
+        height:         calc(224 * 0.0625em);
+        border-radius:  calc(112 * 0.0625em);
+        line-height:    calc(216 * 0.0625em);
     }
 }
 
