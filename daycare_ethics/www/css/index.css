@@ -14,7 +14,7 @@ html, body, [data-role="page"] {
 }
 
 #shelf {
-    background: fixed url(/img/shelf_0512.jpg) center;
+    background: url(/img/shelf_0512.jpg) center;
 }
 
 .ui-link.click-hint, a.click-hint:link, a.click-hint:visited {

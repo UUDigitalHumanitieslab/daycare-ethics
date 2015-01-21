@@ -8,7 +8,7 @@
 }
 
 #shelf {
-    background: fixed url(/img/shelf_1024.jpg) center / 32em;
+    background: url(/img/shelf_1024.jpg) center / 32em;
 }
 
 @media (min-width: 32.05em), (min-height: 32.05em) {
