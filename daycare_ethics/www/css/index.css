@@ -58,13 +58,13 @@ iframe {
     margin:     0;
 }
 
-@media all and (min-width: 513px), all and (min-height: 513px) {
+@media all and (min-width: 32.05em), all and (min-height: 32.05em) {
     #home {
         background: url(/img/background_0724.jpg) center;
     }
 }
 
-@media all and (min-width: 725px), all and (min-height: 725px) {
+@media all and (min-width: 45.3em), all and (min-height: 45.3em) {
     #home {
         background: url(/img/background_1024.jpg) center;
     }
