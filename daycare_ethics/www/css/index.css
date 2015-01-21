@@ -86,8 +86,4 @@ iframe {
         position:       absolute;
         top:            calc(50% - 18em);
     }
-
-    body, [data-role="page"] {
-        height:     64em;
-    }
 }
