@@ -20,10 +20,6 @@
 </head><body>
 
 <div data-role="page" id="home">
-    <ul>
-        <li><a href="#privacy">Privacy</a></li>
-        <li><a href="#about">Colofon</a></li>
-    </ul>
     <a href="#plate" id="plate-button" class="click-hint" data-transition="slide">Casus</a>
     <a href="#mirror" id="mirror-button" class="click-hint" data-transition="pop">Reflectie</a>
     <a href="#shelf" id="shelf-button" class="click-hint" data-transition="flip">Extra</a>
@@ -49,26 +45,46 @@
 <div data-role="page" id="shelf">
     <h4><a href="#home">&lt; Doordenkertjes</a></h4>
     <ul>
-        <li><a href="#labour-code">Beroepscode</a></li>
-        <li><a href="#report-code">Meldcode</a></li>
-        <li><a href="#plate-archive">Casus</a></li>
-        <li><a href="#mirror-archive">Reflectie</a></li>
+        <li><a href="#codes">Beroepscode en meldcode</a></li>
+        <li><a href="#archive">Archief</a></li>
         <li><a href="#links-tips">Links en tips</a></li>
+        <li><a href="#about">Colofon</a></li>
     </ul>
 </div>
 
-<div data-role="page" id="labour-code">
-    <h4><a href="#shelf">&lt; Archief</a></h4>
-    <iframe src="beroepscode_kinderopvang.pdf"></iframe>
+<div data-role="page" id="codes">
+    <h4><a href="#shelf">&lt; Extra</a></h4>
+    <ul>
+        <li><a href="#labour-code">Beroepscode</a></li>
+        <li><a href="#labour-code-tips">Tips bij beroepscode</a></li>
+        <li><a href="#report-code">Meldcode</a></li>
+    </ul>
 </div>
 
-<div data-role="page" id="report-code">
-    <h4><a href="#shelf">&lt; Archief</a></h4>
+<div data-role="page" data-dialog="true" id="labour-code">
+    <iframe src="beroepscode_kinderopvang.pdf"></iframe>
+    <a href="#codes" data-role="footer" data-rel="back" class="ui-btn ui-corner-all">
+        Sluit
+    </a>
+</div>
+
+<div data-role="page" data-dialog="true" id="report-code">
     <iframe src=""></iframe>
+    <a href="#codes" data-role="footer" data-rel="back" class="ui-btn ui-corner-all">
+        Sluit
+    </a>
+</div>
+
+<div data-role="page" id="archive">
+    <h4><a href="#shelf">&lt; Extra</a></h4>
+    <ul>
+        <li><a href="#plate-archive">Casus</a></li>
+        <li><a href="#mirror-archive">Reflectie</a></li>
+    </ul>
 </div>
 
 <div data-role="page" id="plate-archive">
-    <h4><a href="#shelf">&lt; Archief</a></h4>
+    <h4><a href="#archive">&lt; Archief</a></h4>
     <table id="plate-archive-list">
         <thead>
         <tr><th>Titel</th><th>Datum</th></tr>
@@ -82,7 +98,7 @@
 </div>
 
 <div data-role="page" id="mirror-archive">
-    <h4><a href="#shelf">&lt; Archief</a></h4>
+    <h4><a href="#archive">&lt; Archief</a></h4>
     <table id="mirror-archive-list">
         <thead>
         <tr><th>Titel</th><th>Datum</th></tr>
@@ -97,22 +113,14 @@
 </div>
 
 <div data-role="page" id="links-tips">
-    <ul id="links-tips-list"></ul>
-    <h4><a href="#shelf">&lt; Archief</a></h4>
-</div>
-
-<div data-role="page" id="privacy">
-    <h4><a href="#home">&lt; Doordenkertjes</a></h4>
-    <h2>Waarom wij eventueel gegevens verzamelen</h2>
-    <p></p>
-    <h2>Hoe wij je gegevens (niet) verzamelen</h2>
-    <p></p>
-    <h2>Wat wij (niet) met je gegevens doen</h2>
-    <p></p>
+    <ul id="website-links"></ul>
+    <ul id="book-tips"></ul>
+    <ul id="labour-code-tips"></ul>
+    <h4><a href="#shelf">&lt; Extra</a></h4>
 </div>
 
 <div data-role="page" id="about">
-    <h4><a href="#home">&lt; Doordenkertjes</a></h4>
+    <h4><a href="#shelf">&lt; Extra</a></h4>
     <h2>Doordenkertjes</h2>
     <h3>Ethiek in de kinderopvang</h3>
     <p>Applicatie: &copy; 2014 Digital Humanities Lab, Universiteit Utrecht</p>
