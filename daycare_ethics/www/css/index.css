@@ -74,6 +74,21 @@ iframe {
         border-radius:  calc(79 * 0.0625em);
         line-height:    calc(153 * 0.0625em);
     }
+
+    #plate-button {
+        left:       calc(50% - 27 * 0.0625em);
+        top:        calc(50% + 71 * 0.0625em);
+    }
+
+    #mirror-button {
+        left:       calc(50% - 209 * 0.0625em);
+        top:        calc(50% - 232 * 0.0625em);
+    }
+
+    #shelf-button {
+        left:       calc(50% - 3 * 0.0625em);
+        top:        calc(50% - 236 * 0.0625em);
+    }
 }
 
 @media (min-width: 45.3em), (min-height: 45.3em) {
@@ -91,6 +106,21 @@ iframe {
         height:         calc(224 * 0.0625em);
         border-radius:  calc(112 * 0.0625em);
         line-height:    calc(216 * 0.0625em);
+    }
+
+    #plate-button {
+        left:       calc(50% - 38 * 0.0625em);
+        top:        calc(50% + 100 * 0.0625em);
+    }
+
+    #mirror-button {
+        left:       calc(50% - 296 * 0.0625em);
+        top:        calc(50% - 328 * 0.0625em);
+    }
+
+    #shelf-button {
+        left:       calc(50% - 4 * 0.0625em);
+        top:        calc(50% - 334 * 0.0625em);
     }
 }
 
