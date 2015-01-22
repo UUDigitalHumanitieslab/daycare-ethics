@@ -47,7 +47,28 @@ class CasesView(ModelView):
         'closure': 'Date when the case is archived.',
     }
     column_default_sort = ('publication', True)
-    form_columns = ('title', 'publication', 'closure', 'picture', 'text', 'proposition')
+    form_columns = (
+        'title',
+        'publication',
+        'closure',
+        'picture',
+        'text',
+        'proposition',
+        'background',
+    )
+    form_args = {
+        'background': {
+            'label': 'Background color',
+            'validators': [
+                validators.Regexp(r'^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$'),
+            ],
+        }
+    }
+    form_widget_args = {
+        'background': {
+            'placeholder': '#RRGGBB',
+        }
+    }
 
     def __init__(self, session, name='Cases', **kwargs):
         super(CasesView, self).__init__(Case, session, name, **kwargs)
