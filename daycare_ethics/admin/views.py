@@ -86,12 +86,12 @@ class VotesView(ModelView, ActionsMixin):
     @action('Export', 'Export selected data to CSV')
     def export_data(self, ids):
         headers = [c[0] if type(c) == tuple else c for c in self.get_list_columns()]
-        data = Vote.query.filter(Vote.id.in_(ids)).all()
+        data = self.model.query.filter(self.model.id.in_(ids)).all()
         buffer = StringIO.StringIO(b'')
         writer = csv.writer(buffer, delimiter=';')
         writer.writerow(headers)
-        for vote in data:
-            writer.writerow((vote.case.title, vote.submission, vote.agree))
+        for item in data:
+            writer.writerow([str(self._get_field_value(item, h)) for h in headers])
         response = make_response(buffer.getvalue())
         response.headers['Content-Disposition'] = 'attachment; filename="votes.csv"'
         response.headers['Content-Type'] = 'text/csv; charset=utf-8'

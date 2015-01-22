@@ -44,6 +44,9 @@ class PublicationItem (object):
     closure     = db.Column(db.Date)
     title       = db.Column(db.Text)
     text        = db.Column(db.Text)
+    
+    def __str__(self):
+        return self.title
 
 
 class Case (PublicationItem, db.Model):
