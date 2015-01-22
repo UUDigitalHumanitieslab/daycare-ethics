@@ -12,6 +12,7 @@
 <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
 <link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css" />
 <link rel="stylesheet" type="text/css" href="css/index.css" />
+<link rel="stylesheet" type="text/css" href="css/highres.css" media="(-webkit-min-device-pixel-ratio: 2), (min--moz-device-pixel-ratio: 2), (-o-min-device-pixel-ratio: 2/1), (min-device-pixel-ratio: 2), (min-resolution: 192dpi), (min-resolution: 2dppx)" />
 <script src="js/jquery-2.1.1.min.js"></script>
 <script src="js/jquery.mobile-1.4.5.min.js"></script>
 <title>Doordenkertjes &mdash; Ethiek in de kinderopvang</title>
@@ -19,182 +20,102 @@
 </head><body>
 
 <div data-role="page" id="home">
-    <div role="main" class="ui-content">
-        <ul>
-            <li><a href="#plate">Bordje</a></li>
-            <li><a href="#mirror">Spiegel</a></li>
-            <li><a href="#shelf">Boekenkast</a></li>
-            <li><a href="#privacy">Privacy</a></li>
-            <li><a href="#about">Colofon</a></li>
-        </ul>
-    </div>
+    <ul>
+        <li><a href="#privacy">Privacy</a></li>
+        <li><a href="#about">Colofon</a></li>
+    </ul>
+    <a href="#plate" id="plate-button" class="click-hint" data-transition="slide">Casus</a>
+    <a href="#mirror" id="mirror-button" class="click-hint" data-transition="pop">Reflectie</a>
+    <a href="#shelf" id="shelf-button" class="click-hint" data-transition="flip">Extra</a>
 </div>
 
 <div data-role="page" id="plate">
-    <div data-role="header">
-        <h1>Wekelijkse casus</h1>
-    </div>
-    <div role="main" class="ui-content">
-        <h2 id="case-title"></h2>
-        <div id="case-display"></div>
-        <p id="case-text"></p>
-    </div>
-    <div data-role="footer">
-        <h4><a href="#home">&lt; Doordenkertjes</a></h4>
-    </div>
+    <h4><a href="#home">&lt; Doordenkertjes</a></h4>
+    <h2 id="case-title">Wat heb ik op mijn bord?</h2>
+    <div id="case-display" style="width: 18em; height: 12em; background: #808080"></div>
+    <p id="case-text">Ilse is een jonge moeder van drie kinderen, waarvan twee op de kdv. Op een dag belt ze dat haar kinderen door een ander opgehaald worden. Als de persoon in kwestie voor de deur staat, vraagt ze waar de maxi cosi van de kleinste is. Die zit bij Ilse in de auto.</p>
+    <p id="case-proposition">Laat je haar gaan?</p>
+    <a href="#" class="ui-btn ui-btn-inline ui-corner-all">Ja</a>
+    <a href="#" class="ui-btn ui-btn-inline ui-corner-all">Nee</a>
 </div>
 
 <div data-role="page" id="mirror">
-    <div data-role="header">
-        <h1>Reflectie</h1>
-    </div>
-    <div role="main" class="ui-content">
-        <h2 id="reflection-title"></h2>
-        <div id="reflection-display"></div>
-        <div id="reflection-discussion"></div>
-    </div>
-    <div data-role="footer">
-        <h4><a href="#home">&lt; Doordenkertjes</a></h4>
-    </div>
+    <h4><a href="#home">&lt; Doordenkertjes</a></h4>
+    <h2 id="reflection-title"></h2>
+    <div id="reflection-display"></div>
+    <div id="reflection-discussion"></div>
 </div>
 
 <div data-role="page" id="shelf">
-    <div data-role="header">
-        <h1>Archief</h1>
-    </div>
-    <div role="main" class="ui-content">
-        <ul>
-            <li><a href="#labour-code">Beroepscode</a></li>
-            <li><a href="#report-code">Meldcode</a></li>
-            <li><a href="#plate-archive">Casus</a></li>
-            <li><a href="#mirror-archive">Reflectie</a></li>
-            <li><a href="#links-tips">Links en tips</a></li>
-        </ul>
-    </div>
-    <div data-role="footer">
-        <h4><a href="#home">&lt; Doordenkertjes</a></h4>
-    </div>
+    <h4><a href="#home">&lt; Doordenkertjes</a></h4>
+    <ul>
+        <li><a href="#labour-code">Beroepscode</a></li>
+        <li><a href="#report-code">Meldcode</a></li>
+        <li><a href="#plate-archive">Casus</a></li>
+        <li><a href="#mirror-archive">Reflectie</a></li>
+        <li><a href="#links-tips">Links en tips</a></li>
+    </ul>
 </div>
 
 <div data-role="page" id="labour-code">
-    <div data-role="header">
-        <h1>Beroepscode</h1>
-    </div>
-    <div role="main" class="ui-content">
-        <iframe src="beroepscode_kinderopvang.pdf"></iframe>
-    </div>
-    <div data-role="footer">
-        <h4><a href="#shelf">&lt; Archief</a></h4>
-    </div>
+    <h4><a href="#shelf">&lt; Archief</a></h4>
+    <iframe src="beroepscode_kinderopvang.pdf"></iframe>
 </div>
 
 <div data-role="page" id="report-code">
-    <div data-role="header">
-        <h1>Meldcode</h1>
-    </div>
-    <div role="main" class="ui-content">
-        <iframe src=""></iframe>
-    </div>
-    <div data-role="footer">
-        <h4><a href="#shelf">&lt; Archief</a></h4>
-    </div>
+    <h4><a href="#shelf">&lt; Archief</a></h4>
+    <iframe src=""></iframe>
 </div>
 
 <div data-role="page" id="plate-archive">
-    <div data-role="header">
-        <h1>Voorgaande casus</h1>
-    </div>
-    <div role="main" class="ui-content">
-        <table id="plate-archive-list">
-            <thead>
-            <tr><th>Titel</th><th>Datum</th></tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-    <div data-role="footer">
-        <h4><a href="#shelf">&lt; Archief</a></h4>
-    </div>
+    <h4><a href="#shelf">&lt; Archief</a></h4>
+    <table id="plate-archive-list">
+        <thead>
+        <tr><th>Titel</th><th>Datum</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 </div>
 
 <div data-role="page" id="plate-archive-display">
-    <div data-role="header">
-        <h1>Wekelijkse casus van <span id="case-date"></span></h1>
-    </div>
-    <div role="main" class="ui-content"></div>
-    <div data-role="footer">
-        <h4><a href="#plate-archive">&lt; Voorgaande casus</a></h4>
-    </div>
+    <h4><a href="#plate-archive">&lt; Voorgaande casus</a></h4>
 </div>
 
 <div data-role="page" id="mirror-archive">
-    <div data-role="header">
-        <h1>Voorgaande reflectie</h1>
-    </div>
-    <div role="main" class="ui-content">
-        <table id="mirror-archive-list">
-            <thead>
-            <tr><th>Titel</th><th>Datum</th></tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-    <div data-role="footer">
-        <h4><a href="#shelf">&lt; Archief</a></h4>
-    </div>
+    <h4><a href="#shelf">&lt; Archief</a></h4>
+    <table id="mirror-archive-list">
+        <thead>
+        <tr><th>Titel</th><th>Datum</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 </div>
 
 <div data-role="page" id="mirror-archive-display">
-    <div data-role="header">
-        <h1>Reflectie van <span id="brainteaser-date"></span></h1>
-    </div>
-    <div role="main" class="ui-content"></div>
-    <div data-role="footer">
-        <h4><a href="#mirror-archive">&lt; Voorgaande reflectie</a></h4>
-    </div>
+    <h1>Reflectie van <span id="brainteaser-date"></span></h1>
+    <h4><a href="#mirror-archive">&lt; Voorgaande reflectie</a></h4>
 </div>
 
 <div data-role="page" id="links-tips">
-    <div data-role="header">
-        <h1>Links en tips</h1>
-    </div>
-    <div role="main" class="ui-content">
-        <ul id="links-tips-list"></ul>
-    </div>
-    <div data-role="footer">
-        <h4><a href="#shelf">&lt; Archief</a></h4>
-    </div>
+    <ul id="links-tips-list"></ul>
+    <h4><a href="#shelf">&lt; Archief</a></h4>
 </div>
 
 <div data-role="page" id="privacy">
-    <div data-role="header">
-        <h1>Privacy</h1>
-    </div>
-    <div role="main" class="ui-content">
-        <h2>Waarom wij eventueel gegevens verzamelen</h2>
-        <p></p>
-        <h2>Hoe wij je gegevens (niet) verzamelen</h2>
-        <p></p>
-        <h2>Wat wij (niet) met je gegevens doen</h2>
-        <p></p>
-    </div>
-    <div data-role="footer">
-        <h4><a href="#home">&lt; Doordenkertjes</a></h4>
-    </div>
+    <h4><a href="#home">&lt; Doordenkertjes</a></h4>
+    <h2>Waarom wij eventueel gegevens verzamelen</h2>
+    <p></p>
+    <h2>Hoe wij je gegevens (niet) verzamelen</h2>
+    <p></p>
+    <h2>Wat wij (niet) met je gegevens doen</h2>
+    <p></p>
 </div>
 
 <div data-role="page" id="about">
-    <div data-role="header">
-        <h1>Colofon</h1>
-    </div>
-    <div role="main" class="ui-content">
-        <h2>Doordenkertjes</h2>
-        <h3>Ethiek in de kinderopvang</h3>
-        <p>Applicatie: &copy; 2014 Digital Humanities Lab, Universiteit Utrecht</p>
-    </div>
-    <div data-role="footer">
-        <h4><a href="#home">&lt; Doordenkertjes</a></h4>
-    </div>
+    <h4><a href="#home">&lt; Doordenkertjes</a></h4>
+    <h2>Doordenkertjes</h2>
+    <h3>Ethiek in de kinderopvang</h3>
+    <p>Applicatie: &copy; 2014 Digital Humanities Lab, Universiteit Utrecht</p>
 </div>
 
 <script src="cordova.js"></script>

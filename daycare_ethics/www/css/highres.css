@@ -1,0 +1,44 @@
+/*
+    (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+    Author: Julian Gonggrijp, j.gonggrijp@uu.nl
+*/
+
+#home {
+    background: url(/img/background_1024.jpg) center / 32em;
+}
+
+#shelf {
+    background: url(/img/shelf_1024.jpg) center / 32em;
+}
+
+.click-hint {
+    background-image: url(/img/star_224.png);
+}
+
+@media (min-width: 32.05em), (min-height: 32.05em) {
+    #home {
+        background: url(/img/background_1448.jpg) center / 45.25em;
+    }
+
+    #shelf {
+        background: url(/img/shelf_1448.jpg) center / 45.25em;
+    }
+
+    .click-hint {
+        background-image: url(/img/star_317.png);
+    }
+}
+
+@media (min-width: 45.3em), (min-height: 45.3em) {
+    #home {
+        background: url(/img/background_2048.jpg) center / 64em;
+    }
+
+    #shelf {
+        background: url(/img/shelf_2048.jpg) center / 64em;
+    }
+
+    .click-hint {
+        background-image: url(/img/star_448.png);
+    }
+}

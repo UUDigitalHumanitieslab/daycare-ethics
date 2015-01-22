@@ -9,18 +9,45 @@ html, body, [data-role="page"] {
     padding:    0;
 }
 
-[data-role="page"], [data-role="page"] * {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing:    border-box;
-    box-sizing:         border-box;
+#home {
+    background: url(/img/background_0512.jpg) center;
 }
 
-[data-role="page"] .ui-content {
-    height: calc(100% - 89px);
+#shelf {
+    background: url(/img/shelf_0512.jpg) center;
 }
 
-#home .ui-content {
-    height: 100%;
+.ui-link.click-hint, a.click-hint:link, a.click-hint:visited {
+    font-weight:        200;
+    text-decoration:    none;
+    color:              #000000;
+}
+
+.click-hint {
+    display:        block;
+    padding:        0;
+    background:     url(/img/star_112.png) center / cover;
+    width:          calc(112 * 0.0625em);
+    height:         calc(112 * 0.0625em);
+    border-radius:  calc(56 * 0.0625em);
+    text-align:     center;
+    line-height:    calc(108 * 0.0625em);
+    position:       absolute;
+}
+
+#plate-button {
+    left:       calc(50% - 19 * 0.0625em);
+    top:        calc(50% + 50 * 0.0625em);
+}
+
+#mirror-button {
+    left:       calc(50% - 148 * 0.0625em);
+    top:        calc(50% - 164 * 0.0625em);
+}
+
+#shelf-button {
+    left:       calc(50% - 2 * 0.0625em);
+    top:        calc(50% - 167 * 0.0625em);
 }
 
 iframe {
@@ -31,32 +58,86 @@ iframe {
     margin:     0;
 }
 
-@media all and (min-width: 48em) {
-    html {
-        display:        block;
-        width:          48em;
-        position:       absolute;
-        left:           calc(50% - 24em);
+@media (min-width: 32.05em), (min-height: 32.05em) {
+    #home {
+        background: url(/img/background_0724.jpg) center;
+    }
+
+    #shelf {
+        background: url(/img/shelf_0724.jpg) center;
+    }
+
+    .click-hint {
+        background-image: url(/img/star_158.png);
+        width:          calc(158 * 0.0625em);
+        height:         calc(158 * 0.0625em);
+        border-radius:  calc(79 * 0.0625em);
+        line-height:    calc(153 * 0.0625em);
+    }
+
+    #plate-button {
+        left:       calc(50% - 27 * 0.0625em);
+        top:        calc(50% + 71 * 0.0625em);
+    }
+
+    #mirror-button {
+        left:       calc(50% - 209 * 0.0625em);
+        top:        calc(50% - 232 * 0.0625em);
+    }
+
+    #shelf-button {
+        left:       calc(50% - 3 * 0.0625em);
+        top:        calc(50% - 236 * 0.0625em);
     }
 }
 
-@media all and (min-height: 64em) {
+@media (min-width: 45.3em), (min-height: 45.3em) {
+    #home {
+        background: url(/img/background_1024.jpg) center;
+    }
+
+    #shelf {
+        background: url(/img/shelf_1024.jpg) center;
+    }
+
+    .click-hint {
+        background-image: url(/img/star_224.png);
+        width:          calc(224 * 0.0625em);
+        height:         calc(224 * 0.0625em);
+        border-radius:  calc(112 * 0.0625em);
+        line-height:    calc(216 * 0.0625em);
+    }
+
+    #plate-button {
+        left:       calc(50% - 38 * 0.0625em);
+        top:        calc(50% + 100 * 0.0625em);
+    }
+
+    #mirror-button {
+        left:       calc(50% - 296 * 0.0625em);
+        top:        calc(50% - 328 * 0.0625em);
+    }
+
+    #shelf-button {
+        left:       calc(50% - 4 * 0.0625em);
+        top:        calc(50% - 334 * 0.0625em);
+    }
+}
+
+@media (min-width: 64em) {
+    html {
+        display:        block;
+        width:          64em;
+        position:       absolute;
+        left:           calc(50% - 32em);
+    }
+}
+
+@media (min-height: 64em) {
     html {
         display:        block;
         height:         64em;
         position:       absolute;
-        top:            calc(50% - 18em);
-    }
-
-    body, [data-role="page"] {
-        height:     64em;
-    }
-
-    [data-role="page"] .ui-content {
-        height: calc(64em - 89px);
-    }
-
-    #home .ui-content {
-        height: 64em;
+        top:            calc(50% - 32em);
     }
 }
