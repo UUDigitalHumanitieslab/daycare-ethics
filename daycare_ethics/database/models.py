@@ -42,7 +42,7 @@ class PublicationItem (object):
     id          = db.Column(db.Integer, primary_key=True)
     publication = db.Column(db.Date)
     closure     = db.Column(db.Date)
-    title       = db.Column(db.Text, nullable=False)
+    title       = db.Column(db.Text)
     text        = db.Column(db.Text)
 
 
@@ -54,6 +54,7 @@ class Case (PublicationItem, db.Model):
     proposition     = db.Column(db.Text)
     yes_votes       = db.Column(db.Integer, default=0)
     no_votes        = db.Column(db.Integer, default=0)
+    background      = db.Column(db.String(7))  # an RGB color code
     picture         = db.relationship('Picture', backref='cases')
 
 
@@ -82,7 +83,7 @@ class Response (db.Model):
     pseudonym       = db.Column(db.String(30), nullable=False)
     upvotes         = db.Column(db.Integer, default=0)
     downvotes       = db.Column(db.Integer, default=0)
-    message         = db.Column(db.Text)
+    message         = db.Column(db.Text, nullable=False)
     brain_teaser    = db.relationship('BrainTeaser', backref='responses')
 
 
@@ -92,7 +93,7 @@ class Tip (db.Model):
     id      = db.Column(db.Integer, primary_key=True)
     create  = db.Column(db.DateTime, nullable=False)
     update  = db.Column(db.DateTime, nullable=False)
-    what    = db.Column(db.Enum('book', 'site'), default='site')
+    what    = db.Column(db.Enum('labour code', 'book', 'site'))
     author  = db.Column(db.Text)
     title   = db.Column(db.Text, nullable=False)
     text    = db.Column(db.Text)

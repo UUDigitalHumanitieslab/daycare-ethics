@@ -59,7 +59,10 @@ class ModelsAreCreatedTestCase(BaseFixture):
 
     def test_response_exists(self):
         bt = BrainTeaser(title='Test')
-        rsp = Response(submission=datetime.now(), pseudonym='test', brain_teaser=bt)
+        rsp = Response( submission=datetime.now(),
+                        pseudonym='test',
+                        brain_teaser=bt,
+                        message='bla' )
         with self.request_context():
             db.session.add(rsp)
             db.session.commit()
