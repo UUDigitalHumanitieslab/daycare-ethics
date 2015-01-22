@@ -124,12 +124,12 @@ iframe {
     }
 }
 
-@media (min-width: 48em) {
+@media (min-width: 64em) {
     html {
         display:        block;
-        width:          48em;
+        width:          64em;
         position:       absolute;
-        left:           calc(50% - 24em);
+        left:           calc(50% - 32em);
     }
 }
 
