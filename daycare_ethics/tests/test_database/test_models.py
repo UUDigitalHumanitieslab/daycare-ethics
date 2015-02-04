@@ -12,11 +12,9 @@ from ...database.models import *
 class SQLADeclaredAttrTestCase(TestCase):
     def test_picture_refs(self):
         self.assertIn('picture', Case.__dict__)
-        self.assertIn('picture', BrainTeaser.__dict__)
 
     def test_picture_backrefs(self):
         self.assertIn('cases', Picture.__dict__)
-        self.assertIn('brain_teasers', Picture.__dict__)
 
 
 class ModelsAreCreatedTestCase(BaseFixture):
@@ -59,7 +57,10 @@ class ModelsAreCreatedTestCase(BaseFixture):
 
     def test_response_exists(self):
         bt = BrainTeaser(title='Test')
-        rsp = Response(submission=datetime.now(), pseudonym='test', brain_teaser=bt)
+        rsp = Response( submission=datetime.now(),
+                        pseudonym='test',
+                        brain_teaser=bt,
+                        message='bla' )
         with self.request_context():
             db.session.add(rsp)
             db.session.commit()

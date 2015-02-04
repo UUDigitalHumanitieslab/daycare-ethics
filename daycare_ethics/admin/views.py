@@ -1,17 +1,16 @@
 # (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
-import StringIO
-import csv
 from datetime import datetime
 
 from wtforms import validators, widgets
-from flask import current_app, make_response, flash
+from flask import current_app, flash
 from flask.ext.admin import form
 from flask.ext.admin.actions import action, ActionsMixin
 from flask.ext.admin.contrib.sqla import ModelView
 
 from ..database.models import *
+from .util import download_csv
 
 
 class MediaView(ModelView):
@@ -47,7 +46,28 @@ class CasesView(ModelView):
         'closure': 'Date when the case is archived.',
     }
     column_default_sort = ('publication', True)
-    form_columns = ('title', 'publication', 'closure', 'picture', 'text', 'proposition')
+    form_columns = (
+        'title',
+        'publication',
+        'closure',
+        'picture',
+        'text',
+        'proposition',
+        'background',
+    )
+    form_args = {
+        'background': {
+            'label': 'Background color',
+            'validators': [
+                validators.Regexp(r'^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$'),
+            ],
+        }
+    }
+    form_widget_args = {
+        'background': {
+            'placeholder': '#RRGGBB',
+        }
+    }
 
     def __init__(self, session, name='Cases', **kwargs):
         super(CasesView, self).__init__(Case, session, name, **kwargs)
@@ -62,19 +82,9 @@ class VotesView(ModelView, ActionsMixin):
     column_filters = ('case', 'submission')
     page_size = 100
 
-    @action('Export', 'Export selected data to CSV')
+    @action('Export', 'Download as CSV')
     def export_data(self, ids):
-        headers = [c[0] if type(c) == tuple else c for c in self.get_list_columns()]
-        data = Vote.query.filter(Vote.id.in_(ids)).all()
-        buffer = StringIO.StringIO(b'')
-        writer = csv.writer(buffer, delimiter=';')
-        writer.writerow(headers)
-        for vote in data:
-            writer.writerow((vote.case.title, vote.submission, vote.agree))
-        response = make_response(buffer.getvalue())
-        response.headers['Content-Disposition'] = 'attachment; filename="votes.csv"'
-        response.headers['Content-Type'] = 'text/csv; charset=utf-8'
-        return response
+        return download_csv(self, ids, 'votes')
 
     def __init__(self, session, name='Votes', **kwargs):
         super(VotesView, self).__init__(Vote, session, name, **kwargs)
@@ -94,7 +104,7 @@ class BrainTeasersView(ModelView):
         super(BrainTeasersView, self).__init__(BrainTeaser, session, name, **kwargs)
 
 
-class ResponsesView(ModelView):
+class ResponsesView(ModelView, ActionsMixin):
     can_create = False
     can_edit = False
     column_sortable_list = (
@@ -109,8 +119,13 @@ class ResponsesView(ModelView):
     column_filters = ('brain_teaser', 'submission', 'pseudonym', 'upvotes', 'downvotes')
     page_size = 100
 
+    @action('Export', 'Download as CSV')
+    def export_data(self, ids):
+        return download_csv(self, ids, 'responses')
+
     def __init__(self, session, name='Responses', **kwargs):
         super(ResponsesView, self).__init__(Response, session, name, **kwargs)
+        self.init_actions()
 
 
 class TipsView(ModelView):
