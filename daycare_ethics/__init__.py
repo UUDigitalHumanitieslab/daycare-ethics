@@ -14,8 +14,12 @@ from .server import public
 from .admin import create_admin
 
 
-def create_app(config_file=None, config_obj=None):
-    app = Flask(__name__, static_folder='www', static_url_path='')
+def create_app(config_file=None, config_obj=None, instance=None):
+    app = Flask(
+        __name__,
+        static_folder='www',
+        static_url_path='',
+        instance_path=instance )
     if config_file is not None:
         app.config.from_pyfile(config_file)
     elif config_obj is not None:
