@@ -26,12 +26,12 @@ class IndexTestCase (BaseFixture):
 
 
 class CasusTestCase (BaseFixture):
-    def setUp (self):
+    def setUp(self):
         super(CasusTestCase, self).setUp()
-        casus1 = Case(title='casus1')
-        casus2 = Case(title='casus2')
-        casus3 = Case(title='casus3')
         now = datetime.today()
+        casus1 = Case(title='casus1', publication=now.replace(month=now.month - 3))
+        casus2 = Case(title='casus2', publication=now.replace(month=now.month - 2))
+        casus3 = Case(title='casus3', publication=now.replace(month=now.month - 1))
         next_ = now.replace(hour=now.hour - 1)
         def next_date():
             next_ = next_.replace(second=next_.second + 1)
@@ -46,3 +46,9 @@ class CasusTestCase (BaseFixture):
                 ses.add(Vote(case=casus3, submission=next_date(), agree=not(count % 4)))
             ses.commit()
     
+    def test_current_casus(self):
+        with self.request_context():
+            casus3 = Case.query.order_by(Case.c.publication.desc()).first()
+        response = self.client.get('/case')
+        self.assertEqual(response.status_code, 200)
+        
