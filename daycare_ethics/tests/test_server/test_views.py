@@ -6,7 +6,7 @@ from datetime import datetime
 from ..common_fixtures import BaseFixture
 
 
-class ViewsTestCase (BaseFixture):
+class IndexTestCase (BaseFixture):
     def test_index(self):
         response = self.client.get('/')
         self.assertIn(
