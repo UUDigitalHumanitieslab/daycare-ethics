@@ -49,13 +49,17 @@ class CasusTestCase (BaseFixture):
                 ses.add(Vote(case=casus3, submission=next_date(), agree=False if (count % 4) else True))
             ses.commit()
     
+    def test_current_casus_redirect(self):
+        response = self.client.get('/case')
+        self.assertEqual(response.status_code, 301)
+    
     def test_current_casus(self):
         with self.request_context():
             casus3 = Case.query.order_by(Case.publication.desc()).first()
-        response = self.client.get('/case')
+        response = self.client.get('/case/')
         self.assertEqual(response.status_code, 200)
         self.assertIn('json', response.mimetype)
-        response_object = json.parse(response.data)
+        response_object = json.loads(response.data)
         self.assertEqual(response_object['title'], 'casus3')
         self.assertEqual(response_object['publication'], casus3.publication.isoformat())
         
