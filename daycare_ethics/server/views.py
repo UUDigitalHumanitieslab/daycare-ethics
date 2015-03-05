@@ -5,6 +5,8 @@
     Directly visitable routes on the domain.
 """
 
+from datetime import date
+
 from flask import send_from_directory, jsonify
 
 from ..database.models import Case
@@ -18,7 +20,12 @@ def index():
 
 @public.route('/case/')
 def current_casus():
-    latest_casus = Case.query.order_by(Case.publication.desc()).first()
+    latest_casus = (
+        Case.query
+        .filter(Case.publication <= date.today())
+        .order_by(Case.publication.desc())
+        .first()
+    )
     if latest_casus.publication:
         publication = latest_casus.publication.isoformat()
         week = latest_casus.publication.strftime('%W')
