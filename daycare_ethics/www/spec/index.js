@@ -24,17 +24,22 @@ describe('app', function() {
     
     describe('preloadContent', function() {
         function fakeJQueryGet (url, data, success, dataType) {
-            if (url === '/case/') success({
-                'id': 1,
-                'title': 'testcasus',
-                'publication': '2015-03-02',
-                'week': '10',
-                'closure': null,
-                'text': 'some dummy text',
-                'proposition': 'difficult question',
-                'picture': null,
-                'background': '#998877'
-            }, '200 OK');
+            return {
+                query: url,
+                done: function(callback) {
+                    if (this.query === '/case/') callback({
+                        'id': 1,
+                        'title': 'testcasus',
+                        'publication': '2015-03-02',
+                        'week': '10',
+                        'closure': null,
+                        'text': 'some dummy text',
+                        'proposition': 'difficult question',
+                        'picture': null,
+                        'background': '#998877'
+                    });
+                }
+            };
         };
         beforeEach(function() {
             $('#stage').html('<div id="plate">' +

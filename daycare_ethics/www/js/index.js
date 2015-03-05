@@ -10,11 +10,7 @@ var app = {
     },
     
     preloadContent: function() {
-        $.get('/case/', null, function(data, status) {
-            if (status != '200 OK') {
-                console.log('No internet connection');
-                return;
-            }
+        $.get('/case/').done(function(data) {
             $('#plate .week-number').html(data.week);
             $('#case-text').html(data.text);
             $('#case-proposition').html(data.proposition);
