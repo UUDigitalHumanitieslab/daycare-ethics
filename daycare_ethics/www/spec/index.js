@@ -33,7 +33,7 @@ describe('app', function() {
                 'text': 'some dummy text',
                 'proposition': 'difficult question',
                 'picture': null,
-                'background': null
+                'background': '#998877'
             }, '200 OK');
         };
         beforeEach(function() {
@@ -48,7 +48,10 @@ describe('app', function() {
             spyOn($, 'get').and.callFake(fakeJQueryGet);
         });
         it('must prepopulate the HTML content with casus data', function() {
+            app.preloadContent();
             expect($('#plate .week-number').html()).toBe('10');
+            expect($('#case-text').html()).toBe('some dummy text');
+            expect($('#case-proposition').html()).toBe('difficult question');
         });
     });
 
