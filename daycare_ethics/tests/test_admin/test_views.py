@@ -2,6 +2,7 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 from datetime import datetime
+import os.path as op
 
 from ..common_fixtures import BaseFixture
 from ...database.models import *
@@ -64,3 +65,20 @@ class TipsViewTestCase(BaseFixture):
         with self.request_context():
             self.assertNotEqual(Tip.query.filter_by(id=1).one().update, self.old_age)
             self.assertEqual(Tip.query.filter_by(id=2).one().update, self.old_age)
+
+
+class MediaViewTestCase(BaseFixture):
+    def test_upload(self):
+        test_image_name = 'openclipart_hector_gomez_landscape.png'
+        tests_dir = op.dirname(op.dirname(__file__))
+        test_image_path = op.join(tests_dir, 'data', test_image_name)
+        # test_image_file = open(test_image_path, 'rb')
+        # print test_image_path
+        self.client.post(
+            '/admin/picture/new/',
+            data = {
+                'name': 'testimage',
+                'path': (test_image_path, test_image_name),
+            } )
+        with self.request_context():
+            pass

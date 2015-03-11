@@ -7,14 +7,13 @@
 
 import unittest
 
-import test_server
-import test_database
-import test_admin
+import test_server, test_database, test_admin, test_util
 
 suite = unittest.TestSuite([
     test_server.suite,
     test_database.suite,
     test_admin.suite,
+    unittest.TestLoader().loadTestsFromModule(test_util),
 ])
 
 if __name__ == '__main__':
