@@ -5,8 +5,17 @@
 var app = {
     // Application Constructor
     initialize: function() {
+        this.findDimensions();
         this.preloadContent();
         this.bindEvents();
+    },
+    
+    findDimensions: function() {
+        this.viewport = {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            pixelRatio: window.devicePixelRatio
+        };
     },
     
     preloadContent: function() {
@@ -14,6 +23,13 @@ var app = {
             $('#plate .week-number').html(data.week);
             $('#case-text').html(data.text);
             $('#case-proposition').html(data.proposition);
+            var image_size = app.viewport.width * app.viewport.pixelRatio;
+            var img = $('<img>')
+                .attr('src', '/media/' + data.picture + '/' + image_size)
+                .load(function() {
+                    $('#case-display').append(img);
+                });
+            $('#plate').css('background-color', data.background);
         });
     },
     

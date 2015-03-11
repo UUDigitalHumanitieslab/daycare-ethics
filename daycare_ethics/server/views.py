@@ -7,15 +7,27 @@
 
 from datetime import date
 
-from flask import send_from_directory, jsonify
+from flask import send_from_directory, jsonify, current_app, abort
 
-from ..database.models import Case
+from ..util import image_variants, TARGET_WIDTHS
+from ..database.models import Case, Picture
 from blueprint import public
 
 
 @public.route('/')
 def index():
     return send_from_directory(public.static_folder, 'index.html')
+
+
+@public.route('/media/<int:id>/<int:width>')
+def media(id, width):
+    image = Picture.query.filter_by(id=id).one().path
+    variants = image_variants(image)
+    cutoffs = TARGET_WIDTHS[1:] + (100000,)
+    for cutoff, variant in zip(cutoffs, variants):
+        if cutoff >= width:
+            return send_from_directory(current_app.instance_path, variant)
+    abort(404)
 
 
 @public.route('/case/')
