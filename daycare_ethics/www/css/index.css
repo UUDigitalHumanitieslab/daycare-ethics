@@ -11,6 +11,7 @@ html, body {
 
 [data-role="page"] {
     height:     calc(100% - 20px);
+    max-width:  calc(100% - 20px);
     margin:     0;
     padding:    10px;
 }
