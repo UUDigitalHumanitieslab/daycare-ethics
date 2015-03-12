@@ -71,6 +71,14 @@ html, body {
     top:        calc(50% - 167 * 0.0625em);
 }
 
+[data-role="page"][data-dialog="true"] {
+    padding:    0;
+}
+
+[role="dialog"] {
+    height: calc(90% - 16px);
+}
+
 iframe {
     width:      100%;
     height:     100%;
