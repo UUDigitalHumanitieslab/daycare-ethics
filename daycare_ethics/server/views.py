@@ -5,12 +5,13 @@
     Directly visitable routes on the domain.
 """
 
-from datetime import date
+from datetime import date, datetime
 
-from flask import send_from_directory, jsonify, current_app, abort
+from flask import send_from_directory, jsonify, current_app, abort, request
 
 from ..util import image_variants, TARGET_WIDTHS
-from ..database.models import Case, Picture
+from ..database.models import Case, Picture, Vote
+from ..database.db import db
 from blueprint import public
 
 
@@ -58,3 +59,28 @@ def current_casus():
         proposition=latest_casus.proposition,
         picture=latest_casus.picture_id,
         background=latest_casus.background )
+
+
+@public.route('/case/vote')
+def vote_casus():
+    now = datetime.today()
+    if 'id' not in request.values or 'choice' not in request.values:
+        return 'invalid'
+    id, choice = int(request.values['id']), request.values['choice']
+    try:
+        casus = Case.query.filter_by(id=id).one()
+    except:
+        return 'unavailable'
+    if casus.closure and casus.closure <= date.today():
+        return 'unavailable'
+    ses = db.session
+    if choice == 'yes':
+        ses.add(Vote(agree=True, submission=now, case=casus))
+        ses.commit()
+        return 'success'
+    elif choice == 'no':
+        ses.add(Vote(agree=False, submission=now, case=casus))
+        ses.commit()
+        return 'success'
+    else:
+        return 'invalid'
