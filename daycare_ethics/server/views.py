@@ -22,7 +22,10 @@ def index():
 
 @public.route('/media/<int:id>/<int:width>')
 def media(id, width):
-    image = Picture.query.filter_by(id=id).one().path
+    try:
+        image = Picture.query.filter_by(id=id).one().path
+    except:
+        abort(404)
     variants = image_variants(image)
     cutoffs = TARGET_WIDTHS[1:] + (100000,)
     for cutoff, variant in zip(cutoffs, variants):
