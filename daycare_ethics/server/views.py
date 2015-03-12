@@ -61,7 +61,9 @@ def current_casus():
         text=latest_casus.text,
         proposition=latest_casus.proposition,
         picture=latest_casus.picture_id,
-        background=latest_casus.background )
+        background=latest_casus.background,
+        yes=latest_casus.yes_votes,
+        no=latest_casus.no_votes )
 
 
 @public.route('/case/vote')
@@ -78,10 +80,12 @@ def vote_casus():
         return 'unavailable'
     ses = db.session
     if choice == 'yes':
+        casus.yes_votes += 1
         ses.add(Vote(agree=True, submission=now, case=casus))
         ses.commit()
         return 'success'
     elif choice == 'no':
+        casus.no_votes += 1
         ses.add(Vote(agree=False, submission=now, case=casus))
         ses.commit()
         return 'success'
