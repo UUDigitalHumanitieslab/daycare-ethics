@@ -3,10 +3,16 @@
     Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 */
 
-html, body, [data-role="page"] {
+html, body {
     height:     100%;
     margin:     0;
     padding:    0;
+}
+
+[data-role="page"] {
+    height:     calc(100% - 20px);
+    margin:     0;
+    padding:    10px;
 }
 
 #home {
