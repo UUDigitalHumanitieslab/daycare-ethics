@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<!--
+    (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+    Author: Julian Gonggrijp, j.gonggrijp@uu.nl
+-->
+<html><head>
+
+<meta charset="utf-8" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="msapplication-tap-highlight" content="no" />
+<!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+<link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css" />
+<link rel="stylesheet" type="text/css" href="css/index.css" />
+<link rel="stylesheet" type="text/css" href="css/highres.css" media="(-webkit-min-device-pixel-ratio: 2), (min--moz-device-pixel-ratio: 2), (-o-min-device-pixel-ratio: 2/1), (min-device-pixel-ratio: 2), (min-resolution: 192dpi), (min-resolution: 2dppx)" />
+<script src="js/jquery-2.1.1.min.js"></script>
+<script src="js/jquery.mobile-1.4.5.min.js"></script>
+<title>Doordenkertjes &mdash; Ethiek in de kinderopvang</title>
+
+</head><body>
+
+<div data-role="page" id="home">
+    <a href="#plate" id="plate-button" class="click-hint">Casus</a>
+    <!-- <a href="#mirror" id="mirror-button" class="click-hint">Reflectie</a> -->
+    <a href="#shelf" id="shelf-button" class="click-hint">Extra</a>
+</div>
+
+<div data-role="page" id="plate">
+    <h4><a href="#home">&lt; Doordenkertjes</a></h4>
+    <h3>Casus van week <span class="week-number"></span></h3>
+    <div id="case-display"></div>
+    <p id="case-text"></p>
+    <p id="case-proposition">Laat je haar gaan?</p>
+    <span id="yes_count"></span>
+    <span id="no_bar"><span id="yes_bar"></span></span>
+    <span id="no_count"></span>
+    <a href="#" class="ui-btn ui-btn-inline ui-corner-all">Ja</a>
+    <a href="#" class="ui-btn ui-btn-inline ui-corner-all">Nee</a>
+</div>
+
+<div data-role="page" id="mirror">
+    <h4><a href="#home">&lt; Doordenkertjes</a></h4>
+    <h3>Reflectie van week <span class="week-number">20</h3>
+    <p id="reflection-text"></p>
+    <div id="reflection-discussion"></div>
+    <form id="reflection-response">
+        <input type="button" value="Reageer">
+    </form>
+</div>
+
+<div data-role="page" id="shelf">
+    <h4><a href="#home">&lt; Doordenkertjes</a></h4>
+    <ul>
+        <li><a href="#labour-code">Beroepscode <!-- en meldcode --></a></li>
+        <!-- <li><a href="#archive">Archief</a></li>
+        <li><a href="#links-tips">Links en tips</a></li> -->
+        <li><a href="#about">Colofon</a></li>
+    </ul>
+</div>
+
+<div data-role="page" id="codes">
+    <h4><a href="#shelf">&lt; Extra</a></h4>
+    <ul>
+        <li><a href="#labour-code">Beroepscode</a></li>
+        <li><a href="#report-code">Meldcode</a></li>
+    </ul>
+</div>
+
+<div data-role="page" data-dialog="true" id="labour-code">
+    <iframe src="beroepscode_kinderopvang.pdf"></iframe>
+    <a href="#codes" data-role="footer" data-rel="back" class="ui-btn ui-corner-all">
+        Sluit
+    </a>
+</div>
+
+<div data-role="page" data-dialog="true" id="report-code">
+    <iframe src=""></iframe>
+    <a href="#codes" data-role="footer" data-rel="back" class="ui-btn ui-corner-all">
+        Sluit
+    </a>
+</div>
+
+<div data-role="page" id="archive">
+    <h4><a href="#shelf">&lt; Extra</a></h4>
+    <ul>
+        <li><a href="#plate-archive">Casus</a></li>
+        <li><a href="#mirror-archive">Reflectie</a></li>
+    </ul>
+</div>
+
+<div data-role="page" id="plate-archive">
+    <h4><a href="#archive">&lt; Archief</a></h4>
+    <ul data-role="listview" data-inset="true" id="plate-archive-list">
+        <!-- <li><a href=""></a><span class="week-number ui-li-count"></span></li> -->
+    </ul>
+</div>
+
+<div data-role="page" id="mirror-archive">
+    <h4><a href="#archive">&lt; Archief</a></h4>
+    <ul data-role="listview" data-inset="true" id="mirror-archive-list">
+        <!-- <li><a href=""></a><span class="week-number ui-li-count"></span></li> -->
+    </ul>
+</div>
+
+<div data-role="page" id="links-tips">
+    <h4><a href="#shelf">&lt; Extra</a></h4>
+    <h4>Tips bij de beroepscode</h4>
+    <ul id="labour-code-tips"></ul>
+    <h4>Links</h4>
+    <ul id="website-links"></ul>
+    <h4>Boekentips</h4>
+    <ul id="book-tips"></ul>
+</div>
+
+<div data-role="page" id="about">
+    <h4><a href="#shelf">&lt; Extra</a></h4>
+    <h3>Doordenkertjes</h3>
+    <h4>Ethiek in de kinderopvang</h4>
+    <p>
+        Deze applicatie wordt u aangeboden door de <a href="http://www.uu.nl">Universiteit Utrecht</a> in samenwerking met het <a href="http://www.fcb.nl">FCB</a>, in het kader van de pilot <i>beroepsethiek in de kinderopvang</i>. Informatie uit de app wordt voor onderzoeksdoeleinden gebruikt. Gegevens worden altijd anoniem verwerkt en zijn niet herleidbaar tot uw identiteit. Voor meer informatie over het project: <a href="mailto:kinderopvangethiek@gmail.com">kinderopvangethiek@gmail.com</a>.
+    </p>
+    <p>De applicatie is ontwikkeld door het <a href="http://digitalhumanities.wp.hum.uu.nl">Digital Humanities Lab</a> van de Universiteit Utrecht.</p>
+</div>
+
+<script src="cordova.js"></script>
+<script src="js/lodash.min.js"></script>
+<script src="js/machina.min.js"></script>
+<script src="js/index.js"></script>
+<script>
+    app.initialize();
+</script>
+
+</body></html>
