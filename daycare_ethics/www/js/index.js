@@ -25,7 +25,7 @@ var app = {
             $('#plate .week-number').html(data.week);
             $('#case-text').html(data.text);
             $('#case-proposition').html(data.proposition);
-            var image_size = app.viewport.width * app.viewport.pixelRatio;
+            var image_size = (app.viewport.width - 20) * app.viewport.pixelRatio;
             var img = $('<img>')
                 .attr('src', '/media/' + data.picture + '/' + image_size)
                 .load(function() {
@@ -65,7 +65,7 @@ var app = {
         $('#yes_count').html('ja ' + yes_count);
         $('#no_count').html(no_count + ' nee');
         $('#no_bar').width(
-            $('#plate').width() - $('#yes_count').width() - $('#no_count').width() - 16
+            $(window).width() - $('#yes_count').width() - $('#no_count').width() - 36
         );
         $('#yes_bar').css('width', 100 * yes_count / (yes_count + no_count) + '%');
     },

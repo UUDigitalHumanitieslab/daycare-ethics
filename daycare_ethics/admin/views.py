@@ -54,7 +54,7 @@ class CasesView(ModelView):
     }
     column_descriptions = {
         'publication': 'Date when the case goes live.',
-        'closure': 'Date when the case is archived.',
+        'closure': 'Date when voting becomes unavailable.',
     }
     column_default_sort = ('publication', True)
     form_columns = (

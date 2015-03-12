@@ -3,10 +3,17 @@
     Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 */
 
-html, body, [data-role="page"] {
+html, body {
     height:     100%;
     margin:     0;
     padding:    0;
+}
+
+[data-role="page"] {
+    height:     calc(100% - 20px);
+    max-width:  calc(100% - 20px);
+    margin:     0;
+    padding:    10px;
 }
 
 #home {
@@ -62,6 +69,14 @@ html, body, [data-role="page"] {
 #shelf-button {
     left:       calc(50% - 2 * 0.0625em);
     top:        calc(50% - 167 * 0.0625em);
+}
+
+[data-role="page"][data-dialog="true"] {
+    padding:    0;
+}
+
+[role="dialog"] {
+    height: calc(90% - 16px);
 }
 
 iframe {
