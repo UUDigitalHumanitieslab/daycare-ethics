@@ -3,6 +3,11 @@
     Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 */
 
+img {
+    width: 50%;
+    height: 50%;
+}
+
 #home {
     background: url(/img/background_1024.jpg) center / 32em;
 }

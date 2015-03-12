@@ -13,6 +13,7 @@ import os
 from flask import current_app
 from sqlalchemy.event import listens_for
 
+from ..util import image_variants
 from db import db
 
 
@@ -28,12 +29,13 @@ class Picture (db.Model):
 @listens_for(Picture, 'after_delete')
 def del_file(mapper, connection, target):
     if target.path:
-        file_path = current_app.instance_path
-        try:
-            os.remove(os.path.join(file_path, target.path))
-        except OSError:
-            # Don't care if was not deleted because it does not exist
-            pass
+        directory = current_app.instance_path
+        for path in [target.path] + image_variants(target.path):
+            try:
+                os.remove(os.path.join(directory, path))
+            except OSError:
+                # Don't care if was not deleted because it does not exist
+                pass
 
 
 class PublicationItem (object):

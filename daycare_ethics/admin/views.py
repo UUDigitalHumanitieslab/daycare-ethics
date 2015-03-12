@@ -1,6 +1,7 @@
 # (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
+import os.path as op
 from datetime import datetime
 
 from wtforms import validators, widgets
@@ -9,6 +10,9 @@ from flask.ext.admin import form
 from flask.ext.admin.actions import action, ActionsMixin
 from flask.ext.admin.contrib.sqla import ModelView
 
+from PIL import Image
+
+from ..util import TARGET_WIDTHS, image_variants
 from ..database.models import *
 from .util import download_csv
 
@@ -30,6 +34,13 @@ class MediaView(ModelView):
 
     def on_model_change(self, form, model, is_created=True):
         model.mime_type = form.path.data.headers['Content-Type']
+        if model.mime_type.startswith('image'):
+            model_path = op.join(current_app.instance_path, model.path)
+            original = Image.open(model_path)
+            for width, name in zip(TARGET_WIDTHS, image_variants(model_path)):
+                im = original.copy()
+                im.thumbnail((width, width), Image.LANCZOS)
+                im.save(op.join(current_app.instance_path, name), quality=95)
 
     def __init__(self, session, name='Media', **kwargs):
         super(MediaView, self).__init__(Picture, session, name, **kwargs)

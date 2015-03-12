@@ -7,9 +7,11 @@
 
 import unittest
 
-import test_views
+import test_views, test_util
 
-suite = unittest.TestSuite([unittest.TestLoader().loadTestsFromModule(test_views)])
+suite = unittest.TestSuite([
+    unittest.TestLoader().loadTestsFromModule(test_views),
+])
 
 if __name__ == '__main__':
     unittest.main()
