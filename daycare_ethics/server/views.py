@@ -10,7 +10,7 @@ from datetime import date, datetime
 from flask import send_from_directory, jsonify, current_app, abort, request
 
 from ..util import image_variants, TARGET_WIDTHS
-from ..database.models import Case, Picture, Vote
+from ..database.models import *
 from ..database.db import db
 from blueprint import public
 
@@ -91,3 +91,30 @@ def vote_casus():
         return 'success'
     else:
         return 'invalid'
+
+
+@public.route('/reflection/')
+def current_reflection():
+    latest_reflection = (
+        BrainTeaser.query
+        .filter(BrainTeaser.publication <= date.today())
+        .order_by(BrainTeaser.publication.desc())
+        .first()
+    )
+    if latest_reflection.publication:
+        publication = latest_reflection.publication.isoformat()
+        week = latest_reflection.publication.strftime('%W')
+    else:
+        publication = None
+        week = None
+    if latest_reflection.closure:
+        closure = latest_reflection.closure.isoformat()
+    else:
+        closure = None
+    return jsonify(
+        id=latest_reflection.id,
+        title=latest_reflection.title,
+        publication=publication,
+        week=week,
+        closure=closure,
+        text=latest_reflection.text )

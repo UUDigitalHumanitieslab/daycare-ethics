@@ -36,6 +36,12 @@ var app = {
                 app.displayVotes();
             }
         });
+        $.get('/reflection/').done(function(data) {
+            app.current_reflection = data.id;
+            localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
+            $('#mirror .week-number').html(data.week);
+            $('#reflection-text').html(data.text);
+        });
     },
     
     submitVote: function(choice) {
