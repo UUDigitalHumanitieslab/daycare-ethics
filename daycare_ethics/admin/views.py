@@ -105,8 +105,8 @@ class VotesView(ModelView, ActionsMixin):
 class BrainTeasersView(ModelView):
     column_list = ('title', 'publication', 'closure')
     column_descriptions = {
-        'publication': 'Date when the case goes live.',
-        'closure': 'Date when the case is archived.',
+        'publication': 'Date when the reflection item goes live.',
+        'closure': 'Date when the discussion will close.',
     }
     column_default_sort = ('publication', True)
     form_columns = ('title', 'publication', 'closure', 'text')
