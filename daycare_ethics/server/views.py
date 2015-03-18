@@ -170,3 +170,23 @@ def reply_to_reflection(id):
     ))
     db.session.commit()
     return 'success'
+
+
+def moderate_response(id, up):
+    target = Response.query.get_or_404(id)
+    if up:
+        target.upvotes += 1
+    else:
+        target.downvotes += 1
+    db.session.commit()
+    return 'success'
+
+
+@public.route('/reflection/response/<int:id>/upmod')
+def upmoderate_response(id):
+    return moderate_response(id, True)
+
+
+@public.route('/reflection/response/<int:id>/downmod')
+def downmoderate_response(id):
+    return moderate_response(id, False)
