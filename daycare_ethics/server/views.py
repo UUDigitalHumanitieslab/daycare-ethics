@@ -120,7 +120,8 @@ def current_reflection():
         publication=publication,
         week=week,
         closure=closure,
-        text=latest_reflection.text )
+        text=latest_reflection.text,
+        responses=reflection_replies(latest_reflection.id) )
 
 
 def response2dict(response):
