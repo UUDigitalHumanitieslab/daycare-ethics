@@ -7,12 +7,15 @@
 
 from datetime import date, datetime
 
-from flask import send_from_directory, jsonify, current_app, abort, request
+from flask import send_from_directory, jsonify, current_app, abort, request, escape
 
 from ..util import image_variants, TARGET_WIDTHS
 from ..database.models import *
 from ..database.db import db
 from blueprint import public
+
+
+ISOFORMAT = '%Y-%m-%d %H:%M:%S%z'
 
 
 @public.route('/')
@@ -118,3 +121,51 @@ def current_reflection():
         week=week,
         closure=closure,
         text=latest_reflection.text )
+
+
+def response2dict(response):
+    return {
+        'submission': str(response.submission.date()),
+        'pseudonym': response.pseudonym,
+        'message': response.message,
+        'id': response.id,
+        'up': response.upvotes,
+        'down': response.downvotes,
+    }
+
+
+def reflection_replies(id, since=None):
+    query = Response.query.filter_by(brain_teaser_id=id)
+    if since is not None:
+        if isinstance(since, str):
+            since = datetime.strptime(since, ISOFORMAT)
+        query.filter(Response.submission >= since)
+    return map(response2dict, query.order_by(Response.submission).all())
+
+
+@public.route('/reflection/<int:id>/reply')
+def reply_to_reflection(id):
+    now = datetime.today()
+    topic = BrainTeaser.query.get_or_404(id)
+    if topic.closure and topic.closure <= now:
+        return 'closed'
+    if 'last-retrieve' in request.values:
+        ninjas = reflection_replies(id, request.values['last-retrieve'])
+        if ninjas:
+            return jsonify(
+                new=ninjas,
+                since=now.isoformat() )
+    if 'pseudonym' in request.values:
+        pseudonym = request.values['pseudonym']
+    else:
+        pseudonym = 'anoniem'
+    if 'message' not in request.values or not request.values['message']:
+        return 'invalid'
+    db.session.add(Response(
+        brain_teaser=topic,
+        submission=now,
+        pseudonym=escape(pseudonym.strip())[:30],
+        message=escape(request.values['message'].strip())
+    ))
+    db.session.commit()
+    return 'success'
