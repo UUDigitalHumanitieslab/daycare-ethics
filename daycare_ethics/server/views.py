@@ -46,13 +46,13 @@ def current_casus():
         .first()
     )
     if latest_casus.publication:
-        publication = latest_casus.publication.isoformat()
+        publication = str(latest_casus.publication)
         week = latest_casus.publication.strftime('%W')
     else:
         publication = None
         week = None
     if latest_casus.closure:
-        closure = latest_casus.closure.isoformat()
+        closure = str(latest_casus.closure)
     else:
         closure = None
     return jsonify(
@@ -105,13 +105,13 @@ def current_reflection():
         .first()
     )
     if latest_reflection.publication:
-        publication = latest_reflection.publication.isoformat()
+        publication = str(latest_reflection.publication)
         week = latest_reflection.publication.strftime('%W')
     else:
         publication = None
         week = None
     if latest_reflection.closure:
-        closure = latest_reflection.closure.isoformat()
+        closure = str(latest_reflection.closure)
     else:
         closure = None
     return jsonify(
@@ -154,7 +154,7 @@ def reply_to_reflection(id):
         if ninjas:
             return jsonify(
                 new=ninjas,
-                since=now.isoformat() )
+                since=str(now) )
     if 'pseudonym' in request.values:
         pseudonym = request.values['pseudonym']
     else:
