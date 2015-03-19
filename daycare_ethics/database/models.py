@@ -103,3 +103,12 @@ class Tip (db.Model):
     title   = db.Column(db.Text, nullable=False)
     text    = db.Column(db.Text)
     href    = db.Column(db.Text)
+
+
+class Token (db.Model):
+    """ Authorization tokens for the CAPTCHAs.
+    """
+    id = db.Column(db.String(30), primary_key=True)
+    date = db.Column(db.DateTime, nullable=False)
+    authorized = db.Column(db.Boolean, default=False)
+    answer = db.Column(db.Text)
