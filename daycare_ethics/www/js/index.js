@@ -22,6 +22,7 @@ var app = {
         $.get('/case/').done(function(data) {
             app.current_casus = data.id;
             localStorage.setItem('case_data_' + data.id, JSON.stringify(data));
+            localStorage.setItem('token', data.token);
             $('#plate .week-number').html(data.week);
             $('#case-text').html(data.text);
             $('#case-proposition').html(data.proposition);
@@ -39,6 +40,7 @@ var app = {
         $.get('/reflection/').done(function(data) {
             app.current_reflection = data.id;
             localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
+            localStorage.setItem('token', data.token);
             $('#mirror .week-number').html(data.week);
             $('#reflection-text').html(data.text);
         });
@@ -47,17 +49,20 @@ var app = {
     submitVote: function(choice) {
         var id = app.current_casus,
             case_data = JSON.parse(localStorage.getItem('case_data_' + id));
+        if (localStorage.getItem('has_voted_' + id)) return;
         if (choice === 'yes' || choice === 'no') {
-            $.get('/case/vote', {
+            $.post('/case/vote', {
                 'id': id,
-                'choice': choice
+                'choice': choice,
+                't': localStorage.getItem('token')
             }).done(function(data) {
-                if (data === 'success') {
+                if (data.status === 'success') {
                     case_data[choice] += 1;
                     localStorage.setItem('has_voted_' + id, true);
                     localStorage.setItem('case_data_' + id, JSON.stringify(case_data));
                     app.displayVotes();
                 }
+                localStorage.setItem('token', data.token);
             });
         }
     },
