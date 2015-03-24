@@ -7,13 +7,13 @@
 
 from datetime import date, datetime, timedelta
 
-from flask import send_from_directory, jsonify, current_app, abort, request, escape
+from flask import send_from_directory, jsonify, current_app, abort, request, escape, session
 
 from ..util import image_variants, TARGET_WIDTHS
 from ..database.models import *
 from ..database.db import db
 from .blueprint import public
-from .security import session_enable, session_protect, init_captcha
+from .security import session_enable, session_protect, init_captcha, captcha_safe
 
 
 ISOFORMAT = '%Y-%m-%d %H:%M:%S%z'

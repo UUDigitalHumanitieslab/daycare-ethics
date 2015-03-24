@@ -5,6 +5,7 @@
 var app = {
     // Application Constructor
     initialize: function() {
+        $('#reflection-response').validate({submitHandler: this.submitReply});
         this.findDimensions();
         this.preloadContent();
         this.bindEvents();
@@ -65,6 +66,61 @@ var app = {
                 localStorage.setItem('token', data.token);
             });
         }
+    },
+    
+    submitReply: function(form) {
+        var id = app.current_reflection,
+            reflection_data = JSON.parse(localStorage.getItem('reflection_data_' + id)),
+            nickname = $('#form-field-p').val(),
+            message = $('#form-field-r').val();
+        localStorage.setItem('nickname', nickname);
+        $(form).hide();
+        $.post('/reflection/' + id + '/reply', {
+            p: nickname,
+            r: message,
+            t: localStorage.getItem('token')
+        }).done(function(data) {
+            localStorage.setItem('token', data.token);
+            switch (data.status) {
+            case 'success':
+                app.appendReply({
+                    pseudonym: nickname,
+                    'message': message
+                });
+                $(form).show();
+            default:
+                console.log(data);
+            }
+        }).fail(function(jQxhr) {
+            console.log(jQxhr);
+        })
+    },
+    
+    appendReply: function(data) {
+        var upvotes = data.up || 0,
+            downvotes = data.down || 0,
+            score = this.getScore(upvotes, downvotes);
+        var div = $('<div></div>');
+        div.attr('id', 'reply-' + (data.id || 'submitted'));
+        if (score < 0.2) div.class('troll');
+        div.appendTo('#reflection-response');
+        
+    },
+    
+    // Wilson score for Bernoulli distribution
+    // (upper bound of 95% conf.int. of proportion of upvotes)
+    getScore: function(upvotes, downvotes) {
+        var total = upvotes + downvotes;
+        if (total === 0) return 1;
+        var z = 1.96,
+            zz = z * z,
+            upObserved = 1.0 * upvotes / total,
+            errorTerm = zz / (2 * total),
+            sumOfSquares = upObserved * (1 - upObserved) + zz / (4 * total),
+            rootTerm = z * Math.sqrt(sumOfSquares / total),
+            enumerator = upObserved + errorTerm + rootTerm,
+            denominator = 1 + zz / total;
+        return enumerator / denominator;
     },
     
     displayVotes: function() {
