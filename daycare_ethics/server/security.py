@@ -8,10 +8,12 @@
 import json
 from datetime import datetime, timedelta
 from random import SystemRandom
+from functools import wraps
 
 from flask import current_app, session, request, jsonify, abort
 
 
+QUARANTINE_TIME = timedelta(minutes=30)
 AUTHENTICATION_TIME = timedelta(minutes=2)
 HUMAN_LAG = timedelta(milliseconds=200)
 KEY_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -37,14 +39,13 @@ def init_captcha():
     expiry = datetime.today() + AUTHENTICATION_TIME
     session['captcha-answer'] = oddballs
     session['captcha-expires'] = expiry
-    session.modified = True
+    if 'captcha-quarantine' in session:
+        del session['captcha-quarantine']
     return {'captcha-expires': str(expiry), 'captcha-challenge': challenge}
 
 
 def authorize_captcha():
     now = datetime.today()
-    if 'captcha-expires' not in session or 'captcha-answer' not in session:
-        return False
     if 'ca' not in request.form:
         return False
     if session['captcha-expires'] < now:
@@ -53,6 +54,23 @@ def authorize_captcha():
     if set(session['captcha-answer']) == set(answerlist):
         return True
     return False
+
+
+def captcha_safe():
+    now = datetime.today()
+    if 'captcha-answer' in session:
+        authorized = authorize_captcha()
+        del session['captcha-answer'], session['captcha-expires']
+        if authorized:
+            return True
+        session['captcha-quarantine'] = now + QUARANTINE_TIME
+        session.permanent = True
+        return False
+    if 'captcha-quarantine' in session:
+        if now > session['captcha-quarantine']:
+            return True
+        return False
+    return True
 
 
 def verify_natural():
@@ -81,6 +99,7 @@ def tokenize_response(response, request_start):
 
 
 def session_enable(view):
+    @wraps(view)
     def wrap(**kwargs):
         now = datetime.today()
         verify_natural()
@@ -89,6 +108,7 @@ def session_enable(view):
 
 
 def session_protect(view):
+    @wraps(view)
     def wrap(**kwargs):
         now = datetime.today()
         verify_natural()
