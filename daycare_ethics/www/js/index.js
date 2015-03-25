@@ -45,6 +45,20 @@ var app = {
             $('#mirror .week-number').html(data.week);
             $('#reflection-text').html(data.text);
         });
+        $.get('/tips/').done(function(data) {
+            $.each(data.labour, function( index, labour ) {
+                var tip = $('<li>').html(labour.title);
+                $("#labour-code-tips").append(tip);
+            });
+            $.each(data.site, function( index, site ) {
+                var tip = $('<li>').html('<a href="' + site.href + '">' + site.title + '</a>');
+                $("#website-links").append(tip);
+            });
+            $.each(data.book, function( index, book ) {
+                var tip = $('<li>').html('<em>' + book.title + '</em> ' + book.author);
+                $("#book-tips").append(tip);
+            });
+        });
     },
     
     submitVote: function(choice) {
