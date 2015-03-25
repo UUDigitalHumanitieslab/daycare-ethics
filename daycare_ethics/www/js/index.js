@@ -102,9 +102,19 @@ var app = {
             score = this.getScore(upvotes, downvotes);
         var div = $('<div></div>');
         div.attr('id', 'reply-' + (data.id || 'submitted'));
-        if (score < 0.2) div.class('troll');
+        if (score < 0.35) div.class('troll');
+        div.append($('<span class="reply-date"></span>').text(data.submission || 'net'));
+        div.append('<span class="reply-nick">' + data.pseudonym + '</span>');
+        div.append($('<span class="reply-content"></span>').html(data.message));
+        if (data.id) {
+            div.append($('<a href="#" class="reply-vote">\u1f44d</a>')
+                        .data('for', data.id)
+                        .click(app.upmod));
+            div.append($('<a href="#" class="reply-vote">\u1f44e</a>')
+                        .data('for', data.id)
+                        .click(app.downmod));
+        }
         div.appendTo('#reflection-response');
-        
     },
     
     // Wilson score for Bernoulli distribution
