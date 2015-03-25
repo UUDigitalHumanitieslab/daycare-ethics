@@ -102,7 +102,7 @@ var app = {
             score = this.getScore(upvotes, downvotes);
         var div = $('<div></div>');
         div.attr('id', 'reply-' + (data.id || 'submitted'));
-        if (score < 0.35) div.class('troll');
+        if (score < 0.35) div.addClass('troll');
         div.append($('<span class="reply-date"></span>').text(data.submission || 'net'));
         div.append('<span class="reply-nick">' + data.pseudonym + '</span>');
         div.append($('<span class="reply-content"></span>').html(data.message));
@@ -150,10 +150,10 @@ var app = {
     // 'load', 'deviceready', 'offline', and 'online'.
     bindEvents: function() {
         var vote_buttons = $('#plate > a');
-        $(vote_buttons[0]).on('mousedown touchdown', function() {
+        $(vote_buttons[0]).on('mousedown touchstart', function() {
             app.submitVote('yes');
         });
-        $(vote_buttons[1]).on('mousedown touchdown', function() {
+        $(vote_buttons[1]).on('mousedown touchstart', function() {
             app.submitVote('no');
         });
         document.addEventListener('deviceready', this.onDeviceReady, false);
