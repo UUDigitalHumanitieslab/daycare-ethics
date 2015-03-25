@@ -1,10 +1,11 @@
 /*
     (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
-    Author: Julian Gonggrijp, j.gonggrijp@uu.nl
+    Author: Julian Gonggrijp
 */
 var app = {
     // Application Constructor
     initialize: function() {
+        $('#reflection-response').validate({submitHandler: this.submitReply});
         this.findDimensions();
         this.preloadContent();
         this.bindEvents();
@@ -22,6 +23,7 @@ var app = {
         $.get('/case/').done(function(data) {
             app.current_casus = data.id;
             localStorage.setItem('case_data_' + data.id, JSON.stringify(data));
+            localStorage.setItem('token', data.token);
             $('#plate .week-number').html(data.week);
             $('#case-text').html(data.text);
             $('#case-proposition').html(data.proposition);
@@ -39,6 +41,7 @@ var app = {
         $.get('/reflection/').done(function(data) {
             app.current_reflection = data.id;
             localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
+            localStorage.setItem('token', data.token);
             $('#mirror .week-number').html(data.week);
             $('#reflection-text').html(data.text);
         });
@@ -47,19 +50,87 @@ var app = {
     submitVote: function(choice) {
         var id = app.current_casus,
             case_data = JSON.parse(localStorage.getItem('case_data_' + id));
+        if (localStorage.getItem('has_voted_' + id)) return;
         if (choice === 'yes' || choice === 'no') {
-            $.get('/case/vote', {
+            $.post('/case/vote', {
                 'id': id,
-                'choice': choice
+                'choice': choice,
+                't': localStorage.getItem('token')
             }).done(function(data) {
-                if (data === 'success') {
+                if (data.status === 'success') {
                     case_data[choice] += 1;
                     localStorage.setItem('has_voted_' + id, true);
                     localStorage.setItem('case_data_' + id, JSON.stringify(case_data));
                     app.displayVotes();
                 }
+                localStorage.setItem('token', data.token);
             });
         }
+    },
+    
+    submitReply: function(form) {
+        var id = app.current_reflection,
+            reflection_data = JSON.parse(localStorage.getItem('reflection_data_' + id)),
+            nickname = $('#form-field-p').val(),
+            message = $('#form-field-r').val();
+        localStorage.setItem('nickname', nickname);
+        $(form).hide();
+        $.post('/reflection/' + id + '/reply', {
+            p: nickname,
+            r: message,
+            t: localStorage.getItem('token')
+        }).done(function(data) {
+            localStorage.setItem('token', data.token);
+            switch (data.status) {
+            case 'success':
+                app.appendReply({
+                    pseudonym: nickname,
+                    'message': message
+                });
+                $(form).show();
+            default:
+                console.log(data);
+            }
+        }).fail(function(jQxhr) {
+            console.log(jQxhr);
+        })
+    },
+    
+    appendReply: function(data) {
+        var upvotes = data.up || 0,
+            downvotes = data.down || 0,
+            score = this.getScore(upvotes, downvotes);
+        var div = $('<div></div>');
+        div.attr('id', 'reply-' + (data.id || 'submitted'));
+        if (score < 0.35) div.class('troll');
+        div.append($('<span class="reply-date"></span>').text(data.submission || 'net'));
+        div.append('<span class="reply-nick">' + data.pseudonym + '</span>');
+        div.append($('<span class="reply-content"></span>').html(data.message));
+        if (data.id) {
+            div.append($('<a href="#" class="reply-vote">\u1f44d</a>')
+                        .data('for', data.id)
+                        .click(app.upmod));
+            div.append($('<a href="#" class="reply-vote">\u1f44e</a>')
+                        .data('for', data.id)
+                        .click(app.downmod));
+        }
+        div.appendTo('#reflection-response');
+    },
+    
+    // Wilson score for Bernoulli distribution
+    // (upper bound of 95% conf.int. of proportion of upvotes)
+    getScore: function(upvotes, downvotes) {
+        var total = upvotes + downvotes;
+        if (total === 0) return 1;
+        var z = 1.96,
+            zz = z * z,
+            upObserved = 1.0 * upvotes / total,
+            errorTerm = zz / (2 * total),
+            sumOfSquares = upObserved * (1 - upObserved) + zz / (4 * total),
+            rootTerm = z * Math.sqrt(sumOfSquares / total),
+            enumerator = upObserved + errorTerm + rootTerm,
+            denominator = 1 + zz / total;
+        return enumerator / denominator;
     },
     
     displayVotes: function() {

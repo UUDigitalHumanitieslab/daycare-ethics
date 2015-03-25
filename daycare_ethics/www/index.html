@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
     (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
-    Author: Julian Gonggrijp, j.gonggrijp@uu.nl
+    Author: Julian Gonggrijp
 -->
 <html><head>
 
@@ -30,7 +30,7 @@
     <h3>Casus van week <span class="week-number"></span></h3>
     <div id="case-display"></div>
     <p id="case-text"></p>
-    <p id="case-proposition">Laat je haar gaan?</p>
+    <p id="case-proposition"></p>
     <span id="yes_count"></span>
     <span id="no_bar"><span id="yes_bar"></span></span>
     <span id="no_count"></span>
@@ -40,12 +40,16 @@
 
 <div data-role="page" id="mirror">
     <h4><a href="#home">&lt; Doordenkertjes</a></h4>
-    <h3>Reflectie van week <span class="week-number"></h3>
+    <h3>Reflectie van week <span class="week-number"></span></h3>
     <p id="reflection-text"></p>
-    <!-- <div id="reflection-discussion"></div>
+    <div id="reflection-discussion"></div>
     <form id="reflection-response">
-        <input type="button" value="Reageer">
-    </form> -->
+        <label for="form-field-p">Schuilnaam:</label>
+        <input type="text" inputmode="verbatim" maxlength="30" required spellcheck="false" id="form-field-p" name="p">
+        <label for="form-field-r">Reactie:</label>
+        <textarea autocomplete=off required minlength=10 id="form-field-r" name="r"></textarea>
+        <input type="submit" value="Reageer">
+    </form>
 </div>
 
 <div data-role="page" id="shelf">
@@ -125,6 +129,8 @@
 <script src="cordova.js"></script>
 <script src="js/lodash.min.js"></script>
 <script src="js/machina.min.js"></script>
+<script src="js/jquery.validate.min.js"></script>
+<script src="js/messages_nl.min.js"></script>
 <script src="js/index.js"></script>
 <script>
     app.initialize();
