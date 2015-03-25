@@ -179,7 +179,7 @@ def reply_to_reflection(id):
         brain_teaser=topic,
         submission=now,
         pseudonym=escape(request.form['p'].strip())[:30],
-        message=escape(request.form['r'].strip())
+        message=escape(request.form['r'].strip())[:400]
     ))
     db.session.commit()
     session['last-reply'] = now
