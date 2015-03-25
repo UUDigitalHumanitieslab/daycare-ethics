@@ -44,6 +44,7 @@ var app = {
             localStorage.setItem('token', data.token);
             $('#mirror .week-number').html(data.week);
             $('#reflection-text').html(data.text);
+            _(data.responses).each(app.appendReply);
         });
     },
     
@@ -99,7 +100,7 @@ var app = {
     appendReply: function(data) {
         var upvotes = data.up || 0,
             downvotes = data.down || 0,
-            score = this.getScore(upvotes, downvotes);
+            score = app.getScore(upvotes, downvotes);
         var div = $('<div></div>');
         div.attr('id', 'reply-' + (data.id || 'submitted'));
         if (score < 0.35) div.addClass('troll');
@@ -107,14 +108,14 @@ var app = {
         div.append('<span class="reply-nick">' + data.pseudonym + '</span>');
         div.append($('<span class="reply-content"></span>').html(data.message));
         if (data.id) {
-            div.append($('<a href="#" class="reply-vote">\u1f44d</a>')
+            div.append($('<a href="#" class="reply-vote">\ud83d\udc4d</a>')
                         .data('for', data.id)
-                        .click(app.upmod));
-            div.append($('<a href="#" class="reply-vote">\u1f44e</a>')
+                        .on('touchstart mousedown', app.upmod));
+            div.append($('<a href="#" class="reply-vote">\ud83d\udc4e</a>')
                         .data('for', data.id)
-                        .click(app.downmod));
+                        .on('touchstart mousedown', app.downmod));
         }
-        div.appendTo('#reflection-response');
+        div.appendTo('#reflection-discussion');
     },
     
     // Wilson score for Bernoulli distribution
