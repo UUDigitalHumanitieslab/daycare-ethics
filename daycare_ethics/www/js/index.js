@@ -46,18 +46,25 @@ var app = {
             $('#reflection-text').html(data.text);
         });
         $.get('/tips/').done(function(data) {
+            // Load labour code tips
             $.each(data.labour, function( index, labour ) {
                 var tip = $('<li>').html(labour.title);
                 $("#labour-code-tips").append(tip);
             });
+            // Load website links
             $.each(data.site, function( index, site ) {
                 var tip = $('<li>').html('<a href="' + site.href + '">' + site.title + '</a>');
                 $("#website-links").append(tip);
             });
+            // Load book tips
             $.each(data.book, function( index, book ) {
-                var tip = $('<li>').html('<em>' + book.title + '</em> ' + book.author);
+                var tip = $('<li>')
+                    .append($('<h3>').html(book.title).css('white-space', 'normal'))
+                    .append($('<p>').html(book.author));
                 $("#book-tips").append(tip);
             });
+            // We need to refresh the listviews on load.
+            $('.tips-list').listview('refresh');
         });
     },
     
