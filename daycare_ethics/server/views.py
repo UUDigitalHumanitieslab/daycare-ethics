@@ -121,31 +121,48 @@ def vote_casus():
 @public.route('/reflection/')
 @session_enable
 def current_reflection():
-    latest_reflection = (
-        BrainTeaser.query
-        .filter(BrainTeaser.publication <= date.today())
-        .order_by(BrainTeaser.publication.desc())
-        .first()
-    )
-    if latest_reflection.publication:
-        publication = str(latest_reflection.publication)
-        week = latest_reflection.publication.strftime('%W')
-    else:
-        publication = None
-        week = None
-    if latest_reflection.closure:
-        closure = str(latest_reflection.closure)
+    latest_reflection = available_reflection().first()
+    if not latest_reflection or not latest_reflection.publication:
+        abort(404)
+    return reflection2dict(latest_reflection, True)
+
+
+@public.route('/reflection/<int:id>/')
+def retrieve_reflection(id):
+    reflection = BrainTeaser.query.get_or_404(id)
+    if not reflection.publication or reflection.publication > date.today():
+        abort(404)
+    return jsonify(**reflection2dict(reflection, True))
+
+
+def reflection2dict(reflection, with_responses=False):
+    if reflection.closure:
+        closure = str(reflection.closure)
     else:
         closure = None
+    if with_responses:
+        replies = reflection_replies(reflection.id)
+    else:
+        replies = None
     return {
-        'id': latest_reflection.id,
-        'title': latest_reflection.title,
-        'publication': publication,
-        'week': week,
+        'id': reflection.id,
+        'title': reflection.title,
+        'publication': str(reflection.publication),
+        'week': reflection.publication.strftime('%W'),
         'closure': closure,
-        'text': latest_reflection.text,
-        'responses': reflection_replies(latest_reflection.id),
+        'text': reflection.text,
+        'responses': replies,
     }
+
+
+def available_reflection():
+    now = date.today()
+    return (
+        BrainTeaser.query
+        .filter(BrainTeaser.publication != None)
+        .filter(BrainTeaser.publication <= now)
+        .order_by(BrainTeaser.publication.desc())
+    )
 
 
 def response2dict(response):
@@ -166,6 +183,11 @@ def reflection_replies(id, since=None):
             since = datetime.strptime(since, ISOFORMAT)
         query.filter(Response.submission >= since)
     return map(response2dict, query.order_by(Response.submission).all())
+
+
+@public.route('/reflection/archive')
+def reflection_archive():
+    return jsonify(all=map(reflection2dict, available_reflection()))
 
 
 @public.route('/reflection/<int:id>/reply', methods=['POST'])
