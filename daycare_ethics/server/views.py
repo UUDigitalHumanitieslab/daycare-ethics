@@ -42,12 +42,7 @@ def media(id, width):
 @public.route('/case/')
 @session_enable
 def current_casus():
-    latest_casus = (
-        Case.query
-        .filter(Case.publication <= date.today())
-        .order_by(Case.publication.desc())
-        .first()
-    )
+    latest_casus = available_casus().first()
     if not latest_casus or not latest_casus.publication:
         abort(404)
     return casus2dict(latest_casus)
@@ -79,6 +74,20 @@ def casus2dict(casus):
         'yes': casus.yes_votes,
         'no': casus.no_votes,
     }
+
+
+def available_casus():
+    now = date.today()
+    return (
+        Case.query
+        .filter(Case.publication != None, Case.publication <= now)
+        .order_by(Case.publication.desc())
+    )
+
+
+@public.route('/case/archive')
+def casus_archive():
+    return jsonify(all=map(casus2dict, available_casus().all()))
 
 
 @public.route('/case/vote', methods=['POST'])
