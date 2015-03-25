@@ -43,9 +43,12 @@ a {
 }
 
 .ui-link.click-hint, a.click-hint:link, a.click-hint:visited {
-    font-weight:        200;
     text-decoration:    none;
     color:              #000000;
+}
+
+.ui-page-theme-a a, html .ui-bar-a a, html .ui-body-a a, html body .ui-group-theme-a a {
+    font-weight:        200;
 }
 
 .click-hint {

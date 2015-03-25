@@ -109,10 +109,10 @@ var app = {
         div.append($('<span class="reply-content"></span>').html(data.message));
         if (data.id) {
             div.append('<br>');
-            div.append($('<a href="#" class="reply-vote">\ud83d\udc4d</a>')
+            div.append($('<a href="#" class="reply-vote">&#128077; leer ik van</a>')
                         .data('for', data.id)
                         .on('touchstart mousedown', app.upmod));
-            div.append($('<a href="#" class="reply-vote">\ud83d\udc4e</a>')
+            div.append($('<a href="#" class="reply-vote">kwade wil &#128078;</a>')
                         .data('for', data.id)
                         .on('touchstart mousedown', app.downmod));
         }
