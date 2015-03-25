@@ -5,12 +5,11 @@
     Captcha functionality common to some of the public views.
 """
 
-import json
 from datetime import datetime, timedelta
 from random import SystemRandom
 from functools import wraps
 
-from flask import current_app, session, request, jsonify, abort
+from flask import current_app, session, request, jsonify, abort, json
 
 
 QUARANTINE_TIME = timedelta(minutes=30)
@@ -23,7 +22,8 @@ ODDBALLS = 3
 
 
 def init_app(app):
-    app.captcha_data = map(set, json.load(app.config['CAPTCHA_DATA']).values())
+    data = json.load(open(app.config['CAPTCHA_DATA']))
+    app.captcha_data = map(set, data.values())
 
 
 def generate_key(generator):
