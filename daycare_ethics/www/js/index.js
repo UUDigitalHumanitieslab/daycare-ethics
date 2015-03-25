@@ -108,6 +108,7 @@ var app = {
         div.append('<span class="reply-nick">' + data.pseudonym + '</span>');
         div.append($('<span class="reply-content"></span>').html(data.message));
         if (data.id) {
+            div.append('<br>');
             div.append($('<a href="#" class="reply-vote">\ud83d\udc4d</a>')
                         .data('for', data.id)
                         .on('touchstart mousedown', app.upmod));

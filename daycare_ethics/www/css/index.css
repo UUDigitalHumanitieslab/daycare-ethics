@@ -38,6 +38,10 @@ html, body {
     background: #07f;
 }
 
+a {
+    text-decoration: none;
+}
+
 .ui-link.click-hint, a.click-hint:link, a.click-hint:visited {
     font-weight:        200;
     text-decoration:    none;
@@ -69,6 +73,39 @@ html, body {
 #shelf-button {
     left:       calc(50% - 2 * 0.0625em);
     top:        calc(50% - 167 * 0.0625em);
+}
+
+#reflection-response {
+    clear: both;
+}
+
+#reflection-discussion > div {
+    clear:          both;
+    margin-bottom:  2em;
+}
+
+.reply-date {
+    font-size:      10pt;
+    color:          #777;
+    font-style:     italic;
+    margin-right:   10pt;
+}
+
+.reply-nick {
+    font-weight:    bold;
+    margin-right:   10pt;
+}
+
+.reply-nick:after {
+    content: ":";
+}
+
+.reply-vote {
+    float: left;
+}
+
+.reply-vote:last-child {
+    float: right;
 }
 
 [data-role="page"][data-dialog="true"] {
