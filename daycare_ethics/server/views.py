@@ -48,28 +48,36 @@ def current_casus():
         .order_by(Case.publication.desc())
         .first()
     )
-    if latest_casus.publication:
-        publication = str(latest_casus.publication)
-        week = latest_casus.publication.strftime('%W')
-    else:
-        publication = None
-        week = None
-    if latest_casus.closure:
-        closure = str(latest_casus.closure)
+    if not latest_casus or not latest_casus.publication:
+        abort(404)
+    return casus2dict(latest_casus)
+
+
+@public.route('/case/<int:id>')
+def retrieve_casus(id):
+    casus = Case.query.get_or_404(id)
+    if not casus.publication or casus.publication > date.today():
+        abort(404)
+    return jsonify(**casus2dict(casus))
+
+
+def casus2dict(casus):
+    if casus.closure:
+        closure = str(casus.closure)
     else:
         closure = None
     return {
-        'id': latest_casus.id,
-        'title': latest_casus.title,
-        'publication': publication,
-        'week': week,
+        'id': casus.id,
+        'title': casus.title,
+        'publication': str(casus.publication),
+        'week': casus.publication.strftime('%W'),
         'closure': closure,
-        'text': latest_casus.text,
-        'proposition': latest_casus.proposition,
-        'picture': latest_casus.picture_id,
-        'background': latest_casus.background,
-        'yes': latest_casus.yes_votes,
-        'no': latest_casus.no_votes,
+        'text': casus.text,
+        'proposition': casus.proposition,
+        'picture': casus.picture_id,
+        'background': casus.background,
+        'yes': casus.yes_votes,
+        'no': casus.no_votes,
     }
 
 
