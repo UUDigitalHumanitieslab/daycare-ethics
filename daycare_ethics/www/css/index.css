@@ -16,6 +16,11 @@ html, body {
     padding:    10px;
 }
 
+.ui-header[data-role="header"][role="banner"] {
+    background: none;
+    border:     none;
+}
+
 #home {
     background-image: url(/img/background_0512.jpg);
     background-position: center;
