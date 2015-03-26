@@ -9,7 +9,8 @@ img {
 }
 
 #home {
-    background: url(/img/background_1024.jpg) center / 32em;
+    background-image: url(/img/background_1024.jpg);
+    background-size: 32em;
 }
 
 #shelf {
@@ -19,7 +20,8 @@ img {
 
 @media (min-width: 32.05em), (min-height: 32.05em) {
     #home {
-        background: url(/img/background_1448.jpg) center / 45.25em;
+        background-image: url(/img/background_1448.jpg);
+        background-size: 45.25em;
     }
 
     #shelf {
@@ -29,7 +31,8 @@ img {
 
 @media (min-width: 45.3em), (min-height: 45.3em) {
     #home {
-        background: url(/img/background_2048.jpg) center / 64em;
+        background-image: url(/img/background_2048.jpg);
+        background-size: 64em;
     }
 
     #shelf {
