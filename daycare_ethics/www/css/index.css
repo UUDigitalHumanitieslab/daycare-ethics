@@ -17,17 +17,14 @@ html, body {
 }
 
 .ui-header[data-role="header"][role="banner"] {
-    background: none;
-    border:     none;
+    background:     none;
+    border:         none;
+    margin-bottom:  10px;
 }
 
 #home {
     background-image: url(/img/background_0512.jpg);
     background-position: center;
-}
-
-#shelf {
-    background: url(/img/shelf_0512.jpg) center;
 }
 
 #no_bar, #yes_bar {
@@ -95,10 +92,6 @@ iframe {
         background-position: center;
     }
 
-    #shelf {
-        background: url(/img/shelf_0724.jpg) center;
-    }
-
     #plate-button {
         left:       calc(50% + 16px);
         top:        calc(50% + 133px);
@@ -140,10 +133,6 @@ iframe {
     #home {
         background-image: url(/img/background_1024.jpg);
         background-position: center;
-    }
-
-    #shelf {
-        background: url(/img/shelf_1024.jpg) center;
     }
 
     #plate-button {
