@@ -109,14 +109,36 @@ var app = {
         div.append($('<span class="reply-content"></span>').html(data.message));
         if (data.id) {
             div.append('<br>');
-            div.append($('<a href="#" class="reply-vote">&#128077; leer ik van</a>')
+            div.append($('<a href="#">leer ik van</a>')
+                        .addClass('reply-vote ui-btn ui-icon-plus ui-btn-icon-left')
                         .data('for', data.id)
-                        .on('touchstart mousedown', app.upmod));
-            div.append($('<a href="#" class="reply-vote">kwade wil &#128078;</a>')
+                        .on('touchstart mousedown', function() {
+                            app.submitReplyVote(data.id, 'up');
+                        }));
+            div.append($('<a href="#">kwade wil</a>')
+                        .addClass('reply-vote ui-btn ui-icon-minus ui-btn-icon-right')
                         .data('for', data.id)
-                        .on('touchstart mousedown', app.downmod));
+                        .on('touchstart mousedown', function() {
+                            app.submitReplyVote(data.id, 'down');
+                        }));
         }
         div.appendTo('#reflection-discussion');
+    },
+
+    submitReplyVote: function(id, choice) {
+        if (choice === 'up' || choice === 'down') {
+            $.post('/reply/' + id + '/moderate/', {
+                'choice': choice,
+                't': localStorage.getItem('token')
+            }).done(function(data) {
+                if (data.status === 'success') {
+                    // hide reply vote buttons on success
+                    $('#reply-' + id + ' .reply-vote').hide();
+                    $('#reply-' + id).append($('<h3>').text('Bedankt voor je stem!'));
+                }
+                localStorage.setItem('token', data.token);
+            });
+        }
     },
     
     // Wilson score for Bernoulli distribution

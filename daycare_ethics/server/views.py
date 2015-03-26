@@ -156,7 +156,7 @@ def reflection_replies(id, since=None):
 def reply_to_reflection(id):
     now = datetime.today()
     topic = BrainTeaser.query.get_or_404(id)
-    if topic.closure and topic.closure <= now:
+    if topic.closure and topic.closure <= now.date():
         return {'status': 'closed'}, 400
     if 'last-retrieve' in request.form:
         ninjas = reflection_replies(id, request.form['last-retrieve'])
@@ -186,23 +186,24 @@ def reply_to_reflection(id):
     return {'status': 'success'}
 
 
-def moderate_response(id, up):
-    target = Response.query.get_or_404(id)
-    if up:
+@public.route('/reply/<int:id>/moderate/', methods=['POST'])
+@session_protect
+def moderate_reply(id):
+    if 'choice' not in request.form:
+        return {'status': 'invalid'}, 400
+    choice = request.form['choice']
+    try:
+        target = Response.query.filter_by(id=id).one()
+    except:
+        return {'status': 'unavailable'}, 400
+    ses = db.session
+    if choice == 'up':
         target.upvotes += 1
-    else:
+        ses.commit()
+        return {'status': 'success'}
+    elif choice == 'down':
         target.downvotes += 1
-    db.session.commit()
-    return {'status': 'success'}
-
-
-@public.route('/reflection/response/<int:id>/upmod', methods=['POST'])
-@session_protect
-def upmoderate_response(id):
-    return moderate_response(id, True)
-
-
-@public.route('/reflection/response/<int:id>/downmod', methods=['POST'])
-@session_protect
-def downmoderate_response(id):
-    return moderate_response(id, False)
+        ses.commit()
+        return {'status': 'success'}
+    else:
+        return {'status': 'invalid'}, 400
