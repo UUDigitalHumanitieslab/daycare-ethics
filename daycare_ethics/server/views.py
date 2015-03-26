@@ -120,6 +120,7 @@ def current_reflection():
         closure = str(latest_reflection.closure)
     else:
         closure = None
+    now = datetime.today()
     return {
         'id': latest_reflection.id,
         'title': latest_reflection.title,
@@ -128,6 +129,7 @@ def current_reflection():
         'closure': closure,
         'text': latest_reflection.text,
         'responses': reflection_replies(latest_reflection.id),
+        'since': str(now),
     }
 
 

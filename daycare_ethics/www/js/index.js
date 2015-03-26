@@ -42,6 +42,7 @@ var app = {
             app.current_reflection = data.id;
             localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
             localStorage.setItem('token', data.token);
+            localStorage.setItem('last_retrieve', data.since);
             $('#mirror .week-number').html(data.week);
             $('#reflection-text').html(data.text);
             _(data.responses).each(app.appendReply);
