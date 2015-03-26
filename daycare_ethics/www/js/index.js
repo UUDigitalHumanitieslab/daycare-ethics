@@ -21,9 +21,9 @@ var app = {
     
     preloadContent: function() {
         $.get('/case/').done(function(data) {
+            localStorage.setItem('token', data.token);
             app.current_casus = data.id;
             localStorage.setItem('case_data_' + data.id, JSON.stringify(data));
-            localStorage.setItem('token', data.token);
             $('#plate .week-number').html(data.week);
             $('#case-text').html(data.text);
             $('#case-proposition').html(data.proposition);
@@ -39,9 +39,9 @@ var app = {
             }
         });
         $.get('/reflection/').done(function(data) {
+            localStorage.setItem('token', data.token);
             app.current_reflection = data.id;
             localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
-            localStorage.setItem('token', data.token);
             localStorage.setItem('last_retrieve', data.since);
             $('#mirror .week-number').html(data.week);
             $('#reflection-text').html(data.text);
@@ -59,13 +59,13 @@ var app = {
                 'choice': choice,
                 't': localStorage.getItem('token')
             }).done(function(data) {
+                localStorage.setItem('token', data.token);
                 if (data.status === 'success') {
                     case_data[choice] += 1;
                     localStorage.setItem('has_voted_' + id, true);
                     localStorage.setItem('case_data_' + id, JSON.stringify(case_data));
                     app.displayVotes();
                 }
-                localStorage.setItem('token', data.token);
             });
         }
     },
@@ -132,12 +132,12 @@ var app = {
                 'choice': choice,
                 't': localStorage.getItem('token')
             }).done(function(data) {
+                localStorage.setItem('token', data.token);
                 if (data.status === 'success') {
                     // hide reply vote buttons on success
                     $('#reply-' + id + ' .reply-vote').hide();
                     $('#reply-' + id).append($('<h3>').text('Bedankt voor je stem!'));
                 }
-                localStorage.setItem('token', data.token);
             });
         }
     },
