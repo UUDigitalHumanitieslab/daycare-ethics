@@ -47,28 +47,24 @@ html, body {
 .click-hint {
     display:        block;
     padding:        0;
-    background:     url(/img/star_112.png) center / cover;
-    width:          calc(112 * 0.0625em);
-    height:         calc(112 * 0.0625em);
-    border-radius:  calc(56 * 0.0625em);
     text-align:     center;
-    line-height:    calc(108 * 0.0625em);
+    font-size:      18pt;
     position:       absolute;
 }
 
 #plate-button {
-    left:       calc(50% - 19 * 0.0625em);
-    top:        calc(50% + 50 * 0.0625em);
+    left:       calc(50% + 2px);
+    top:        calc(50% + 89px);
 }
 
 #mirror-button {
-    left:       calc(50% - 148 * 0.0625em);
-    top:        calc(50% - 164 * 0.0625em);
+    left:       calc(50% - 139px);
+    top:        calc(50% - 120px);
 }
 
 #shelf-button {
-    left:       calc(50% - 2 * 0.0625em);
-    top:        calc(50% - 167 * 0.0625em);
+    left:       calc(50% + 25px);
+    top:        calc(50% - 126px);
 }
 
 [data-role="page"][data-dialog="true"] {
@@ -96,27 +92,19 @@ iframe {
         background: url(/img/shelf_0724.jpg) center;
     }
 
-    .click-hint {
-        background-image: url(/img/star_158.png);
-        width:          calc(158 * 0.0625em);
-        height:         calc(158 * 0.0625em);
-        border-radius:  calc(79 * 0.0625em);
-        line-height:    calc(153 * 0.0625em);
-    }
-
     #plate-button {
-        left:       calc(50% - 27 * 0.0625em);
-        top:        calc(50% + 71 * 0.0625em);
+        left:       calc(50% + 16px);
+        top:        calc(50% + 133px);
     }
 
     #mirror-button {
-        left:       calc(50% - 209 * 0.0625em);
-        top:        calc(50% - 232 * 0.0625em);
+        left:       calc(50% - 179px);
+        top:        calc(50% - 170px);
     }
 
     #shelf-button {
-        left:       calc(50% - 3 * 0.0625em);
-        top:        calc(50% - 236 * 0.0625em);
+        left:       calc(50% + 48px);
+        top:        calc(50% - 174px);
     }
 }
 
@@ -129,27 +117,19 @@ iframe {
         background: url(/img/shelf_1024.jpg) center;
     }
 
-    .click-hint {
-        background-image: url(/img/star_224.png);
-        width:          calc(224 * 0.0625em);
-        height:         calc(224 * 0.0625em);
-        border-radius:  calc(112 * 0.0625em);
-        line-height:    calc(216 * 0.0625em);
-    }
-
     #plate-button {
-        left:       calc(50% - 38 * 0.0625em);
-        top:        calc(50% + 100 * 0.0625em);
+        left:       calc(50% + 37px);
+        top:        calc(50% + 197px);
     }
 
     #mirror-button {
-        left:       calc(50% - 296 * 0.0625em);
-        top:        calc(50% - 328 * 0.0625em);
+        left:       calc(50% - 235px);
+        top:        calc(50% - 228px);
     }
 
     #shelf-button {
-        left:       calc(50% - 4 * 0.0625em);
-        top:        calc(50% - 334 * 0.0625em);
+        left:       calc(50% + 77px);
+        top:        calc(50% - 239px);
     }
 }
 
