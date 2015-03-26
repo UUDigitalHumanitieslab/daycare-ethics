@@ -105,6 +105,7 @@ a {
 
 .reply-vote {
     float: left;
+    margin-bottom:  20pt;
 }
 
 .reply-vote:last-child {
