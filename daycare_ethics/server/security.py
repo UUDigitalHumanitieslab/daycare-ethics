@@ -68,6 +68,7 @@ def captcha_safe():
         return False
     if 'captcha-quarantine' in session:
         if now > session['captcha-quarantine']:
+            del session['captcha-quarantine']
             return True
         return False
     return True
