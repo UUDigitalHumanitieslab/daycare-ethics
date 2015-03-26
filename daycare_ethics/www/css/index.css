@@ -70,22 +70,6 @@ html, body {
     top:        calc(50% - 126px);
 }
 
-[data-role="page"][data-dialog="true"] {
-    padding:    0;
-}
-
-[role="dialog"] {
-    height: calc(90% - 16px);
-}
-
-iframe {
-    width:      100%;
-    height:     100%;
-    border:     0;
-    padding:    0;
-    margin:     0;
-}
-
 @media (min-width: 32.05em), (min-height: 32.05em) {
     #home {
         background-image: url(/img/background_0724.jpg);
