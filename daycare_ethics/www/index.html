@@ -55,6 +55,15 @@
         <strong>Let op</strong>: je reactie is dus nog niet opgeslagen!
         <a href="#" data-role="button" data-rel="back">OK</a>
     </div>
+    <div id="captcha-popup" data-role="popup" class="ui-content" data-dismissible="false">
+        Welke <strong>drie</strong> woorden horen niet in onderstaand rijtje? Plaats alleen spaties tussen de woorden.<br>
+        <span id="captcha-challenge"></span>
+        <form id="reflection-captcha">
+            <label for="form-field-ca">Antwoord:</label>
+            <input type=text inputmode=verbatim required spellcheck=false id="form-field-ca" name="ca" pattern="[a-z]+( +[a-z+]){2}" placeholder="maan roos vis">
+            <input type=submit value="Stuur op">
+        </form>
+    </div>
 </div>
 
 <div data-role="page" id="shelf">

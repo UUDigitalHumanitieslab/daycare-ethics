@@ -170,11 +170,14 @@ def reply_to_reflection(id):
     if ( 'p' not in request.form or not request.form['p']
          or 'r' not in request.form or not request.form['r'] ):
         return {'status': 'invalid'}, 400
+    if ( 'last-reply' in session and
+         now - session['last-reply'] < POST_INTERVAL and
+         not 'captcha-answer' in session ):
+        return dict(status='captcha', **init_captcha())
     # code below does not enforce quarantine period.
     # in order to make it happen, return {status: quarantine} if not 
     # captcha_safe.
-    if ( not captcha_safe() or 'captcha-quarantine' in session or
-         'last-reply' in session and now - session['last-reply'] < POST_INTERVAL ):
+    if (not captcha_safe() or 'captcha-quarantine' in session):
         return dict(status='captcha', **init_captcha())
     db.session.add(Response(
         brain_teaser=topic,

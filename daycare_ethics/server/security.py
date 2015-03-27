@@ -35,13 +35,16 @@ def init_captcha():
     normalset, oddballset = dice.sample(current_app.captcha_data, 2)
     normals = dice.sample(normalset, NORMALS)
     oddballs = dice.sample(oddballset - normalset, ODDBALLS)
-    challenge = ' '.join(dice.shuffle(normals + oddballs))
+    united = normals + oddballs
+    dice.shuffle(united)
+    challenge = ' '.join(united)
     expiry = datetime.today() + AUTHENTICATION_TIME
     session['captcha-answer'] = oddballs
     session['captcha-expires'] = expiry
     if 'captcha-quarantine' in session:
         del session['captcha-quarantine']
-    return {'captcha-expires': str(expiry), 'captcha-challenge': challenge}
+        session.modified = True
+    return {'captcha_expires': str(expiry), 'captcha_challenge': challenge}
 
 
 def authorize_captcha():
@@ -69,6 +72,7 @@ def captcha_safe():
     if 'captcha-quarantine' in session:
         if now > session['captcha-quarantine']:
             del session['captcha-quarantine']
+            session.modified = True
             return True
         return False
     return True

@@ -78,6 +78,12 @@ a {
     top:        calc(50% - 167 * 0.0625em);
 }
 
+#captcha-challenge {
+    padding:    1em 0;
+    color:      #008;
+    font-style: italic;
+}
+
 #reflection-response {
     clear: both;
 }

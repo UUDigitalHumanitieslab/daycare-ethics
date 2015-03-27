@@ -6,6 +6,7 @@ var app = {
     // Application Constructor
     initialize: function() {
         $('#reflection-response').validate({submitHandler: this.submitReply});
+        $('#reflection-captcha').validate({submitHandler: this.submitCaptcha});
         this.findDimensions();
         this.preloadContent();
         this.bindEvents();
@@ -72,17 +73,18 @@ var app = {
     },
     
     submitReply: function(form) {
+        $(form).hide();
         var id = app.current_reflection,
             reflection_data = JSON.parse(localStorage.getItem('reflection_data_' + id)),
             nickname = $('#form-field-p').val(),
             message = $('#form-field-r').val();
         localStorage.setItem('nickname', nickname);
-        $(form).hide();
         $.post('/reflection/' + id + '/reply', {
             p: nickname,
             r: message,
             t: localStorage.getItem('token'),
-            'last-retrieve': localStorage.getItem('last_retrieve')
+            'last-retrieve': localStorage.getItem('last_retrieve'),
+            ca: $('#form-field-ca').val()
         }).done(function(data) {
             localStorage.setItem('token', data.token);
             switch (data.status) {
@@ -101,12 +103,19 @@ var app = {
                 $(form).show();
                 localStorage.setItem('last_retrieve', data.since);
                 break;
-            default:
-                console.log(data);
+            case 'captcha':
+                $('#captcha-challenge').text(data.captcha_challenge);
+                $('#captcha-popup').popup('open', {positionTo: 'window'});
             }
         }).fail(function(jQxhr) {
             console.log(jQxhr);
         })
+        $('#form-field-ca').val('');
+    },
+    
+    submitCaptcha: function(form) {
+        $('#captcha-popup').popup('close');
+        app.submitReply($('#reflection-response'));
     },
     
     appendReply: function(data) {
