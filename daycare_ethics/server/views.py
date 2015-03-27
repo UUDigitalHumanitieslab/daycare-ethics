@@ -40,7 +40,6 @@ def media(id, width):
 
 
 @public.route('/case/')
-@session_enable
 def current_casus():
     latest_casus = (
         Case.query
@@ -58,7 +57,7 @@ def current_casus():
         closure = str(latest_casus.closure)
     else:
         closure = None
-    return {
+    return jsonify(**{
         'id': latest_casus.id,
         'title': latest_casus.title,
         'publication': publication,
@@ -70,7 +69,7 @@ def current_casus():
         'background': latest_casus.background,
         'yes': latest_casus.yes_votes,
         'no': latest_casus.no_votes,
-    }
+    })
 
 
 @public.route('/case/vote', methods=['POST'])

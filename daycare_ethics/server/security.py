@@ -103,8 +103,17 @@ def session_enable(view):
     @wraps(view)
     def wrap(**kwargs):
         now = datetime.today()
-        verify_natural()
-        return tokenize_response(view(**kwargs), now)
+        if not 'token' in session:
+            verify_natural()
+            return tokenize_response(view(**kwargs), now)
+        response = view(**kwargs)
+        if isinstance(response, tuple):
+            if len(response) == 3:
+                return jsonify(**response[0]), response[1], response[2]
+            if len(response) == 2:
+                return jsonify(**response[0]), response[1]
+            return jsonify(**response[0])
+        return jsonify(**response)
     return wrap
 
 

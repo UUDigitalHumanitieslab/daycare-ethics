@@ -21,7 +21,6 @@ var app = {
     
     preloadContent: function() {
         $.get('/case/').done(function(data) {
-            localStorage.setItem('token', data.token);
             app.current_casus = data.id;
             localStorage.setItem('case_data_' + data.id, JSON.stringify(data));
             $('#plate .week-number').html(data.week);
@@ -39,7 +38,7 @@ var app = {
             }
         });
         $.get('/reflection/').done(function(data) {
-            localStorage.setItem('token', data.token);
+            if (data.token) localStorage.setItem('token', data.token);
             app.current_reflection = data.id;
             localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
             localStorage.setItem('last_retrieve', data.since);
