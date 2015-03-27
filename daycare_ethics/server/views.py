@@ -16,7 +16,7 @@ from .blueprint import public
 from .security import session_enable, session_protect, init_captcha, captcha_safe
 
 
-ISOFORMAT = '%Y-%m-%d %H:%M:%S%z'
+ISOFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 POST_INTERVAL = timedelta(minutes=10)
 
 
@@ -146,9 +146,9 @@ def response2dict(response):
 def reflection_replies(id, since=None):
     query = Response.query.filter_by(brain_teaser_id=id)
     if since is not None:
-        if isinstance(since, str):
+        if isinstance(since, str) or isinstance(since, unicode):
             since = datetime.strptime(since, ISOFORMAT)
-        query.filter(Response.submission >= since)
+        query = query.filter(Response.submission >= since)
     return map(response2dict, query.order_by(Response.submission).all())
 
 

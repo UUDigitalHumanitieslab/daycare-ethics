@@ -45,6 +45,8 @@ var app = {
             $('#mirror .week-number').html(data.week);
             $('#reflection-text').html(data.text);
             _(data.responses).each(app.appendReply);
+            nickname = localStorage.getItem('nickname');
+            if (nickname) $('#form-field-p').val(nickname);
         });
     },
     
@@ -79,7 +81,8 @@ var app = {
         $.post('/reflection/' + id + '/reply', {
             p: nickname,
             r: message,
-            t: localStorage.getItem('token')
+            t: localStorage.getItem('token'),
+            'last-retrieve': localStorage.getItem('last_retrieve')
         }).done(function(data) {
             localStorage.setItem('token', data.token);
             switch (data.status) {
@@ -88,7 +91,16 @@ var app = {
                     pseudonym: nickname,
                     'message': message
                 });
+                $(form).find('#form-field-r').val('');
                 $(form).show();
+                break;
+            case 'ninja':
+                $('#ninja-message').popup('open', {positionTo: 'window'});
+                $('#reply-submitted').remove();
+                _(data.new).each(app.appendReply);
+                $(form).show();
+                localStorage.setItem('last_retrieve', data.since);
+                break;
             default:
                 console.log(data);
             }
