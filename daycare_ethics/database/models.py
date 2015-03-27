@@ -24,6 +24,9 @@ class Picture (db.Model):
     mime_type   = db.Column(db.String(30), nullable=False)
     name        = db.Column(db.String(40), nullable=False)
     path        = db.Column(db.String(50), unique=True, nullable=False)
+    
+    def __str__(self):
+        return self.name
 
 
 @listens_for(Picture, 'after_delete')
