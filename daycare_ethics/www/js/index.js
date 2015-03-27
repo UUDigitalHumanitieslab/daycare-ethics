@@ -69,7 +69,7 @@ var app = {
             });
             // Load website links
             $.each(data.site, function( index, site ) {
-                var tip = $('<li>').html('<a href="' + site.href + '">' + site.title + '</a>');
+                var tip = $('<li>').html('<a href="' + site.href + '" target="_blank">' + site.title + '</a>');
                 $("#website-links").append(tip);
             });
             // Load book tips
