@@ -150,9 +150,12 @@ var app = {
             score = app.getScore(upvotes, downvotes);
         var div = $('<div></div>');
         div.attr('id', 'reply-' + (data.id || 'submitted'));
-        if (score < 0.35) div.addClass('troll');
-        div.append($('<span class="reply-date"></span>').text(data.submission || 'net'));
-        div.append('<span class="reply-nick">' + data.pseudonym + '</span>');
+        var date = '<span class="reply-date">' + (data.submission || 'net') + '</span>';
+        var pseudonym = '<span class="reply-nick">' + data.pseudonym + '</span>';
+        var synopsis = $('<h3 class="reply-synopsis"></h3>').append(date + ' ' + pseudonym);
+        div.append(synopsis);
+        div.append(date);
+        div.append(pseudonym);
         div.append($('<span class="reply-content"></span>').html(data.message));
         if (data.id) {
             div.append('<br>');
@@ -170,6 +173,17 @@ var app = {
                         }));
         }
         div.appendTo('#reflection-discussion');
+
+        // If score is lower than treshold, show the synopsis and display as collapsible.
+        if (score < 0.35) {
+            synopsis.show();
+            $('#reply-' + data.id + ' .reply-synopsis .reply-nick').html('spam');
+            div.collapsible({ mini: true, collapsedIcon: 'arrow-r', expandedIcon: 'arrow-d' });
+        }
+        // Otherwise, hide the synopsis.
+        else {
+            synopsis.hide();
+        }
     },
 
     submitReplyVote: function(id, choice) {
@@ -180,9 +194,12 @@ var app = {
             }).done(function(data) {
                 localStorage.setItem('token', data.token);
                 if (data.status === 'success') {
-                    // hide reply vote buttons on success
+                    // hide reply vote buttons on success, and add success message
                     $('#reply-' + id + ' .reply-vote').hide();
-                    $('#reply-' + id).append($('<h3>').text('Bedankt voor je stem!'));
+                    $('#reply-' + id + ' .reply-vote:last')
+                        .after($('<em>')
+                        .text('Bedankt voor je stem!')
+                        .css('color', 'green'));
                 }
             });
         }

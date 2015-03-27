@@ -93,6 +93,10 @@ a {
     margin-bottom:  2em;
 }
 
+#reflection-discussion .ui-collapsible-content {
+    padding-bottom: 50pt;
+}
+
 .reply-date {
     font-size:      10pt;
     color:          #777;
