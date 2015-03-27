@@ -211,3 +211,24 @@ def moderate_reply(id):
         return {'status': 'success'}
     else:
         return {'status': 'invalid'}, 400
+
+
+def tip2dict(tip):
+    return {
+        'id': tip.id,
+        'created': str(tip.create),
+        'updated': str(tip.update),
+        'author': tip.author,
+        'title': tip.title,
+        'text': tip.text,
+        'href': tip.href,
+    }
+
+
+@public.route('/tips/')
+def retrieve_tips():
+    sorted_tips = Tip.query.order_by(Tip.update.desc())
+    labour_code = map(tip2dict, sorted_tips.filter_by(what='labour code').all())
+    book = map(tip2dict, sorted_tips.filter_by(what='book').all())
+    site = map(tip2dict, sorted_tips.filter_by(what='site').all())
+    return jsonify(labour=labour_code, book=book, site=site)
