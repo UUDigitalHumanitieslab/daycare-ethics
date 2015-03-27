@@ -49,7 +49,7 @@ def current_casus():
     )
     if latest_casus.publication:
         publication = str(latest_casus.publication)
-        week = latest_casus.publication.strftime('%W')
+        week = latest_casus.publication.isocalendar()[1]
     else:
         publication = None
         week = None
@@ -111,7 +111,7 @@ def current_reflection():
     )
     if latest_reflection.publication:
         publication = str(latest_reflection.publication)
-        week = latest_reflection.publication.strftime('%W')
+        week = latest_reflection.publication.isocalendar()[1]
     else:
         publication = None
         week = None
