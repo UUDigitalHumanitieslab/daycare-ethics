@@ -180,13 +180,13 @@ var app = {
         div.append($('<span class="reply-content"></span>').html(data.message));
         if (data.id) {
             div.append('<br>');
-            div.append($('<a href="#">leer ik van</a>')
+            div.append($('<a href="#">leerzaam</a>')
                         .addClass('reply-vote ui-btn ui-icon-plus ui-btn-icon-left')
                         .data('for', data.id)
                         .on('touchstart mousedown', function() {
                             app.submitReplyVote(data.id, 'up');
                         }));
-            div.append($('<a href="#">kwade wil</a>')
+            div.append($('<a href="#">ongewenst</a>')
                         .addClass('reply-vote ui-btn ui-icon-minus ui-btn-icon-right')
                         .data('for', data.id)
                         .on('touchstart mousedown', function() {
