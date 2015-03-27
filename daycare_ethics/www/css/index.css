@@ -162,6 +162,23 @@ a {
             top:        calc(50% - 174px);
         }
     }
+    
+    @media (min-aspect-ratio: 100/65), (min-device-aspect-ratio: 100/65) {
+        #plate-button {
+            left:       calc(50% + 16px);
+            top:        calc(50% + 85px);
+        }
+
+        #mirror-button {
+            left:       calc(50% - 179px);
+            top:        calc(50% - 110px);
+        }
+
+        #shelf-button {
+            left:       calc(50% + 48px);
+            top:        calc(50% - 84px);
+        }
+    }
 }
 
 @media (min-width: 45.3em), (min-height: 45.3em) {
@@ -203,6 +220,23 @@ a {
         #shelf-button {
             left:       calc(50% + 105px);
             top:        calc(50% - 239px);
+        }
+    }
+    
+    @media (min-aspect-ratio: 100/65), (min-device-aspect-ratio: 100/65) {
+        #plate-button {
+            left:       calc(50% + 37px);
+            top:        calc(50% + 129px);
+        }
+
+        #mirror-button {
+            left:       calc(50% - 235px);
+            top:        calc(50% - 143px);
+        }
+
+        #shelf-button {
+            left:       calc(50% + 77px);
+            top:        calc(50% - 112px);
         }
     }
 }
