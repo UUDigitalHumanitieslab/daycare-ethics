@@ -129,6 +129,10 @@ var app = {
                     $('#reflection-closed-popup').popup('open', {positionTo: 'window'});
                     $('#reflection-closure-announce').hide();
                     $('#reflection-closed-notice').show();
+                    break;
+                case 'invalid':
+                    $('#reflection-invalid-popup').popup('open', {positionTo: 'window'});
+                    $('#reflection-response').show();
                 }
             }
         })
