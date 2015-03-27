@@ -47,9 +47,37 @@
         <label for="form-field-p">Schuilnaam:</label>
         <input type="text" inputmode="verbatim" maxlength="30" required spellcheck="false" id="form-field-p" name="p">
         <label for="form-field-r">Reactie:</label>
-        <textarea autocomplete=off required minlength=10 id="form-field-r" name="r"></textarea>
+        <textarea autocomplete=off required minlength=10 maxlength=400 id="form-field-r" name="r"></textarea>
         <input type="submit" value="Reageer">
     </form>
+    <div id="ninja-message" data-role="popup" class="ui-content">
+        Er zijn één of meer reacties binnengekomen terwijl je typte. Je kunt je eigen reactie hier nu op aanpassen als je dat wilt.<br>
+        <strong>Let op</strong>: je reactie is dus nog niet opgeslagen!
+        <a href="#" data-role="button" data-rel="back">OK</a>
+    </div>
+    <div id="captcha-popup" data-role="popup" class="ui-content" data-dismissible="false">
+        Welke <strong>drie</strong> woorden horen niet in onderstaand rijtje? Plaats alleen spaties tussen de woorden.<br>
+        <span id="captcha-challenge"></span>
+        <form id="reflection-captcha">
+            <label for="form-field-ca">Antwoord:</label>
+            <input type=text inputmode=verbatim required spellcheck=false id="form-field-ca" name="ca" pattern="[a-z]+( +[a-z+]){2}" placeholder="maan roos vis">
+            <input type=submit value="Stuur op">
+        </form>
+    </div>
+    <p id="reflection-closed-notice" style="clear: both;">
+        Deze reflectie is gesloten voor reacties.
+    </p>
+    <p id="reflection-closure-announce" style="clear: both;">
+        Reageren is mogelijk tot <span id="reflection-closure-date"></span>.
+    </p>
+    <div id="reflection-closed-popup" data-role="popup" class="ui-content">
+        Sorry, deze reflectie is gesloten voor reacties.
+        <a href="#" data-role="button" data-rel="back">OK</a>
+    </div>
+    <div id="reflection-invalid-popup" data-role="popup" class="ui-content">
+        Vul alsjeblieft beide velden in.
+        <a href="#" data-role="button" data-rel="back">OK</a>
+    </div>
 </div>
 
 <div data-role="page" id="shelf">

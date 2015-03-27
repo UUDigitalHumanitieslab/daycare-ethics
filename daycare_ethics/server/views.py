@@ -16,7 +16,7 @@ from .blueprint import public
 from .security import session_enable, session_protect, init_captcha, captcha_safe
 
 
-ISOFORMAT = '%Y-%m-%d %H:%M:%S%z'
+ISOFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 POST_INTERVAL = timedelta(minutes=10)
 
 
@@ -40,7 +40,6 @@ def media(id, width):
 
 
 @public.route('/case/')
-@session_enable
 def current_casus():
     latest_casus = (
         Case.query
@@ -58,7 +57,7 @@ def current_casus():
         closure = str(latest_casus.closure)
     else:
         closure = None
-    return {
+    return jsonify(**{
         'id': latest_casus.id,
         'title': latest_casus.title,
         'publication': publication,
@@ -70,7 +69,7 @@ def current_casus():
         'background': latest_casus.background,
         'yes': latest_casus.yes_votes,
         'no': latest_casus.no_votes,
-    }
+    })
 
 
 @public.route('/case/vote', methods=['POST'])
@@ -120,6 +119,7 @@ def current_reflection():
         closure = str(latest_reflection.closure)
     else:
         closure = None
+    now = datetime.today()
     return {
         'id': latest_reflection.id,
         'title': latest_reflection.title,
@@ -128,6 +128,7 @@ def current_reflection():
         'closure': closure,
         'text': latest_reflection.text,
         'responses': reflection_replies(latest_reflection.id),
+        'since': str(now),
     }
 
 
@@ -145,9 +146,9 @@ def response2dict(response):
 def reflection_replies(id, since=None):
     query = Response.query.filter_by(brain_teaser_id=id)
     if since is not None:
-        if isinstance(since, str):
+        if isinstance(since, str) or isinstance(since, unicode):
             since = datetime.strptime(since, ISOFORMAT)
-        query.filter(Response.submission >= since)
+        query = query.filter(Response.submission >= since)
     return map(response2dict, query.order_by(Response.submission).all())
 
 
@@ -156,7 +157,7 @@ def reflection_replies(id, since=None):
 def reply_to_reflection(id):
     now = datetime.today()
     topic = BrainTeaser.query.get_or_404(id)
-    if topic.closure and topic.closure <= now:
+    if topic.closure and topic.closure <= now.date():
         return {'status': 'closed'}, 400
     if 'last-retrieve' in request.form:
         ninjas = reflection_replies(id, request.form['last-retrieve'])
@@ -169,40 +170,44 @@ def reply_to_reflection(id):
     if ( 'p' not in request.form or not request.form['p']
          or 'r' not in request.form or not request.form['r'] ):
         return {'status': 'invalid'}, 400
+    if ( 'last-reply' in session and
+         now - session['last-reply'] < POST_INTERVAL and
+         not 'captcha-answer' in session ):
+        return dict(status='captcha', **init_captcha())
     # code below does not enforce quarantine period.
     # in order to make it happen, return {status: quarantine} if not 
     # captcha_safe.
-    if ( not captcha_safe() or 'captcha-quarantine' in session or
-         'last-reply' in session and now - session['last-reply'] < POST_INTERVAL ):
+    if (not captcha_safe() or 'captcha-quarantine' in session):
         return dict(status='captcha', **init_captcha())
     db.session.add(Response(
         brain_teaser=topic,
         submission=now,
         pseudonym=escape(request.form['p'].strip())[:30],
-        message=escape(request.form['r'].strip())
+        message=escape(request.form['r'].strip())[:400]
     ))
     db.session.commit()
     session['last-reply'] = now
     return {'status': 'success'}
 
 
-def moderate_response(id, up):
-    target = Response.query.get_or_404(id)
-    if up:
+@public.route('/reply/<int:id>/moderate/', methods=['POST'])
+@session_protect
+def moderate_reply(id):
+    if 'choice' not in request.form:
+        return {'status': 'invalid'}, 400
+    choice = request.form['choice']
+    try:
+        target = Response.query.filter_by(id=id).one()
+    except:
+        return {'status': 'unavailable'}, 400
+    ses = db.session
+    if choice == 'up':
         target.upvotes += 1
-    else:
+        ses.commit()
+        return {'status': 'success'}
+    elif choice == 'down':
         target.downvotes += 1
-    db.session.commit()
-    return {'status': 'success'}
-
-
-@public.route('/reflection/response/<int:id>/upmod', methods=['POST'])
-@session_protect
-def upmoderate_response(id):
-    return moderate_response(id, True)
-
-
-@public.route('/reflection/response/<int:id>/downmod', methods=['POST'])
-@session_protect
-def downmoderate_response(id):
-    return moderate_response(id, False)
+        ses.commit()
+        return {'status': 'success'}
+    else:
+        return {'status': 'invalid'}, 400

@@ -38,10 +38,17 @@ html, body {
     background: #07f;
 }
 
+a {
+    text-decoration: none;
+}
+
 .ui-link.click-hint, a.click-hint:link, a.click-hint:visited {
-    font-weight:        200;
     text-decoration:    none;
     color:              #000000;
+}
+
+.ui-page-theme-a a, html .ui-bar-a a, html .ui-body-a a, html body .ui-group-theme-a a {
+    font-weight:        200;
 }
 
 .click-hint {
@@ -69,6 +76,50 @@ html, body {
 #shelf-button {
     left:       calc(50% - 2 * 0.0625em);
     top:        calc(50% - 167 * 0.0625em);
+}
+
+#captcha-challenge {
+    padding:    1em 0;
+    color:      #008;
+    font-style: italic;
+}
+
+#reflection-response {
+    clear: both;
+}
+
+#reflection-discussion > div {
+    clear:          both;
+    margin-bottom:  2em;
+}
+
+#reflection-discussion .ui-collapsible-content {
+    padding-bottom: 50pt;
+}
+
+.reply-date {
+    font-size:      10pt;
+    color:          #777;
+    font-style:     italic;
+    margin-right:   10pt;
+}
+
+.reply-nick {
+    font-weight:    bold;
+    margin-right:   10pt;
+}
+
+.reply-nick:after {
+    content: ":";
+}
+
+.reply-vote {
+    float: left;
+    margin-bottom:  20pt;
+}
+
+.reply-vote:last-child {
+    float: right;
 }
 
 [data-role="page"][data-dialog="true"] {

@@ -10,7 +10,7 @@
 from flask import Flask
 
 from .database import db
-from .server import public
+from .server import public, security
 from .admin import create_admin
 
 
@@ -31,5 +31,6 @@ def create_app(config_file=None, config_obj=None, instance=None):
     db.create_all(app=app)  # pass app because of Flask-SQLAlchemy contexts
     app.register_blueprint(public)
     create_admin(app)
+    security.init_app(app)
 
     return app
