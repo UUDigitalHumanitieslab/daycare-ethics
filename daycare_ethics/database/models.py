@@ -98,7 +98,7 @@ class Tip (db.Model):
     id      = db.Column(db.Integer, primary_key=True)
     create  = db.Column(db.DateTime, nullable=False)
     update  = db.Column(db.DateTime, nullable=False)
-    what    = db.Column(db.Enum('labour code', 'book', 'site'))
+    what    = db.Column(db.Enum('labour code', 'book', 'site', name='what_types'))
     author  = db.Column(db.Text)
     title   = db.Column(db.Text, nullable=False)
     text    = db.Column(db.Text)

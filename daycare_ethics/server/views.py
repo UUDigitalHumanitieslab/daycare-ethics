@@ -5,14 +5,19 @@
     Directly visitable routes on the domain.
 """
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
-from flask import send_from_directory, jsonify, current_app, abort, request
+from flask import send_from_directory, jsonify, current_app, abort, request, escape, session
 
 from ..util import image_variants, TARGET_WIDTHS
 from ..database.models import *
 from ..database.db import db
-from blueprint import public
+from .blueprint import public
+from .security import session_enable, session_protect, init_captcha, captcha_safe
+
+
+ISOFORMAT = '%Y-%m-%d %H:%M:%S.%f'
+POST_INTERVAL = timedelta(minutes=10)
 
 
 @public.route('/')
@@ -43,57 +48,60 @@ def current_casus():
         .first()
     )
     if latest_casus.publication:
-        publication = latest_casus.publication.isoformat()
+        publication = str(latest_casus.publication)
         week = latest_casus.publication.strftime('%W')
     else:
         publication = None
         week = None
     if latest_casus.closure:
-        closure = latest_casus.closure.isoformat()
+        closure = str(latest_casus.closure)
     else:
         closure = None
-    return jsonify(
-        id=latest_casus.id,
-        title=latest_casus.title,
-        publication=publication,
-        week=week,
-        closure=closure,
-        text=latest_casus.text,
-        proposition=latest_casus.proposition,
-        picture=latest_casus.picture_id,
-        background=latest_casus.background,
-        yes=latest_casus.yes_votes,
-        no=latest_casus.no_votes )
+    return jsonify(**{
+        'id': latest_casus.id,
+        'title': latest_casus.title,
+        'publication': publication,
+        'week': week,
+        'closure': closure,
+        'text': latest_casus.text,
+        'proposition': latest_casus.proposition,
+        'picture': latest_casus.picture_id,
+        'background': latest_casus.background,
+        'yes': latest_casus.yes_votes,
+        'no': latest_casus.no_votes,
+    })
 
 
-@public.route('/case/vote')
+@public.route('/case/vote', methods=['POST'])
+@session_protect
 def vote_casus():
     now = datetime.today()
-    if 'id' not in request.values or 'choice' not in request.values:
-        return 'invalid'
-    id, choice = int(request.values['id']), request.values['choice']
+    if 'id' not in request.form or 'choice' not in request.form:
+        return {'status': 'invalid'}, 400
+    id, choice = int(request.form['id']), request.form['choice']
     try:
         casus = Case.query.filter_by(id=id).one()
     except:
-        return 'unavailable'
+        return {'status': 'unavailable'}, 400
     if casus.closure and casus.closure <= date.today():
-        return 'unavailable'
+        return {'status': 'unavailable'}, 400
     ses = db.session
     if choice == 'yes':
         casus.yes_votes += 1
         ses.add(Vote(agree=True, submission=now, case=casus))
         ses.commit()
-        return 'success'
+        return {'status': 'success'}
     elif choice == 'no':
         casus.no_votes += 1
         ses.add(Vote(agree=False, submission=now, case=casus))
         ses.commit()
-        return 'success'
+        return {'status': 'success'}
     else:
-        return 'invalid'
+        return {'status': 'invalid'}, 400
 
 
 @public.route('/reflection/')
+@session_enable
 def current_reflection():
     latest_reflection = (
         BrainTeaser.query
@@ -102,19 +110,125 @@ def current_reflection():
         .first()
     )
     if latest_reflection.publication:
-        publication = latest_reflection.publication.isoformat()
+        publication = str(latest_reflection.publication)
         week = latest_reflection.publication.strftime('%W')
     else:
         publication = None
         week = None
     if latest_reflection.closure:
-        closure = latest_reflection.closure.isoformat()
+        closure = str(latest_reflection.closure)
     else:
         closure = None
-    return jsonify(
-        id=latest_reflection.id,
-        title=latest_reflection.title,
-        publication=publication,
-        week=week,
-        closure=closure,
-        text=latest_reflection.text )
+    now = datetime.today()
+    return {
+        'id': latest_reflection.id,
+        'title': latest_reflection.title,
+        'publication': publication,
+        'week': week,
+        'closure': closure,
+        'text': latest_reflection.text,
+        'responses': reflection_replies(latest_reflection.id),
+        'since': str(now),
+    }
+
+
+def response2dict(response):
+    return {
+        'submission': str(response.submission.date()),
+        'pseudonym': response.pseudonym,
+        'message': response.message,
+        'id': response.id,
+        'up': response.upvotes,
+        'down': response.downvotes,
+    }
+
+
+def reflection_replies(id, since=None):
+    query = Response.query.filter_by(brain_teaser_id=id)
+    if since is not None:
+        if isinstance(since, str) or isinstance(since, unicode):
+            since = datetime.strptime(since, ISOFORMAT)
+        query = query.filter(Response.submission >= since)
+    return map(response2dict, query.order_by(Response.submission).all())
+
+
+@public.route('/reflection/<int:id>/reply', methods=['POST'])
+@session_protect
+def reply_to_reflection(id):
+    now = datetime.today()
+    topic = BrainTeaser.query.get_or_404(id)
+    if topic.closure and topic.closure <= now.date():
+        return {'status': 'closed'}, 400
+    if 'last-retrieve' in request.form:
+        ninjas = reflection_replies(id, request.form['last-retrieve'])
+        if ninjas:
+            return {
+                'status': 'ninja',
+                'new': ninjas,
+                'since': str(now),
+            }
+    if ( 'p' not in request.form or not request.form['p']
+         or 'r' not in request.form or not request.form['r'] ):
+        return {'status': 'invalid'}, 400
+    if ( 'last-reply' in session and
+         now - session['last-reply'] < POST_INTERVAL and
+         not 'captcha-answer' in session ):
+        return dict(status='captcha', **init_captcha())
+    # code below does not enforce quarantine period.
+    # in order to make it happen, return {status: quarantine} if not 
+    # captcha_safe.
+    if (not captcha_safe() or 'captcha-quarantine' in session):
+        return dict(status='captcha', **init_captcha())
+    db.session.add(Response(
+        brain_teaser=topic,
+        submission=now,
+        pseudonym=escape(request.form['p'].strip())[:30],
+        message=escape(request.form['r'].strip())[:400]
+    ))
+    db.session.commit()
+    session['last-reply'] = now
+    return {'status': 'success'}
+
+
+@public.route('/reply/<int:id>/moderate/', methods=['POST'])
+@session_protect
+def moderate_reply(id):
+    if 'choice' not in request.form:
+        return {'status': 'invalid'}, 400
+    choice = request.form['choice']
+    try:
+        target = Response.query.filter_by(id=id).one()
+    except:
+        return {'status': 'unavailable'}, 400
+    ses = db.session
+    if choice == 'up':
+        target.upvotes += 1
+        ses.commit()
+        return {'status': 'success'}
+    elif choice == 'down':
+        target.downvotes += 1
+        ses.commit()
+        return {'status': 'success'}
+    else:
+        return {'status': 'invalid'}, 400
+
+
+def tip2dict(tip):
+    return {
+        'id': tip.id,
+        'created': str(tip.create),
+        'updated': str(tip.update),
+        'author': tip.author,
+        'title': tip.title,
+        'text': tip.text,
+        'href': tip.href,
+    }
+
+
+@public.route('/tips/')
+def retrieve_tips():
+    sorted_tips = Tip.query.order_by(Tip.update.desc())
+    labour_code = map(tip2dict, sorted_tips.filter_by(what='labour code').all())
+    book = map(tip2dict, sorted_tips.filter_by(what='book').all())
+    site = map(tip2dict, sorted_tips.filter_by(what='site').all())
+    return jsonify(labour=labour_code, book=book, site=site)
