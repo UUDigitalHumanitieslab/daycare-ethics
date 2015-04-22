@@ -258,7 +258,7 @@ var app = {
         $('#plate > a').hide();
         $('#yes_count').html('ja ' + yes_count);
         $('#no_count').html(no_count + ' nee');
-        $('#no_bar').width($(window).width() - 15 * 8);
+        $('#no_bar').width(app.viewport.width - 15 * 8);
         $('#yes_bar').css('width', 100 * yes_count / (yes_count + no_count) + '%');
     },
     
