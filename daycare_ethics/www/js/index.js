@@ -18,6 +18,11 @@ var app = {
             height: window.innerHeight,
             pixelRatio: window.devicePixelRatio
         };
+        if (this.viewport.width > this.viewport.height) {
+            var temp = this.viewport.width;
+            this.viewport.width = this.viewport.height;
+            this.viewport.height = temp;
+        }
     },
     
     preloadContent: function() {
@@ -27,11 +32,14 @@ var app = {
             $('#plate .week-number').html(data.week);
             $('#case-text').html(data.text);
             $('#case-proposition').html(data.proposition);
-            var image_size = (app.viewport.width - 20) * app.viewport.pixelRatio;
+            var image_size = (Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio;
             var img = $('<img>')
                 .attr('src', '/media/' + data.picture + '/' + image_size)
                 .load(function() {
                     $('#case-display').append(img);
+                    if (app.viewport.pixelRatio != 1) {
+                        img.width(img.width() / app.viewport.pixelRatio);
+                    }
                 });
             $('#plate').css('background-color', data.background);
             if (localStorage.getItem('has_voted_' + data.id)) {

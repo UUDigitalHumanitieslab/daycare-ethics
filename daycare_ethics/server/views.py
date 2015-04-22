@@ -35,7 +35,7 @@ def media(id, width):
     variants = image_variants(image)
     cutoffs = TARGET_WIDTHS[1:] + (100000,)
     for cutoff, variant in zip(cutoffs, variants):
-        if cutoff >= width:
+        if cutoff > width:
             return send_from_directory(current_app.instance_path, variant)
     abort(404)
 
