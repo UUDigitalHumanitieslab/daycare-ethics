@@ -1,6 +1,6 @@
 /*
     (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
-    Author: Julian Gonggrijp
+    Authors: Julian Gonggrijp, Martijn van der Klis
 */
 var app = {
     // Application Constructor

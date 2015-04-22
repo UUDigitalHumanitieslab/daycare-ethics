@@ -1,5 +1,6 @@
 # (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
-# Author: Julian Gonggrijp, j.gonggrijp@uu.nl
+# Authors: Julian Gonggrijp, j.gonggrijp@uu.nl,
+#          Martijn van der Klis, m.h.vanderklis@uu.nl
 
 """
     Directly visitable routes on the domain.
