@@ -186,6 +186,13 @@ a {
     }
 }
 
+@media (max-width: 39em), (max-aspect-ratio: 99/100), (max-device-aspect-ratio: 99/100) {
+    .flex-col .ui-block-a, .flex-col .ui-block-b {
+        float:          none;
+        width:          100%;
+    }
+}
+
 @media (min-width: 45.3em), (min-height: 45.3em) {
     #home {
         background-image: url(/img/background_1024.jpg);
