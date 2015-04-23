@@ -28,10 +28,6 @@ html, body {
     background-position: center;
 }
 
-#case-display {
-    text-align: center;
-}
-
 #no_bar, #yes_bar {
     height: 3em;
     display: inline-block;
