@@ -26,70 +26,76 @@ var app = {
     },
     
     preloadContent: function() {
-        $.get('/case/').done(function(data) {
-            app.current_casus = data.id;
-            localStorage.setItem('case_data_' + data.id, JSON.stringify(data));
-            $('#plate .week-number').html(data.week);
-            $('#case-text').html(data.text);
-            $('#case-proposition').html(data.proposition);
-            var image_size = (Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio;
-            var img = $('<img>')
-                .attr('src', '/media/' + data.picture + '/' + image_size)
-                .load(function() {
-                    $('#case-display').append(img);
-                    if (app.viewport.pixelRatio != 1) {
-                        img.width(img.width() / app.viewport.pixelRatio);
-                    }
-                });
-            $('#plate').css('background-color', data.background);
-            if (localStorage.getItem('has_voted_' + data.id)) {
-                app.displayVotes();
-            }
-        });
-        $.get('/reflection/').done(function(data) {
-            if (data.token) localStorage.setItem('token', data.token);
-            app.current_reflection = data.id;
-            localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
-            localStorage.setItem('last_retrieve', data.since);
-            $('#mirror .week-number').html(data.week);
-            $('#reflection-text').html(data.text);
-            _(data.responses).each(app.appendReply);
-            nickname = localStorage.getItem('nickname');
-            if (nickname) $('#form-field-p').val(nickname);
-            if (data.closure) {
-                if (new Date(data.closure) <= new Date()) {
-                    $('#reflection-response').hide();
-                    $('#reflection-closure-announce').hide();
-                } else {
-                    $('#reflection-closure-date').text(data.closure);
-                    $('#reflection-closed-notice').hide();
+        $.get('/case/').done(app.loadCasus);
+        $.get('/reflection/').done(app.loadReflection);
+        $.get('/tips/').done(app.loadTips);
+    },
+    
+    loadCasus: function(data) {
+        app.current_casus = data.id;
+        localStorage.setItem('case_data_' + data.id, JSON.stringify(data));
+        $('#plate .week-number').html(data.week);
+        $('#case-text').html(data.text);
+        $('#case-proposition').html(data.proposition);
+        var image_size = (Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio;
+        var img = $('<img>')
+            .attr('src', '/media/' + data.picture + '/' + image_size)
+            .load(function() {
+                $('#case-display').append(img);
+                if (app.viewport.pixelRatio != 1) {
+                    img.width(img.width() / app.viewport.pixelRatio);
                 }
-            } else {
-                $('#reflection-closed-notice').hide();
+            });
+        $('#plate').css('background-color', data.background);
+        if (localStorage.getItem('has_voted_' + data.id)) {
+            app.displayVotes();
+        }
+    },
+    
+    loadReflection: function(data) {
+        if (data.token) localStorage.setItem('token', data.token);
+        app.current_reflection = data.id;
+        localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
+        localStorage.setItem('last_retrieve', data.since);
+        $('#mirror .week-number').html(data.week);
+        $('#reflection-text').html(data.text);
+        _(data.responses).each(app.appendReply);
+        nickname = localStorage.getItem('nickname');
+        if (nickname) $('#form-field-p').val(nickname);
+        if (data.closure) {
+            if (new Date(data.closure) <= new Date()) {
+                $('#reflection-response').hide();
                 $('#reflection-closure-announce').hide();
+            } else {
+                $('#reflection-closure-date').text(data.closure);
+                $('#reflection-closed-notice').hide();
             }
+        } else {
+            $('#reflection-closed-notice').hide();
+            $('#reflection-closure-announce').hide();
+        }
+    },
+    
+    loadTips: function(data) {
+        // Load labour code tips
+        $.each(data.labour, function( index, labour ) {
+            var tip = $('<li>').html(labour.title);
+            $("#labour-code-tips").append(tip);
         });
-        $.get('/tips/').done(function(data) {
-            // Load labour code tips
-            $.each(data.labour, function( index, labour ) {
-                var tip = $('<li>').html(labour.title);
-                $("#labour-code-tips").append(tip);
-            });
-            // Load website links
-            $.each(data.site, function( index, site ) {
-                var tip = $('<li>').html('<a href="' + site.href + '" target="_blank">' + site.title + '</a>');
-                $("#website-links").append(tip);
-            });
-            // Load book tips
-            $.each(data.book, function( index, book ) {
-                var tip = $('<li>')
-                    .append($('<h3>').html(book.title).css('white-space', 'normal'))
-                    .append($('<p>').html(book.author));
-                $("#book-tips").append(tip);
-            });
-            // We need to refresh the listviews on load.
-            $('.tips-list').listview('refresh');
+        // Load website links
+        $.each(data.site, function( index, site ) {
+            var tip = $('<li>').html('<a href="' + site.href + '" target="_blank">' + site.title + '</a>');
+            $("#website-links").append(tip);
         });
+        // Load book tips
+        $.each(data.book, function( index, book ) {
+            var tip = $('<li>')
+                .append($('<h3>').html(book.title).css('white-space', 'normal'))
+                .append($('<p>').html(book.author));
+            $("#book-tips").append(tip);
+        });
+        // We need to refresh the listviews on load.
+        $('.tips-list').listview('refresh');
     },
     
     submitVote: function(choice) {
