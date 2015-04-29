@@ -5,12 +5,11 @@
     Captcha functionality common to some of the public views.
 """
 
-import json
 from datetime import datetime, timedelta
 from random import SystemRandom
 from functools import wraps
 
-from flask import current_app, session, request, jsonify, abort
+from flask import current_app, session, request, jsonify, abort, json
 
 
 QUARANTINE_TIME = timedelta(minutes=30)
@@ -23,7 +22,8 @@ ODDBALLS = 3
 
 
 def init_app(app):
-    app.captcha_data = map(set, json.load(app.config['CAPTCHA_DATA']).values())
+    data = json.load(open(app.config['CAPTCHA_DATA']))
+    app.captcha_data = map(set, data.values())
 
 
 def generate_key(generator):
@@ -35,13 +35,16 @@ def init_captcha():
     normalset, oddballset = dice.sample(current_app.captcha_data, 2)
     normals = dice.sample(normalset, NORMALS)
     oddballs = dice.sample(oddballset - normalset, ODDBALLS)
-    challenge = ' '.join(dice.shuffle(normals + oddballs))
+    united = normals + oddballs
+    dice.shuffle(united)
+    challenge = ' '.join(united)
     expiry = datetime.today() + AUTHENTICATION_TIME
     session['captcha-answer'] = oddballs
     session['captcha-expires'] = expiry
     if 'captcha-quarantine' in session:
         del session['captcha-quarantine']
-    return {'captcha-expires': str(expiry), 'captcha-challenge': challenge}
+        session.modified = True
+    return {'captcha_expires': str(expiry), 'captcha_challenge': challenge}
 
 
 def authorize_captcha():
@@ -68,6 +71,8 @@ def captcha_safe():
         return False
     if 'captcha-quarantine' in session:
         if now > session['captcha-quarantine']:
+            del session['captcha-quarantine']
+            session.modified = True
             return True
         return False
     return True
@@ -102,8 +107,17 @@ def session_enable(view):
     @wraps(view)
     def wrap(**kwargs):
         now = datetime.today()
-        verify_natural()
-        return tokenize_response(view(**kwargs), now)
+        if not 'token' in session:
+            verify_natural()
+            return tokenize_response(view(**kwargs), now)
+        response = view(**kwargs)
+        if isinstance(response, tuple):
+            if len(response) == 3:
+                return jsonify(**response[0]), response[1], response[2]
+            if len(response) == 2:
+                return jsonify(**response[0]), response[1]
+            return jsonify(**response[0])
+        return jsonify(**response)
     return wrap
 
 

@@ -3,47 +3,22 @@
     Author: Julian Gonggrijp
 */
 
-img {
-    width: 50%;
-    height: 50%;
-}
-
 #home {
-    background: url(/img/background_1024.jpg) center / 32em;
+    background-image: url(/img/background_1024.jpg);
+    background-size: 32em;
 }
 
-#shelf {
-    background: url(/img/shelf_1024.jpg) center / 32em;
-}
-
-.click-hint {
-    background-image: url(/img/star_224.png);
-}
 
 @media (min-width: 32.05em), (min-height: 32.05em) {
     #home {
-        background: url(/img/background_1448.jpg) center / 45.25em;
-    }
-
-    #shelf {
-        background: url(/img/shelf_1448.jpg) center / 45.25em;
-    }
-
-    .click-hint {
-        background-image: url(/img/star_317.png);
+        background-image: url(/img/background_1448.jpg);
+        background-size: 45.25em;
     }
 }
 
 @media (min-width: 45.3em), (min-height: 45.3em) {
     #home {
-        background: url(/img/background_2048.jpg) center / 64em;
-    }
-
-    #shelf {
-        background: url(/img/shelf_2048.jpg) center / 64em;
-    }
-
-    .click-hint {
-        background-image: url(/img/star_448.png);
+        background-image: url(/img/background_2048.jpg);
+        background-size: 64em;
     }
 }

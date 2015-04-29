@@ -8,4 +8,4 @@
 """
 
 from blueprint import public
-import views
+import views, security

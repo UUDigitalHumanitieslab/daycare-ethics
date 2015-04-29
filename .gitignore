@@ -3,3 +3,9 @@
 /daycare_ethics/plugins
 /instance
 *.pyc
+/config.py
+/dist
+*.egg-info
+/build
+.DS_Store
+/.idea

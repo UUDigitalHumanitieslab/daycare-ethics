@@ -24,6 +24,9 @@ class Picture (db.Model):
     mime_type   = db.Column(db.String(30), nullable=False)
     name        = db.Column(db.String(40), nullable=False)
     path        = db.Column(db.String(50), unique=True, nullable=False)
+    
+    def __str__(self):
+        return self.name
 
 
 @listens_for(Picture, 'after_delete')
@@ -98,7 +101,7 @@ class Tip (db.Model):
     id      = db.Column(db.Integer, primary_key=True)
     create  = db.Column(db.DateTime, nullable=False)
     update  = db.Column(db.DateTime, nullable=False)
-    what    = db.Column(db.Enum('labour code', 'book', 'site'))
+    what    = db.Column(db.Enum('labour code', 'book', 'site', name='what_types'))
     author  = db.Column(db.Text)
     title   = db.Column(db.Text, nullable=False)
     text    = db.Column(db.Text)

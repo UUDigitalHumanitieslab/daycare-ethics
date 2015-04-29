@@ -1,5 +1,6 @@
 # (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
-# Author: Julian Gonggrijp, j.gonggrijp@uu.nl
+# Authors: Julian Gonggrijp, j.gonggrijp@uu.nl,
+#          Martijn van der Klis, m.h.vanderklis@uu.nl
 
 """
     Directly visitable routes on the domain.
@@ -16,7 +17,7 @@ from .blueprint import public
 from .security import session_enable, session_protect, init_captcha, captcha_safe
 
 
-ISOFORMAT = '%Y-%m-%d %H:%M:%S%z'
+ISOFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 POST_INTERVAL = timedelta(minutes=10)
 
 
@@ -34,18 +35,17 @@ def media(id, width):
     variants = image_variants(image)
     cutoffs = TARGET_WIDTHS[1:] + (100000,)
     for cutoff, variant in zip(cutoffs, variants):
-        if cutoff >= width:
+        if cutoff > width:
             return send_from_directory(current_app.instance_path, variant)
     abort(404)
 
 
 @public.route('/case/')
-@session_enable
 def current_casus():
     latest_casus = available_casus().first()
     if not latest_casus or not latest_casus.publication:
         abort(404)
-    return casus2dict(latest_casus)
+    return jsonify(**casus2dict(latest_casus))
 
 
 @public.route('/case/<int:id>')
@@ -65,7 +65,7 @@ def casus2dict(casus):
         'id': casus.id,
         'title': casus.title,
         'publication': str(casus.publication),
-        'week': casus.publication.strftime('%W'),
+        'week': casus.publication.isocalendar()[1],
         'closure': closure,
         'text': casus.text,
         'proposition': casus.proposition,
@@ -144,14 +144,16 @@ def reflection2dict(reflection, with_responses=False):
         replies = reflection_replies(reflection.id)
     else:
         replies = None
+    now = datetime.today()
     return {
         'id': reflection.id,
         'title': reflection.title,
         'publication': str(reflection.publication),
-        'week': reflection.publication.strftime('%W'),
+        'week': reflection.publication.isocalendar()[1],
         'closure': closure,
         'text': reflection.text,
         'responses': replies,
+        'since': str(now),
     }
 
 
@@ -179,9 +181,9 @@ def response2dict(response):
 def reflection_replies(id, since=None):
     query = Response.query.filter_by(brain_teaser_id=id)
     if since is not None:
-        if isinstance(since, str):
+        if isinstance(since, str) or isinstance(since, unicode):
             since = datetime.strptime(since, ISOFORMAT)
-        query.filter(Response.submission >= since)
+        query = query.filter(Response.submission >= since)
     return map(response2dict, query.order_by(Response.submission).all())
 
 
@@ -195,7 +197,7 @@ def reflection_archive():
 def reply_to_reflection(id):
     now = datetime.today()
     topic = BrainTeaser.query.get_or_404(id)
-    if topic.closure and topic.closure <= now:
+    if topic.closure and topic.closure <= now.date():
         return {'status': 'closed'}, 400
     if 'last-retrieve' in request.form:
         ninjas = reflection_replies(id, request.form['last-retrieve'])
@@ -208,40 +210,65 @@ def reply_to_reflection(id):
     if ( 'p' not in request.form or not request.form['p']
          or 'r' not in request.form or not request.form['r'] ):
         return {'status': 'invalid'}, 400
+    if ( 'last-reply' in session and
+         now - session['last-reply'] < POST_INTERVAL and
+         not 'captcha-answer' in session ):
+        return dict(status='captcha', **init_captcha())
     # code below does not enforce quarantine period.
     # in order to make it happen, return {status: quarantine} if not 
     # captcha_safe.
-    if ( not captcha_safe() or 'captcha-quarantine' in session or
-         'last-reply' in session and now - session['last-reply'] < POST_INTERVAL ):
+    if (not captcha_safe() or 'captcha-quarantine' in session):
         return dict(status='captcha', **init_captcha())
     db.session.add(Response(
         brain_teaser=topic,
         submission=now,
         pseudonym=escape(request.form['p'].strip())[:30],
-        message=escape(request.form['r'].strip())
+        message=escape(request.form['r'].strip())[:400]
     ))
     db.session.commit()
     session['last-reply'] = now
     return {'status': 'success'}
 
 
-def moderate_response(id, up):
-    target = Response.query.get_or_404(id)
-    if up:
+@public.route('/reply/<int:id>/moderate/', methods=['POST'])
+@session_protect
+def moderate_reply(id):
+    if 'choice' not in request.form:
+        return {'status': 'invalid'}, 400
+    choice = request.form['choice']
+    try:
+        target = Response.query.filter_by(id=id).one()
+    except:
+        return {'status': 'unavailable'}, 400
+    ses = db.session
+    if choice == 'up':
         target.upvotes += 1
-    else:
+        ses.commit()
+        return {'status': 'success'}
+    elif choice == 'down':
         target.downvotes += 1
-    db.session.commit()
-    return {'status': 'success'}
+        ses.commit()
+        return {'status': 'success'}
+    else:
+        return {'status': 'invalid'}, 400
 
 
-@public.route('/reflection/response/<int:id>/upmod', methods=['POST'])
-@session_protect
-def upmoderate_response(id):
-    return moderate_response(id, True)
+def tip2dict(tip):
+    return {
+        'id': tip.id,
+        'created': str(tip.create),
+        'updated': str(tip.update),
+        'author': tip.author,
+        'title': tip.title,
+        'text': tip.text,
+        'href': tip.href,
+    }
 
 
-@public.route('/reflection/response/<int:id>/downmod', methods=['POST'])
-@session_protect
-def downmoderate_response(id):
-    return moderate_response(id, False)
+@public.route('/tips/')
+def retrieve_tips():
+    sorted_tips = Tip.query.order_by(Tip.update.desc())
+    labour_code = map(tip2dict, sorted_tips.filter_by(what='labour code').all())
+    book = map(tip2dict, sorted_tips.filter_by(what='book').all())
+    site = map(tip2dict, sorted_tips.filter_by(what='site').all())
+    return jsonify(labour=labour_code, book=book, site=site)
