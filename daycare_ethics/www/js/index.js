@@ -26,7 +26,6 @@ var app = {
     },
     
     preloadContent: function() {
-        $.get('/case/').done(app.loadCasus);
         $.get('/reflection/').done(app.loadReflection);
         $.get('/tips/').done(app.loadTips);
         $.get('/case/archive').done(app.loadCasusArchive);
@@ -101,6 +100,7 @@ var app = {
     },
     
     loadCasusArchive: function(data) {
+        app.loadCasus(data.all[0]);
         app.renderArchiveList(data.all, $('#plate-archive-list'));
     },
     
