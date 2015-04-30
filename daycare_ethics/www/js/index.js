@@ -29,6 +29,8 @@ var app = {
         $.get('/case/').done(app.loadCasus);
         $.get('/reflection/').done(app.loadReflection);
         $.get('/tips/').done(app.loadTips);
+        $.get('/case/archive').done(app.loadCasusArchive);
+        $.get('/reflection/archive').done(app.loadReflectionArchive);
     },
     
     loadCasus: function(data) {
@@ -96,6 +98,28 @@ var app = {
         });
         // We need to refresh the listviews on load.
         $('.tips-list').listview('refresh');
+    },
+    
+    loadCasusArchive: function(data) {
+        app.renderArchiveList(data.all, $('#plate-archive-list'));
+    },
+    
+    loadReflectionArchive: function(data) {
+        app.renderArchiveList(data.all, $('#mirror-archive-list'));
+    },
+    
+    renderArchiveList: function(data, listElem, retrieve) {
+        var item, anchor;
+        _(data).each(function(datum) {
+            item = $('<li>');
+            anchor = $('<a>').attr('href', '#').text(datum.title)
+                             .data('identifier', datum.id).click(retrieve)
+                             .appendTo(item);
+            $('<span>').addClass('week-number ui-li-count')
+                       .text(datum.week).appendTo(anchor);
+            listElem.append(item);
+        });
+        listElem.listview('refresh');        
     },
     
     submitVote: function(choice) {
