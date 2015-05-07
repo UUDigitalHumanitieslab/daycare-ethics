@@ -123,18 +123,29 @@ var app = {
     
     loadCasusArchive: function(data) {
         app.loadCasus($('#plate'), data.all[0]);
-        app.renderArchiveList(data.all, $('#plate-archive-list'));
+        app.renderArchiveList(data.all, $('#plate-archive-list'), function(ev) {
+            var id = $(ev.target).data('identifier');
+            $.get('/case/' + id).done(function(data) {
+                app.loadCasus($('#plate-archive-item'), data);
+            });
+        });
     },
     
     loadReflectionArchive: function(data) {
-        app.renderArchiveList(data.all, $('#mirror-archive-list'));
+        app.renderArchiveList(data.all, $('#mirror-archive-list'), function(ev) {
+            var id = $(ev.target).data('identifier');
+            $.get('/reflection/' + id + '/').done(function(data) {
+                app.loadReflection($('#mirror-archive-item'), data);
+            });
+        });
     },
     
     renderArchiveList: function(data, listElem, retrieve) {
         var item, anchor;
+        var target = '#' + listElem.prop('id').slice(0, -4) + 'item';
         _(data).each(function(datum) {
             item = $('<li>');
-            anchor = $('<a>').attr('href', '#').text(datum.title)
+            anchor = $('<a>').attr('href', target).text(datum.title)
                              .data('identifier', datum.id).click(retrieve)
                              .appendTo(item);
             $('<span>').addClass('week-number ui-li-count')
