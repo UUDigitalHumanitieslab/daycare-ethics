@@ -7,9 +7,27 @@ var app = {
     initialize: function() {
         $('.reflection-response').validate({submitHandler: this.submitReply});
         $('.reflection-captcha').validate({submitHandler: this.submitCaptcha});
+        this.clonePages();
         this.findDimensions();
         this.preloadContent();
         this.bindEvents();
+    },
+    
+    clonePages: function() {
+        var plate = $('#plate').clone().attr('id', 'plate-archive-item');
+        var mirror = $('#mirror').clone().attr('id', 'mirror-archive-item');
+        plate.find('[data-role="header"] a').text('Archief');
+        plate.appendTo(document.body);
+        mirror.find('[data-role="header"] a').text('Archief');
+        mirror.find('input[id], textarea[id]').each(function() {
+            var self = $(this), id = self.attr('id');
+            self.attr('id', id + '-2');
+        });
+        mirror.find('label[for]').each(function() {
+            var self = $(this), id = self.attr('for');
+            self.attr('for', id + '-2');
+        });
+        mirror.appendTo(document.body);
     },
     
     findDimensions: function() {
