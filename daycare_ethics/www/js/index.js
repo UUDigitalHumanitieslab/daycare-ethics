@@ -231,13 +231,13 @@ var app = {
             div.append($('<a href="#">leerzaam</a>')
                         .addClass('reply-vote ui-btn ui-icon-plus ui-btn-icon-left')
                         .data('for', data.id)
-                        .on('touchstart mousedown', function() {
+                        .click(function() {
                             app.submitReplyVote(data.id, 'up');
                         }));
             div.append($('<a href="#">ongewenst</a>')
                         .addClass('reply-vote ui-btn ui-icon-minus ui-btn-icon-right')
                         .data('for', data.id)
-                        .on('touchstart mousedown', function() {
+                        .click(function() {
                             app.submitReplyVote(data.id, 'down');
                         }));
         }
