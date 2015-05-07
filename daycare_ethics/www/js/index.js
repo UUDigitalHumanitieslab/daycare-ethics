@@ -68,8 +68,11 @@ var app = {
                 }
             });
         page.css('background-color', data.background);
-        if (localStorage.getItem('has_voted_' + data.id)) {
+        if (localStorage.getItem('has_voted_' + data.id) ||
+                data.closure && new Date(data.closure) <= new Date()) {
             app.displayVotes(page);
+        } else {
+            app.displayVoteButtons(page);
         }
     },
     
@@ -325,10 +328,15 @@ var app = {
             yes_count = case_data.yes,
             no_count = case_data.no;
         page.children('a').hide();
-        page.find('.yes_count').html('ja ' + yes_count);
-        page.find('.no_count').html(no_count + ' nee');
-        page.find('.no_bar').width(app.viewport.width - 15 * 8);
-        page.find('.yes_bar').css('width', 100 * yes_count / (yes_count + no_count) + '%');
+        page.find('.yes_count').html('ja ' + yes_count).show();
+        page.find('.no_count').html(no_count + ' nee').show();
+        page.find('.no_bar').width(app.viewport.width - 15 * 8).show();
+        page.find('.yes_bar').css('width', 100 * yes_count / (yes_count + no_count) + '%').show();
+    },
+    
+    displayVoteButtons: function(page) {
+        page.children('a').show();
+        page.find('.yes_count, .no_count, .no_bar, .yes_bar').hide();
     },
     
     // Bind Event Listeners
