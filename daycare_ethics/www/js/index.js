@@ -5,29 +5,35 @@
 var app = {
     // Application Constructor
     initialize: function() {
-        $('.reflection-response').validate({submitHandler: this.submitReply});
-        $('.reflection-captcha').validate({submitHandler: this.submitCaptcha});
-        this.clonePages();
+        this.insertPages();
         this.findDimensions();
         this.preloadContent();
         this.bindEvents();
+        $('.reflection-response').validate({submitHandler: this.submitReply});
+        $('.reflection-captcha').validate({submitHandler: this.submitCaptcha});
     },
     
-    clonePages: function() {
-        var plate = $('#plate').clone().attr('id', 'plate-archive-item');
-        var mirror = $('#mirror').clone().attr('id', 'mirror-archive-item');
-        plate.find('[data-role="header"] a').text('Archief');
-        plate.appendTo(document.body);
-        mirror.find('[data-role="header"] a').text('Archief');
-        mirror.find('input[id], textarea[id]').each(function() {
-            var self = $(this), id = self.attr('id');
-            self.attr('id', id + '-2');
-        });
-        mirror.find('label[for]').each(function() {
-            var self = $(this), id = self.attr('for');
-            self.attr('for', id + '-2');
-        });
-        mirror.appendTo(document.body);
+    insertPages: function() {
+        var casusTemplate = $('#casus-format').html();
+        var reflectionTemplate = $('#reflection-format').html();
+        $(_.template(casusTemplate, {
+            pageid: 'plate',
+            back: 'Doordenkertjes'
+        })).appendTo(document.body).page();
+        $(_.template(casusTemplate, {
+            pageid: 'plate-archive-item',
+            back: 'Archief'
+        })).appendTo(document.body).page();
+        $(_.template(reflectionTemplate, {
+            pageid: 'mirror',
+            back: 'Doordenkertjes',
+            suffix: ''
+        })).appendTo(document.body).page();
+        $(_.template(reflectionTemplate, {
+            pageid: 'mirror-archive-item',
+            back: 'Archief',
+            suffix: '-2'
+        })).appendTo(document.body).page();
     },
     
     findDimensions: function() {

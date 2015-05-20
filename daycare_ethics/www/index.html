@@ -25,70 +25,74 @@
     <a href="#shelf" id="shelf-button" class="click-hint">Extra</a>
 </div>
 
-<div data-role="page" id="plate">
-    <div data-role="header">
-        <a href="#" data-rel="back" data-icon="carat-l">Doordenkertjes</a>
-        <span class="ui-title" />
+<script type="text/template" id="casus-format">
+    <div data-role="page" id="<%= pageid %>">
+        <div data-role="header">
+            <a href="#" data-rel="back" data-icon="carat-l"><%= back %></a>
+            <span class="ui-title" />
+        </div>
+        <h3>Casus van week <span class="week-number"></span></h3>
+        <div class="ui-grid-a flex-col">
+            <div class="case-display ui-block-a"></div>
+            <div class="ui-block-b">
+                <p class="case-text"></p>
+                <p class="case-proposition"></p>
+            </div>
+        </div>
+        <span class="yes_count"></span>
+        <span class="no_bar"><span class="yes_bar"></span></span>
+        <span class="no_count"></span>
+        <a href="#" class="vote-btn-yes ui-btn ui-btn-inline ui-corner-all">Ja</a>
+        <a href="#" class="vote-btn-no ui-btn ui-btn-inline ui-corner-all">Nee</a>
     </div>
-    <h3>Casus van week <span class="week-number"></span></h3>
-    <div class="ui-grid-a flex-col">
-        <div class="case-display ui-block-a"></div>
-        <div class="ui-block-b">
-            <p class="case-text"></p>
-            <p class="case-proposition"></p>
+</script>
+
+<script type="text/template" id="reflection-format">
+    <div data-role="page" id="<%= pageid %>">
+        <div data-role="header">
+            <a href="#" data-rel="back" data-icon="carat-l"><%= back %></a>
+            <span class="ui-title" />
+        </div>
+        <h3>Reflectie van week <span class="week-number"></span></h3>
+        <p class="reflection-text"></p>
+        <div class="reflection-discussion"></div>
+        <form class="reflection-response">
+            <label for="form-field-p<%= suffix %>">Schuilnaam:</label>
+            <input type="text" inputmode="verbatim" maxlength="30" required spellcheck="false" id="form-field-p<%= suffix %>" name="p">
+            <label for="form-field-r<%= suffix %>">Reactie:</label>
+            <textarea autocomplete=off required minlength=10 maxlength=400 id="form-field-r<%= suffix %>" name="r"></textarea>
+            <input type="submit" value="Reageer">
+        </form>
+        <div data-role="popup" class="ninja-message ui-content">
+            Er zijn één of meer reacties binnengekomen terwijl je typte. Je kunt je eigen reactie hier nu op aanpassen als je dat wilt.<br>
+            <strong>Let op</strong>: je reactie is dus nog niet opgeslagen!
+            <a href="#" data-role="button" data-rel="back">OK</a>
+        </div>
+        <div data-role="popup" class="captcha-popup ui-content" data-dismissible="false">
+            Welke <strong>drie</strong> woorden horen niet in onderstaand rijtje? Plaats alleen spaties tussen de woorden.<br>
+            <span class="captcha-challenge"></span>
+            <form class="reflection-captcha">
+                <label for="form-field-ca<%= suffix %>">Antwoord:</label>
+                <input type=text inputmode=verbatim required spellcheck=false id="form-field-ca<%= suffix %>" name="ca" pattern="[a-z]+( +[a-z+]){2}" placeholder="maan roos vis">
+                <input type=submit value="Stuur op">
+            </form>
+        </div>
+        <p class="reflection-closed-notice" style="clear: both;">
+            Deze reflectie is gesloten voor reacties.
+        </p>
+        <p class="reflection-closure-announce" style="clear: both;">
+            Reageren is mogelijk tot <span class="reflection-closure-date"></span>.
+        </p>
+        <div data-role="popup" class="reflection-closed-popup ui-content">
+            Sorry, deze reflectie is gesloten voor reacties.
+            <a href="#" data-role="button" data-rel="back">OK</a>
+        </div>
+        <div data-role="popup" class="reflection-invalid-popup ui-content">
+            Vul alsjeblieft beide velden in.
+            <a href="#" data-role="button" data-rel="back">OK</a>
         </div>
     </div>
-    <span class="yes_count"></span>
-    <span class="no_bar"><span class="yes_bar"></span></span>
-    <span class="no_count"></span>
-    <a href="#" class="vote-btn-yes ui-btn ui-btn-inline ui-corner-all">Ja</a>
-    <a href="#" class="vote-btn-no ui-btn ui-btn-inline ui-corner-all">Nee</a>
-</div>
-
-<div data-role="page" id="mirror">
-    <div data-role="header">
-        <a href="#" data-rel="back" data-icon="carat-l">Doordenkertjes</a>
-        <span class="ui-title" />
-    </div>
-    <h3>Reflectie van week <span class="week-number"></span></h3>
-    <p class="reflection-text"></p>
-    <div class="reflection-discussion"></div>
-    <form class="reflection-response">
-        <label for="form-field-p">Schuilnaam:</label>
-        <input type="text" inputmode="verbatim" maxlength="30" required spellcheck="false" id="form-field-p" name="p">
-        <label for="form-field-r">Reactie:</label>
-        <textarea autocomplete=off required minlength=10 maxlength=400 id="form-field-r" name="r"></textarea>
-        <input type="submit" value="Reageer">
-    </form>
-    <div data-role="popup" class="ninja-message ui-content">
-        Er zijn één of meer reacties binnengekomen terwijl je typte. Je kunt je eigen reactie hier nu op aanpassen als je dat wilt.<br>
-        <strong>Let op</strong>: je reactie is dus nog niet opgeslagen!
-        <a href="#" data-role="button" data-rel="back">OK</a>
-    </div>
-    <div data-role="popup" class="captcha-popup ui-content" data-dismissible="false">
-        Welke <strong>drie</strong> woorden horen niet in onderstaand rijtje? Plaats alleen spaties tussen de woorden.<br>
-        <span class="captcha-challenge"></span>
-        <form class="reflection-captcha">
-            <label for="form-field-ca">Antwoord:</label>
-            <input type=text inputmode=verbatim required spellcheck=false id="form-field-ca" name="ca" pattern="[a-z]+( +[a-z+]){2}" placeholder="maan roos vis">
-            <input type=submit value="Stuur op">
-        </form>
-    </div>
-    <p class="reflection-closed-notice" style="clear: both;">
-        Deze reflectie is gesloten voor reacties.
-    </p>
-    <p class="reflection-closure-announce" style="clear: both;">
-        Reageren is mogelijk tot <span class="reflection-closure-date"></span>.
-    </p>
-    <div data-role="popup" class="reflection-closed-popup ui-content">
-        Sorry, deze reflectie is gesloten voor reacties.
-        <a href="#" data-role="button" data-rel="back">OK</a>
-    </div>
-    <div data-role="popup" class="reflection-invalid-popup ui-content">
-        Vul alsjeblieft beide velden in.
-        <a href="#" data-role="button" data-rel="back">OK</a>
-    </div>
-</div>
+</script>
 
 <div data-role="page" id="shelf">
     <div data-role="header">
