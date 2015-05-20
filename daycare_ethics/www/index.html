@@ -10,6 +10,10 @@
 <meta name="msapplication-tap-highlight" content="no" />
 <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
 <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="apple-touch-icon-precomposed" href="icon.png" />
 <link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css" />
 <link rel="stylesheet" type="text/css" href="css/index.css" />
 <link rel="stylesheet" type="text/css" href="css/highres.css" media="(-webkit-min-device-pixel-ratio: 2), (min--moz-device-pixel-ratio: 2), (-o-min-device-pixel-ratio: 2/1), (min-device-pixel-ratio: 2), (min-resolution: 192dpi), (min-resolution: 2dppx)" />
@@ -25,75 +29,84 @@
     <a href="#shelf" id="shelf-button" class="click-hint">Extra</a>
 </div>
 
-<div data-role="page" id="plate">
-    <div data-role="header">
-        <a href="#home" data-icon="carat-l">Doordenkertjes</a>
-        <span class="ui-title" />
+<script type="text/template" id="casus-format">
+    <div data-role="page" id="<%= pageid %>">
+        <div data-role="header">
+            <a href="#" data-rel="back" data-icon="carat-l"><%= back %></a>
+            <span class="ui-title" />
+        </div>
+        <h3>Casus van week <span class="week-number"></span></h3>
+        <div class="ui-grid-a flex-col">
+            <div class="case-display ui-block-a"></div>
+            <div class="ui-block-b">
+                <p class="case-text"></p>
+                <p class="case-proposition"></p>
+            </div>
+        </div>
+        <span class="yes_count"></span>
+        <span class="no_bar"><span class="yes_bar"></span></span>
+        <span class="no_count"></span>
+        <a href="#" class="vote-btn-yes ui-btn ui-btn-inline ui-corner-all">Ja</a>
+        <a href="#" class="vote-btn-no ui-btn ui-btn-inline ui-corner-all">Nee</a>
     </div>
-    <h3>Casus van week <span class="week-number"></span></h3>
-    <div id="case-display"></div>
-    <p id="case-text"></p>
-    <p id="case-proposition"></p>
-    <span id="yes_count"></span>
-    <span id="no_bar"><span id="yes_bar"></span></span>
-    <span id="no_count"></span>
-    <a href="#" class="ui-btn ui-btn-inline ui-corner-all">Ja</a>
-    <a href="#" class="ui-btn ui-btn-inline ui-corner-all">Nee</a>
-</div>
+</script>
 
-<div data-role="page" id="mirror">
-    <div data-role="header">
-        <a href="#home" data-icon="carat-l">Doordenkertjes</a>
-        <span class="ui-title" />
-    </div>
-    <h3>Reflectie van week <span class="week-number"></span></h3>
-    <p id="reflection-text"></p>
-    <div id="reflection-discussion"></div>
-    <form id="reflection-response">
-        <label for="form-field-p">Schuilnaam:</label>
-        <input type="text" inputmode="verbatim" maxlength="30" required spellcheck="false" id="form-field-p" name="p">
-        <label for="form-field-r">Reactie:</label>
-        <textarea autocomplete=off required minlength=10 maxlength=400 id="form-field-r" name="r"></textarea>
-        <input type="submit" value="Reageer">
-    </form>
-    <div id="ninja-message" data-role="popup" class="ui-content">
-        Er zijn één of meer reacties binnengekomen terwijl je typte. Je kunt je eigen reactie hier nu op aanpassen als je dat wilt.<br>
-        <strong>Let op</strong>: je reactie is dus nog niet opgeslagen!
-        <a href="#" data-role="button" data-rel="back">OK</a>
-    </div>
-    <div id="captcha-popup" data-role="popup" class="ui-content" data-dismissible="false">
-        Welke <strong>drie</strong> woorden horen niet in onderstaand rijtje? Plaats alleen spaties tussen de woorden.<br>
-        <span id="captcha-challenge"></span>
-        <form id="reflection-captcha">
-            <label for="form-field-ca">Antwoord:</label>
-            <input type=text inputmode=verbatim required spellcheck=false id="form-field-ca" name="ca" pattern="[a-z]+( +[a-z+]){2}" placeholder="maan roos vis">
-            <input type=submit value="Stuur op">
+<script type="text/template" id="reflection-format">
+    <div data-role="page" id="<%= pageid %>">
+        <div data-role="header">
+            <a href="#" data-rel="back" data-icon="carat-l"><%= back %></a>
+            <span class="ui-title" />
+        </div>
+        <h3>Reflectie van week <span class="week-number"></span></h3>
+        <p class="reflection-text"></p>
+        <div class="reflection-discussion"></div>
+        <form class="reflection-response">
+            <label for="form-field-p<%= suffix %>">Schuilnaam:</label>
+            <input type="text" inputmode="verbatim" maxlength="30" required spellcheck="false" id="form-field-p<%= suffix %>" name="p">
+            <label for="form-field-r<%= suffix %>">Reactie:</label>
+            <textarea autocomplete=off required minlength=10 maxlength=400 id="form-field-r<%= suffix %>" name="r"></textarea>
+            <input type="submit" value="Reageer">
         </form>
+        <div data-role="popup" class="ninja-message ui-content">
+            Er zijn één of meer reacties binnengekomen terwijl je typte. Je kunt je eigen reactie hier nu op aanpassen als je dat wilt.<br>
+            <strong>Let op</strong>: je reactie is dus nog niet opgeslagen!
+            <a href="#" data-role="button" data-rel="back">OK</a>
+        </div>
+        <div data-role="popup" class="captcha-popup ui-content" data-dismissible="false">
+            Welke <strong>drie</strong> woorden horen niet in onderstaand rijtje? Plaats alleen spaties tussen de woorden.<br>
+            <span class="captcha-challenge"></span>
+            <form class="reflection-captcha">
+                <label for="form-field-ca<%= suffix %>">Antwoord:</label>
+                <input type=text inputmode=verbatim required spellcheck=false id="form-field-ca<%= suffix %>" name="ca" pattern="[a-z]+( +[a-z+]){2}" placeholder="maan roos vis">
+                <input type=submit value="Stuur op">
+            </form>
+        </div>
+        <p class="reflection-closed-notice" style="clear: both;">
+            Deze reflectie is gesloten voor reacties.
+        </p>
+        <p class="reflection-closure-announce" style="clear: both;">
+            Reageren is mogelijk tot <span class="reflection-closure-date"></span>.
+        </p>
+        <div data-role="popup" class="reflection-closed-popup ui-content">
+            Sorry, deze reflectie is gesloten voor reacties.
+            <a href="#" data-role="button" data-rel="back">OK</a>
+        </div>
+        <div data-role="popup" class="reflection-invalid-popup ui-content">
+            Vul alsjeblieft beide velden in.
+            <a href="#" data-role="button" data-rel="back">OK</a>
+        </div>
     </div>
-    <p id="reflection-closed-notice" style="clear: both;">
-        Deze reflectie is gesloten voor reacties.
-    </p>
-    <p id="reflection-closure-announce" style="clear: both;">
-        Reageren is mogelijk tot <span id="reflection-closure-date"></span>.
-    </p>
-    <div id="reflection-closed-popup" data-role="popup" class="ui-content">
-        Sorry, deze reflectie is gesloten voor reacties.
-        <a href="#" data-role="button" data-rel="back">OK</a>
-    </div>
-    <div id="reflection-invalid-popup" data-role="popup" class="ui-content">
-        Vul alsjeblieft beide velden in.
-        <a href="#" data-role="button" data-rel="back">OK</a>
-    </div>
-</div>
+</script>
 
 <div data-role="page" id="shelf">
     <div data-role="header">
         <a href="#home" data-icon="carat-l">Doordenkertjes</a>
         <span class="ui-title" />
     </div>
-    <ul data-role="listview">
+    <h3>Extra</h3>
+    <ul data-role="listview" data-inset="true">
         <li><a href="beroepscode_kinderopvang.pdf" target="_blank">Beroepscode</a></li>
-        <!-- <li><a href="#archive">Archief</a></li> -->
+        <li><a href="#archive">Archief</a></li>
         <li><a href="#links-tips">Links en tips</a></li>
         <li><a href="#about">Colofon</a></li>
     </ul>
@@ -104,7 +117,8 @@
         <a href="#shelf" data-icon="carat-l">Extra</a>
         <span class="ui-title" />
     </div>
-    <ul>
+    <h3>Archief</h3>
+    <ul data-role="listview" data-inset="true">
         <li><a href="#plate-archive">Casus</a></li>
         <li><a href="#mirror-archive">Reflectie</a></li>
     </ul>
@@ -115,8 +129,9 @@
         <a href="#archive" data-icon="carat-l">Archief</a>
         <span class="ui-title" />
     </div>
+    <h3>Lijst van casus</h3>
+    <p>(op weeknummer)</p>
     <ul data-role="listview" data-inset="true" id="plate-archive-list">
-        <!-- <li><a href=""></a><span class="week-number ui-li-count"></span></li> -->
     </ul>
 </div>
 
@@ -125,8 +140,9 @@
         <a href="#archive" data-icon="carat-l">Archief</a>
         <span class="ui-title" />
     </div>
+    <h3>Lijst van reflecties</h3>
+    <p>(op weeknummer)</p>
     <ul data-role="listview" data-inset="true" id="mirror-archive-list">
-        <!-- <li><a href=""></a><span class="week-number ui-li-count"></span></li> -->
     </ul>
 </div>
 
@@ -148,8 +164,8 @@
         <a href="#shelf" data-icon="carat-l">Extra</a>
         <span class="ui-title" />
     </div>
-    <h3>Doordenkertjes</h3>
-    <h4>Ethiek in de kinderopvang</h4>
+    <h3>Colofon</h3>
+    <h4>Doordenkertjes: Ethiek in de kinderopvang</h4>
     <p>
         Deze applicatie wordt u aangeboden door de <a href="http://www.uu.nl" target="_blank">Universiteit Utrecht</a> in samenwerking met het <a href="http://www.fcb.nl" target="_blank">FCB</a>, in het kader van de pilot <i>beroepsethiek in de kinderopvang</i>. Informatie uit de app wordt voor onderzoeksdoeleinden gebruikt. Gegevens worden altijd anoniem verwerkt en zijn niet herleidbaar tot uw identiteit. Voor meer informatie over het project: <a href="mailto:kinderopvangethiek@gmail.com">kinderopvangethiek@gmail.com</a>.
     </p>

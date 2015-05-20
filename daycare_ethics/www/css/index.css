@@ -5,6 +5,7 @@
 
 html, body {
     height:     100%;
+    width:      100%;
     margin:     0;
     padding:    0;
 }
@@ -27,17 +28,17 @@ html, body {
     background-position: center;
 }
 
-#no_bar, #yes_bar {
+.no_bar, .yes_bar {
     height: 3em;
     display: inline-block;
     vertical-align: middle;
 }
 
-#no_bar {
+.no_bar {
     background: #f00;
 }
 
-#yes_bar {
+.yes_bar {
     background: #07f;
 }
 
@@ -77,22 +78,22 @@ a {
     top:        calc(50% - 126px);
 }
 
-#captcha-challenge {
+.captcha-challenge {
     padding:    1em 0;
     color:      #008;
     font-style: italic;
 }
 
-#reflection-response {
+.reflection-response {
     clear: both;
 }
 
-#reflection-discussion > div {
+.reflection-discussion > div {
     clear:          both;
     margin-bottom:  2em;
 }
 
-#reflection-discussion .ui-collapsible-content {
+.reflection-discussion .ui-collapsible-content {
     padding-bottom: 50pt;
 }
 
@@ -178,6 +179,13 @@ a {
             left:       calc(50% + 48px);
             top:        calc(50% - 84px);
         }
+    }
+}
+
+@media (max-width: 39em), (max-aspect-ratio: 99/100), (max-device-aspect-ratio: 99/100) {
+    .flex-col .ui-block-a, .flex-col .ui-block-b {
+        float:          none;
+        width:          100%;
     }
 }
 

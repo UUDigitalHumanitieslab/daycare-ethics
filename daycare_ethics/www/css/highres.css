@@ -3,11 +3,6 @@
     Author: Julian Gonggrijp
 */
 
-img {
-    width: 50%;
-    height: 50%;
-}
-
 #home {
     background-image: url(/img/background_1024.jpg);
     background-size: 32em;
