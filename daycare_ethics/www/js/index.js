@@ -73,10 +73,12 @@ var app = {
             .attr('src', '/media/' + data.picture + '/' + image_size)
             .load(function() {
                 page.find('.case-display').empty().append(img);
-                if (app.viewport.pixelRatio != 1) {
-                    img.width(img.width() / app.viewport.pixelRatio);
-                }
             });
+        if (app.viewport.pixelRatio != 1) {
+            page.one('pageshow', function() {
+                img.width(img.width() / app.viewport.pixelRatio);
+            });
+        }
         page.css('background-color', data.background);
         if (localStorage.getItem('has_voted_' + data.id) ||
                 data.closure && new Date(data.closure) <= new Date()) {
