@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name = "daycare_ethics",
-    version = "0.2.3",
+    version = "0.3.0",
     packages = find_packages(),
     package_data = {
         'daycare_ethics': [
