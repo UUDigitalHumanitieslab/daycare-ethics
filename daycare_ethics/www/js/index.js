@@ -5,11 +5,39 @@
 var app = {
     // Application Constructor
     initialize: function() {
-        $('#reflection-response').validate({submitHandler: this.submitReply});
-        $('#reflection-captcha').validate({submitHandler: this.submitCaptcha});
+        this.insertPages();
         this.findDimensions();
         this.preloadContent();
         this.bindEvents();
+        $('.reflection-response').each(function() {
+            $(this).validate({submitHandler: app.submitReply});
+        });
+        $('.reflection-captcha').each(function() {
+            $(this).validate({submitHandler: app.submitCaptcha});
+        });
+    },
+    
+    insertPages: function() {
+        var casusTemplate = $('#casus-format').html();
+        var reflectionTemplate = $('#reflection-format').html();
+        $(_.template(casusTemplate, {
+            pageid: 'plate',
+            back: 'Doordenkertjes'
+        })).appendTo(document.body).page();
+        $(_.template(casusTemplate, {
+            pageid: 'plate-archive-item',
+            back: 'Archief'
+        })).appendTo(document.body).page();
+        $(_.template(reflectionTemplate, {
+            pageid: 'mirror',
+            back: 'Doordenkertjes',
+            suffix: ''
+        })).appendTo(document.body).page();
+        $(_.template(reflectionTemplate, {
+            pageid: 'mirror-archive-item',
+            back: 'Archief',
+            suffix: '-2'
+        })).appendTo(document.body).page();
     },
     
     findDimensions: function() {
@@ -26,75 +54,124 @@ var app = {
     },
     
     preloadContent: function() {
-        $.get('/case/').done(function(data) {
-            app.current_casus = data.id;
-            localStorage.setItem('case_data_' + data.id, JSON.stringify(data));
-            $('#plate .week-number').html(data.week);
-            $('#case-text').html(data.text);
-            $('#case-proposition').html(data.proposition);
-            var image_size = (Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio;
-            var img = $('<img>')
-                .attr('src', '/media/' + data.picture + '/' + image_size)
-                .load(function() {
-                    $('#case-display').append(img);
-                    if (app.viewport.pixelRatio != 1) {
-                        img.width(img.width() / app.viewport.pixelRatio);
-                    }
-                });
-            $('#plate').css('background-color', data.background);
-            if (localStorage.getItem('has_voted_' + data.id)) {
-                app.displayVotes();
-            }
-        });
         $.get('/reflection/').done(function(data) {
-            if (data.token) localStorage.setItem('token', data.token);
-            app.current_reflection = data.id;
-            localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
-            localStorage.setItem('last_retrieve', data.since);
-            $('#mirror .week-number').html(data.week);
-            $('#reflection-text').html(data.text);
-            _(data.responses).each(app.appendReply);
-            nickname = localStorage.getItem('nickname');
-            if (nickname) $('#form-field-p').val(nickname);
-            if (data.closure) {
-                if (new Date(data.closure) <= new Date()) {
-                    $('#reflection-response').hide();
-                    $('#reflection-closure-announce').hide();
-                } else {
-                    $('#reflection-closure-date').text(data.closure);
-                    $('#reflection-closed-notice').hide();
-                }
-            } else {
-                $('#reflection-closed-notice').hide();
-                $('#reflection-closure-announce').hide();
-            }
+            app.loadReflection($('#mirror'), data);
         });
-        $.get('/tips/').done(function(data) {
-            // Load labour code tips
-            $.each(data.labour, function( index, labour ) {
-                var tip = $('<li>').html(labour.title);
-                $("#labour-code-tips").append(tip);
+        $.get('/tips/').done(app.loadTips);
+        $.get('/case/archive').done(app.loadCasusArchive);
+        $.get('/reflection/archive').done(app.loadReflectionArchive);
+    },
+    
+    loadCasus: function(page, data) {
+        app.current_casus = data.id;
+        localStorage.setItem('case_data_' + data.id, JSON.stringify(data));
+        page.find('.week-number').html(data.week);
+        page.find('.case-text').html(data.text);
+        page.find('.case-proposition').html(data.proposition);
+        var image_size = (Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio;
+        var img = $('<img>')
+            .attr('src', '/media/' + data.picture + '/' + image_size)
+            .load(function() {
+                page.find('.case-display').empty().append(img);
+                if (app.viewport.pixelRatio != 1) {
+                    img.width(img.width() / app.viewport.pixelRatio);
+                }
             });
-            // Load website links
-            $.each(data.site, function( index, site ) {
-                var tip = $('<li>').html('<a href="' + site.href + '" target="_blank">' + site.title + '</a>');
-                $("#website-links").append(tip);
+        page.css('background-color', data.background);
+        if (localStorage.getItem('has_voted_' + data.id) ||
+                data.closure && new Date(data.closure) <= new Date()) {
+            app.displayVotes(page);
+        } else {
+            app.displayVoteButtons(page);
+        }
+    },
+    
+    loadReflection: function(page, data) {
+        if (data.token) localStorage.setItem('token', data.token);
+        app.current_reflection = data.id;
+        localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
+        localStorage.setItem('last_retrieve', data.since);
+        page.find('.week-number').html(data.week);
+        page.find('.reflection-text').html(data.text);
+        _(data.responses).each(function(datum) {
+            app.appendReply(page, datum);
+        });
+        nickname = localStorage.getItem('nickname');
+        if (nickname) page.find('[name="p"]').val(nickname);
+        if (data.closure) {
+            if (new Date(data.closure) <= new Date()) {
+                page.find('.reflection-response').hide();
+                page.find('.reflection-closure-announce').hide();
+            } else {
+                page.find('.reflection-closure-date').text(data.closure);
+                page.find('.reflection-closed-notice').hide();
+            }
+        } else {
+            page.find('.reflection-closed-notice').hide();
+            page.find('.reflection-closure-announce').hide();
+        }
+    },
+    
+    loadTips: function(data) {
+        // Load labour code tips
+        $.each(data.labour, function( index, labour ) {
+            var tip = $('<li>').html(labour.title);
+            $("#labour-code-tips").append(tip);
+        });
+        // Load website links
+        $.each(data.site, function( index, site ) {
+            var tip = $('<li>').html('<a href="' + site.href + '" target="_blank">' + site.title + '</a>');
+            $("#website-links").append(tip);
+        });
+        // Load book tips
+        $.each(data.book, function( index, book ) {
+            var tip = $('<li>')
+                .append($('<h3>').html(book.title).css('white-space', 'normal'))
+                .append($('<p>').html(book.author));
+            $("#book-tips").append(tip);
+        });
+        // We need to refresh the listviews on load.
+        $('.tips-list').listview('refresh');
+    },
+    
+    loadCasusArchive: function(data) {
+        app.loadCasus($('#plate'), data.all[0]);
+        app.renderArchiveList(data.all, $('#plate-archive-list'), function(ev) {
+            var id = $(ev.target).data('identifier');
+            $.get('/case/' + id).done(function(data) {
+                app.loadCasus($('#plate-archive-item'), data);
             });
-            // Load book tips
-            $.each(data.book, function( index, book ) {
-                var tip = $('<li>')
-                    .append($('<h3>').html(book.title).css('white-space', 'normal'))
-                    .append($('<p>').html(book.author));
-                $("#book-tips").append(tip);
-            });
-            // We need to refresh the listviews on load.
-            $('.tips-list').listview('refresh');
         });
     },
     
-    submitVote: function(choice) {
+    loadReflectionArchive: function(data) {
+        app.renderArchiveList(data.all, $('#mirror-archive-list'), function(ev) {
+            var id = $(ev.target).data('identifier');
+            $.get('/reflection/' + id + '/').done(function(data) {
+                app.loadReflection($('#mirror-archive-item'), data);
+            });
+        });
+    },
+    
+    renderArchiveList: function(data, listElem, retrieve) {
+        var item, anchor;
+        var target = '#' + listElem.prop('id').slice(0, -4) + 'item';
+        _(data).each(function(datum) {
+            item = $('<li>');
+            anchor = $('<a>').attr('href', target).text(datum.title)
+                             .data('identifier', datum.id).click(retrieve)
+                             .appendTo(item);
+            $('<span>').addClass('week-number ui-li-count')
+                       .text(datum.week).appendTo(anchor);
+            listElem.append(item);
+        });
+        listElem.listview('refresh');        
+    },
+    
+    submitVote: function(target, choice) {
         var id = app.current_casus,
-            case_data = JSON.parse(localStorage.getItem('case_data_' + id));
+            case_data = JSON.parse(localStorage.getItem('case_data_' + id)),
+            page = $(target).parent();
         if (localStorage.getItem('has_voted_' + id)) return;
         if (choice === 'yes' || choice === 'no') {
             $.post('/case/vote', {
@@ -107,46 +184,50 @@ var app = {
                     case_data[choice] += 1;
                     localStorage.setItem('has_voted_' + id, true);
                     localStorage.setItem('case_data_' + id, JSON.stringify(case_data));
-                    app.displayVotes();
+                    app.displayVotes(page);
                 }
             });
         }
     },
     
     submitReply: function(form) {
-        $(form).hide();
-        var id = app.current_reflection,
+        form = $(form);
+        form.hide();
+        var page = form.parent(),
+            id = app.current_reflection,
             reflection_data = JSON.parse(localStorage.getItem('reflection_data_' + id)),
-            nickname = $('#form-field-p').val(),
-            message = $('#form-field-r').val();
+            nickname = form.find('[name="p"]').val(),
+            message = form.find('[name="r"]').val();
         localStorage.setItem('nickname', nickname);
         $.post('/reflection/' + id + '/reply', {
             p: nickname,
             r: message,
             t: localStorage.getItem('token'),
             'last-retrieve': localStorage.getItem('last_retrieve'),
-            ca: $('#form-field-ca').val()
+            ca: page.find('[name="ca"]').val()
         }).done(function(data) {
             localStorage.setItem('token', data.token);
             switch (data.status) {
             case 'success':
-                app.appendReply({
+                app.appendReply(page, {
                     pseudonym: nickname,
                     'message': message
                 });
-                $(form).find('#form-field-r').val('');
-                $(form).show();
+                form.find('[name="r"]').val('');
+                form.show();
                 break;
             case 'ninja':
-                $('#ninja-message').popup('open', {positionTo: 'window'});
-                $('#reply-submitted').remove();
-                _(data.new).each(app.appendReply);
-                $(form).show();
+                page.find('.ninja-message').popup('open', {positionTo: 'window'});
+                page.find('.reply-submitted').remove();
+                _(data.new).each(function(datum) {
+                    app.appendReply(page, datum);
+                });
+                form.show();
                 localStorage.setItem('last_retrieve', data.since);
                 break;
             case 'captcha':
-                $('#captcha-challenge').text(data.captcha_challenge);
-                $('#captcha-popup').popup('open', {positionTo: 'window'});
+                page.find('.captcha-challenge').text(data.captcha_challenge);
+                page.find('.captcha-popup').popup('open', {positionTo: 'window'});
             }
         }).fail(function(jqXHR) {
             if ( jqXHR.status == 400 &&
@@ -155,30 +236,31 @@ var app = {
                 localStorage.setItem('token', data.token);
                 switch (data.status) {
                 case 'closed':
-                    $('#reflection-closed-popup').popup('open', {positionTo: 'window'});
-                    $('#reflection-closure-announce').hide();
-                    $('#reflection-closed-notice').show();
+                    page.find('.reflection-closed-popup').popup('open', {positionTo: 'window'});
+                    page.find('.reflection-closure-announce').hide();
+                    page.find('.reflection-closed-notice').show();
                     break;
                 case 'invalid':
-                    $('#reflection-invalid-popup').popup('open', {positionTo: 'window'});
-                    $('#reflection-response').show();
+                    page.find('.reflection-invalid-popup').popup('open', {positionTo: 'window'});
+                    page.find('.reflection-response').show();
                 }
             }
-        })
-        $('#form-field-ca').val('');
+        });
     },
     
     submitCaptcha: function(form) {
-        $('#captcha-popup').popup('close');
-        app.submitReply($('#reflection-response'));
+        var page = $(form).parents().find('[data-role="page"]');
+        page.find('.captcha-popup').popup('close');
+        app.submitReply(page.find('.reflection-response'));
+        $(form).find('[name="ca"]').val('');
     },
     
-    appendReply: function(data) {
+    appendReply: function(page, data) {
         var upvotes = data.up || 0,
             downvotes = data.down || 0,
             score = app.getScore(upvotes, downvotes);
         var div = $('<div></div>');
-        div.attr('id', 'reply-' + (data.id || 'submitted'));
+        div.addClass('reply-' + (data.id || 'submitted'));
         var date = '<span class="reply-date">' + (data.submission || 'net') + '</span>';
         var pseudonym = '<span class="reply-nick">' + data.pseudonym + '</span>';
         var synopsis = $('<h3 class="reply-synopsis"></h3>').append(date + ' ' + pseudonym);
@@ -191,22 +273,22 @@ var app = {
             div.append($('<a href="#">leerzaam</a>')
                         .addClass('reply-vote ui-btn ui-icon-plus ui-btn-icon-left')
                         .data('for', data.id)
-                        .on('touchstart mousedown', function() {
+                        .click(function() {
                             app.submitReplyVote(data.id, 'up');
                         }));
             div.append($('<a href="#">ongewenst</a>')
                         .addClass('reply-vote ui-btn ui-icon-minus ui-btn-icon-right')
                         .data('for', data.id)
-                        .on('touchstart mousedown', function() {
+                        .click(function() {
                             app.submitReplyVote(data.id, 'down');
                         }));
         }
-        div.appendTo('#reflection-discussion');
+        page.find('.reflection-discussion').append(div);
 
         // If score is lower than treshold, show the synopsis and display as collapsible.
         if (score < 0.35) {
             synopsis.show();
-            $('#reply-' + data.id + ' .reply-synopsis .reply-nick').html('spam');
+            page.find('.reply-' + data.id + ' .reply-synopsis .reply-nick').html('spam');
             div.collapsible({ mini: true, collapsedIcon: 'arrow-r', expandedIcon: 'arrow-d' });
         }
         // Otherwise, hide the synopsis.
@@ -224,8 +306,8 @@ var app = {
                 localStorage.setItem('token', data.token);
                 if (data.status === 'success') {
                     // hide reply vote buttons on success, and add success message
-                    $('#reply-' + id + ' .reply-vote').hide();
-                    $('#reply-' + id + ' .reply-vote:last')
+                    $('.reply-' + id + ' .reply-vote').hide();
+                    $('.reply-' + id + ' .reply-vote:last')
                         .after($('<em>')
                         .text('Bedankt voor je stem!')
                         .css('color', 'green'));
@@ -250,28 +332,32 @@ var app = {
         return enumerator / denominator;
     },
     
-    displayVotes: function() {
+    displayVotes: function(page) {
         var id = app.current_casus,
             case_data = JSON.parse(localStorage.getItem('case_data_' + id)),
             yes_count = case_data.yes,
             no_count = case_data.no;
-        $('#plate > a').hide();
-        $('#yes_count').html('ja ' + yes_count);
-        $('#no_count').html(no_count + ' nee');
-        $('#no_bar').width(app.viewport.width - 15 * 8);
-        $('#yes_bar').css('width', 100 * yes_count / (yes_count + no_count) + '%');
+        page.children('a').hide();
+        page.find('.yes_count').html('ja ' + yes_count).show();
+        page.find('.no_count').html(no_count + ' nee').show();
+        page.find('.no_bar').width(app.viewport.width - 15 * 8).show();
+        page.find('.yes_bar').css('width', 100 * yes_count / (yes_count + no_count) + '%').show();
+    },
+    
+    displayVoteButtons: function(page) {
+        page.children('a').show();
+        page.find('.yes_count, .no_count, .no_bar, .yes_bar').hide();
     },
     
     // Bind Event Listeners
     // Bind any events that are required on startup. Common events are:
     // 'load', 'deviceready', 'offline', and 'online'.
     bindEvents: function() {
-        var vote_buttons = $('#plate > a');
-        $(vote_buttons[0]).on('mousedown touchstart', function() {
-            app.submitVote('yes');
+        $('.vote-btn-yes').on('mousedown touchstart', function(event) {
+            app.submitVote(event.target, 'yes');
         });
-        $(vote_buttons[1]).on('mousedown touchstart', function() {
-            app.submitVote('no');
+        $('.vote-btn-no').on('mousedown touchstart', function(event) {
+            app.submitVote(event.target, 'no');
         });
         document.addEventListener('deviceready', this.onDeviceReady, false);
     },
