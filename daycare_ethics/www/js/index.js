@@ -68,7 +68,7 @@ var app = {
         page.find('.week-number').html(data.week);
         page.find('.case-text').html(data.text);
         page.find('.case-proposition').html(data.proposition);
-        var image_size = (Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio;
+        var image_size = Math.ceil((Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio);
         var img = $('<img>')
             .attr('src', '/media/' + data.picture + '/' + image_size)
             .load(function() {
