@@ -246,13 +246,13 @@ var app = {
                 }
             }
         });
-        form.find('[name="ca"]').val('');
     },
     
     submitCaptcha: function(form) {
         var page = $(form).parents().find('[data-role="page"]');
         page.find('.captcha-popup').popup('close');
         app.submitReply(page.find('.reflection-response'));
+        $(form).find('[name="ca"]').val('');
     },
     
     appendReply: function(page, data) {
