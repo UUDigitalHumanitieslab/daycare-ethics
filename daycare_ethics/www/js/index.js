@@ -9,8 +9,12 @@ var app = {
         this.findDimensions();
         this.preloadContent();
         this.bindEvents();
-        $('.reflection-response').validate({submitHandler: this.submitReply});
-        $('.reflection-captcha').validate({submitHandler: this.submitCaptcha});
+        $('.reflection-response').each(function() {
+            $(this).validate({submitHandler: app.submitReply});
+        });
+        $('.reflection-captcha').each(function() {
+            $(this).validate({submitHandler: app.submitCaptcha});
+        });
     },
     
     insertPages: function() {
