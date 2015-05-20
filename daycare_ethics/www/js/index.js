@@ -245,7 +245,7 @@ var app = {
                     page.find('.reflection-response').show();
                 }
             }
-        })
+        });
         form.find('[name="ca"]').val('');
     },
     
