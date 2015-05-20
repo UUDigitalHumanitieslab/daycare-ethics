@@ -75,6 +75,12 @@ var app = {
                 page.find('.case-display').empty().append(img);
             });
         if (app.viewport.pixelRatio != 1) {
+            // The pageshow event is deprecated as of JQM 1.4.0 and will be
+            // removed in JQM 1.6.0. However, at this time no suitable
+            // alternative is available. If there is still no suitable
+            // alternative by that time, we can emply the technique described
+            // here: 
+            // http://viralpatel.net/blogs/jquery-trigger-custom-event-show-hide-element/
             page.one('pageshow', function() {
                 img.width(img.width() / app.viewport.pixelRatio);
             });
