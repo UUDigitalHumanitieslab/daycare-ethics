@@ -101,6 +101,7 @@ var app = {
         localStorage.setItem('last_retrieve', data.since);
         page.find('.week-number').html(data.week);
         page.find('.reflection-text').html(data.text);
+        page.find('.reflection-discussion').empty();
         _(data.responses).each(function(datum) {
             app.appendReply(page, datum);
         });
