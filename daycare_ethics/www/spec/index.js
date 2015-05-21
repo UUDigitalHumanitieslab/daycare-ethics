@@ -23,40 +23,37 @@ describe('app', function() {
     });
     
     describe('preloadContent', function() {
+        var fakeLatestCaseData = {
+            'id': 1,
+            'title': 'testcasus',
+            'publication': '2015-03-02',
+            'week': '10',
+            'closure': null,
+            'text': 'some dummy text',
+            'proposition': 'difficult question',
+            'picture': null,
+            'background': '#998877'
+        };
         function fakeJQueryGet (url, data, success, dataType) {
             return {
                 query: url,
                 done: function(callback) {
-                    if (this.query === '/case/') callback({
-                        'id': 1,
-                        'title': 'testcasus',
-                        'publication': '2015-03-02',
-                        'week': '10',
-                        'closure': null,
-                        'text': 'some dummy text',
-                        'proposition': 'difficult question',
-                        'picture': null,
-                        'background': '#998877'
-                    });
+                    if (this.query === '/case/') callback(fakeLatestCaseData);
                 }
             };
         };
         beforeEach(function() {
-            $('#stage').html('<div id="plate">' +
-                '<h3>Casus van week <span class="week-number"></span></h3>' +
-                '<div id="case-display" style="width: 18em; height: 12em; background: #808080"></div>' +
-                '<p id="case-text"></p>' +
-                '<p id="case-proposition"></p>' +
-                '<a href="#" class="ui-btn ui-btn-inline ui-corner-all">Ja</a>' +
-                '<a href="#" class="ui-btn ui-btn-inline ui-corner-all">Nee</a>' +
-                '</div>');
+            app.insertPages();
+            $('#stage').empty();
+            $('#plate, #plate-archive-item, #mirror, #mirror-archive-item')
+                .appendTo('#stage');
             spyOn($, 'get').and.callFake(fakeJQueryGet);
         });
         it('must prepopulate the HTML content with casus data', function() {
-            app.preloadContent();
+            app.loadCasus($('#plate'), fakeLatestCaseData);
             expect($('#plate .week-number').html()).toBe('10');
-            expect($('#case-text').html()).toBe('some dummy text');
-            expect($('#case-proposition').html()).toBe('difficult question');
+            expect($('#plate .case-text').html()).toBe('some dummy text');
+            expect($('#plate .case-proposition').html()).toBe('difficult question');
         });
     });
 
