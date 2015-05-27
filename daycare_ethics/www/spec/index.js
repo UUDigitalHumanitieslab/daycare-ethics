@@ -56,6 +56,16 @@ describe('app', function() {
         });
     });
     
+    describe('insertPages', function() {
+        it('creates pages from a template', function() {
+            app.insertPages();
+            expect($('#plate')).toBeInDOM();
+            expect($('#plate-archive-item')).toBeInDOM();
+            expect($('#mirror')).toBeInDOM();
+            expect($('#mirror-archive-item')).toBeInDOM();
+        });
+    });
+    
     describe('preloadContent', function() {
         beforeEach(function() {
             app.insertPages();
