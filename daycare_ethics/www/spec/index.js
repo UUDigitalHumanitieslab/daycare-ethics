@@ -3,6 +3,27 @@
     Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 */
 describe('app', function() {
+    var fakeLatestCaseData = {
+        'id': 1,
+        'title': 'testcasus',
+        'publication': '2015-03-02',
+        'week': '10',
+        'closure': null,
+        'text': 'some dummy text',
+        'proposition': 'difficult question',
+        'picture': null,
+        'background': '#998877'
+    };
+    
+    function fakeJQueryGet (url, data, success, dataType) {
+        return {
+            query: url,
+            done: function(callback) {
+                if (this.query === '/case/') callback(fakeLatestCaseData);
+            }
+        };
+    };
+    
     describe('initialize', function() {
         var emulateDeviceReady = function(callback) {
             app.initialize();
@@ -23,25 +44,6 @@ describe('app', function() {
     });
     
     describe('preloadContent', function() {
-        var fakeLatestCaseData = {
-            'id': 1,
-            'title': 'testcasus',
-            'publication': '2015-03-02',
-            'week': '10',
-            'closure': null,
-            'text': 'some dummy text',
-            'proposition': 'difficult question',
-            'picture': null,
-            'background': '#998877'
-        };
-        function fakeJQueryGet (url, data, success, dataType) {
-            return {
-                query: url,
-                done: function(callback) {
-                    if (this.query === '/case/') callback(fakeLatestCaseData);
-                }
-            };
-        };
         beforeEach(function() {
             app.insertPages();
             $('#stage').empty();
