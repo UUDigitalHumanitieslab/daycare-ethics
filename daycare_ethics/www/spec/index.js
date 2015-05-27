@@ -39,15 +39,20 @@ describe('app', function() {
             callback();
         };
         beforeEach(function(done) {
+            spyOn(app, 'insertPages').and.callThrough();
+            spyOn(app, 'findDimensions').and.callThrough();
             spyOn(app, 'onDeviceReady');
             spyOn(app, 'preloadContent');
             emulateDeviceReady(done);
         });
-        it('should bind deviceready', function() {
+        it('should call four other functions', function() {
+            expect(app.insertPages).toHaveBeenCalled();
+            expect(app.findDimensions).toHaveBeenCalled();
+            expect(app.preloadContent).toHaveBeenCalled();
             expect(app.onDeviceReady).toHaveBeenCalled();
         });
-        it('should preload content', function() {
-            expect(app.preloadContent).toHaveBeenCalled();
+        it('should validate the forms', function() {
+            expect($('#stage').find('.reflection-response, .reflection-captcha').find('[aria-required]').length).toBe(6);
         });
     });
     
