@@ -87,16 +87,14 @@ describe('app', function() {
         });
     });
     
-    describe('preloadContent', function() {
-        beforeEach(function() {
+    describe('loadCasus', function() {
+        it('populates a page with casus data', function() {
             app.insertPages();
-            spyOn($, 'get').and.callFake(fakeJQueryGet);
-        });
-        it('must prepopulate the HTML content with casus data', function() {
             app.loadCasus($('#plate'), fakeLatestCaseData);
-            expect($('#plate .week-number').html()).toBe('10');
-            expect($('#plate .case-text').html()).toBe('some dummy text');
-            expect($('#plate .case-proposition').html()).toBe('difficult question');
+            expect($('#plate .week-number')).toContainText('10');
+            expect($('#plate .case-text')).toContainText('some dummy text');
+            expect($('#plate .case-proposition')).toContainText('difficult question');
+            expect($('#plate')).toHaveCss({'background-color': 'rgb(153, 136, 119)'});
         });
     });
 
