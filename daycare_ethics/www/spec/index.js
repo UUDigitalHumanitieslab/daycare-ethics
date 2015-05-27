@@ -17,6 +17,11 @@ describe('app', function() {
     
     beforeEach(function() {
         app.scope = $('#stage');
+        jasmine.Ajax.install();
+    });
+    
+    afterEach(function() {
+        jasmine.Ajax.uninstall();
     });
     
     describe('initialize', function() {
@@ -75,6 +80,31 @@ describe('app', function() {
         });
         it('will assume that the shortest dimension is the width', function() {
             expect(app.viewport.width).not.toBeGreaterThan(app.viewport.height);
+        });
+    });
+    
+    describe('preloadContent', function() {
+        it('fetches data from the server and passes them to other functions', function() {
+            spyOn(app, 'loadReflection');
+            spyOn(app, 'loadTips');
+            spyOn(app, 'loadCasusArchive');
+            spyOn(app, 'loadReflectionArchive');
+            app.preloadContent();
+            var requests = jasmine.Ajax.requests;
+            expect(requests.count()).toBe(4);
+            expect(requests.at(0).url).toBe('/reflection/');
+            expect(requests.at(1).url).toBe('/tips/');
+            expect(requests.at(2).url).toBe('/case/archive');
+            expect(requests.at(3).url).toBe('/reflection/archive');
+            requests.at(0).respondWith({responseText: ''});
+            requests.at(1).respondWith({responseText: ''});
+            requests.at(2).respondWith({responseText: ''});
+            requests.at(3).respondWith({responseText: ''});
+            expect(app.loadReflection).toHaveBeenCalled();
+            expect(app.loadTips).toHaveBeenCalled();
+            expect(app.loadCasusArchive).toHaveBeenCalled();
+            expect(app.loadReflectionArchive).toHaveBeenCalled();
+            
         });
     });
     
