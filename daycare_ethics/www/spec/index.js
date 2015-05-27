@@ -24,6 +24,14 @@ describe('app', function() {
         };
     };
     
+    beforeEach(function() {
+        app.scope = $('#stage');
+    });
+    
+    afterEach(function() {
+        $('#stage').empty();
+    });
+    
     describe('initialize', function() {
         var emulateDeviceReady = function(callback) {
             app.initialize();
@@ -46,9 +54,6 @@ describe('app', function() {
     describe('preloadContent', function() {
         beforeEach(function() {
             app.insertPages();
-            $('#stage').empty();
-            $('#plate, #plate-archive-item, #mirror, #mirror-archive-item')
-                .appendTo('#stage');
             spyOn($, 'get').and.callFake(fakeJQueryGet);
         });
         it('must prepopulate the HTML content with casus data', function() {

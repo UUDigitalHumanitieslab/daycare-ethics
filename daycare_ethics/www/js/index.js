@@ -3,6 +3,8 @@
     Authors: Julian Gonggrijp, Martijn van der Klis
 */
 var app = {
+    scope: document.body,
+    
     // Application Constructor
     initialize: function() {
         this.insertPages();
@@ -23,21 +25,21 @@ var app = {
         $(_.template(casusTemplate, {
             pageid: 'plate',
             back: 'Doordenkertjes'
-        })).appendTo(document.body).page();
+        })).appendTo(app.scope).page();
         $(_.template(casusTemplate, {
             pageid: 'plate-archive-item',
             back: 'Archief'
-        })).appendTo(document.body).page();
+        })).appendTo(app.scope).page();
         $(_.template(reflectionTemplate, {
             pageid: 'mirror',
             back: 'Doordenkertjes',
             suffix: ''
-        })).appendTo(document.body).page();
+        })).appendTo(app.scope).page();
         $(_.template(reflectionTemplate, {
             pageid: 'mirror-archive-item',
             back: 'Archief',
             suffix: '-2'
-        })).appendTo(document.body).page();
+        })).appendTo(app.scope).page();
     },
     
     findDimensions: function() {
