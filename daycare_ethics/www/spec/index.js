@@ -62,6 +62,31 @@ describe('app', function() {
         });
     });
     
+    describe('findDimensions', function() {
+        beforeEach(function() {
+            app.findDimensions();
+        });
+        it('sets viewport dimensions on the app object', function() {
+            expect(app.viewport).toBeDefined();
+            expect(app.viewport.width).toEqual(jasmine.any(Number));
+            expect(app.viewport.height).toEqual(jasmine.any(Number));
+            expect(app.viewport.pixelRatio).toEqual(jasmine.any(Number));
+        });
+        it('should find realistic values', function() {
+            expect(app.viewport.width).toBe(Math.floor(app.viewport.width));
+            expect(app.viewport.width).toBeGreaterThan(300);
+            expect(app.viewport.width).toBeLessThan(4000);
+            expect(app.viewport.height).toBe(Math.floor(app.viewport.height));
+            expect(app.viewport.height).toBeGreaterThan(400);
+            expect(app.viewport.height).toBeLessThan(2500);
+            expect(app.viewport.pixelRatio).not.toBeLessThan(1);
+            expect(app.viewport.pixelRatio).not.toBeGreaterThan(3);
+        });
+        it('will assume that the shortest dimension is the width', function() {
+            expect(app.viewport.width).not.toBeGreaterThan(app.viewport.height);
+        });
+    });
+    
     describe('preloadContent', function() {
         beforeEach(function() {
             app.insertPages();
