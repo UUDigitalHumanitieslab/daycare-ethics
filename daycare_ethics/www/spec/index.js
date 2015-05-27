@@ -15,15 +15,6 @@ describe('app', function() {
         'background': '#998877'
     };
     
-    function fakeJQueryGet (url, data, success, dataType) {
-        return {
-            query: url,
-            done: function(callback) {
-                if (this.query === '/case/') callback(fakeLatestCaseData);
-            }
-        };
-    };
-    
     beforeEach(function() {
         app.scope = $('#stage');
     });
