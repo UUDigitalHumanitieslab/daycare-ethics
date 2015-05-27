@@ -28,10 +28,6 @@ describe('app', function() {
         app.scope = $('#stage');
     });
     
-    afterEach(function() {
-        $('#stage').empty();
-    });
-    
     describe('initialize', function() {
         var emulateDeviceReady = function(callback) {
             app.initialize();
