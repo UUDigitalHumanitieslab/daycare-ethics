@@ -186,6 +186,53 @@ describe('app', function() {
             expect($('#mirror .reflection-closure-announce')).toBeHidden();
         });
     });
+    
+    describe('loadTips', function() {
+        beforeEach(function() {
+            $(_.template($('#tips-format').html(), {})).appendTo('#stage').page();
+            app.loadTips({
+                'labour': [
+                    { 'title': 'labourtest1' },
+                    { 'title': 'labourtest2' }
+                ],
+                'site': [
+                    {
+                        'href': 'http://www.example.com',
+                        'title': 'sitetest'
+                    }
+                ],
+                'book': [
+                    {
+                        'title': 'interesting book',
+                        'author': 'interesting author'
+                    },
+                    {
+                        'title': 'amusing book',
+                        'author': 'amusing author'
+                    },
+                    {
+                        'title': 'annoying book',
+                        'author': 'annoying author'
+                    }
+                ]
+            });
+        });
+        it('inserts labour code tips in the first list', function() {
+            var items = $('#labour-code-tips > *');
+            expect(items).toHaveLength(2);
+            expect(items[0].outerHTML).toBe('<li class="ui-li-static ui-body-inherit ui-first-child">labourtest1</li>');
+        });
+        it('inserts website tips in the second list', function() {
+            var items = $('#website-links > *');
+            expect(items).toHaveLength(1);
+            expect(items[0].outerHTML).toBe('<li class="ui-first-child ui-last-child"><a href="http://www.example.com" target="_blank" class="ui-btn ui-btn-icon-right ui-icon-carat-r">sitetest</a></li>');
+        });
+        it('inserts book tips in the third list', function() {
+            var items = $('#book-tips > *');
+            expect(items).toHaveLength(3);
+            expect(items[2].outerHTML).toBe('<li class="ui-li-static ui-body-inherit ui-last-child"><h3 style="white-space: normal;">annoying book</h3><p>annoying author</p></li>');
+        });
+    });
 
     describe('onDeviceReady', function() {
         it('should report that it fired', function() {
