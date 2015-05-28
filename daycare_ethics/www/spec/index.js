@@ -49,6 +49,7 @@ describe('app', function() {
     
     afterEach(function() {
         jasmine.Ajax.uninstall();
+        localStorage.clear();
     });
     
     describe('initialize', function() {
@@ -136,13 +137,26 @@ describe('app', function() {
     });
     
     describe('loadCasus', function() {
-        it('populates a page with casus data', function() {
+        beforeEach(function() {
             app.insertPages();
+        });
+        it('populates a page with casus data', function() {
             app.loadCasus($('#plate'), fakeLatestCaseData);
             expect($('#plate .week-number')).toContainText('10');
             expect($('#plate .case-text')).toContainText('some dummy text');
             expect($('#plate .case-proposition')).toContainText('difficult question');
             expect($('#plate')).toHaveCss({'background-color': 'rgb(153, 136, 119)'});
+        });
+        it('displays the votes if the user voted before', function() {
+            localStorage.setItem('has_voted_1', true);
+            spyOn(app, 'displayVotes');
+            app.loadCasus($('#plate'), fakeLatestCaseData);
+            expect(app.displayVotes).toHaveBeenCalled();
+        });
+        it('provides voting buttons otherwise', function() {
+            spyOn(app, 'displayVoteButtons');
+            app.loadCasus($('#plate'), fakeLatestCaseData);
+            expect(app.displayVoteButtons).toHaveBeenCalled();
         });
     });
     
