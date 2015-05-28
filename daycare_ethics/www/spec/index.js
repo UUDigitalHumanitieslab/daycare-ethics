@@ -252,6 +252,36 @@ describe('app', function() {
             expect(items[2].outerHTML).toBe('<li class="ui-li-static ui-body-inherit ui-last-child"><h3 style="white-space: normal;">annoying book</h3><p>annoying author</p></li>');
         });
     });
+    
+    describe('loadCasusArchive', function() {
+        beforeEach(function() {
+            $(_.template($('#casus-archive-format').html(), {}))
+                .appendTo('#stage').page();
+            var fakeData = { 'all': [
+                _.clone(fakeLatestCaseData),
+                fakeLatestCaseData
+            ]};
+            _.assign(fakeData.all[0], { 'id': 2, 'week': '11' });
+            spyOn(app, 'loadCasus');
+            spyOn(app, 'renderArchiveList').and.callThrough();
+            app.loadCasusArchive(fakeData);
+        });
+        it('forwards the most recent casus to loadCasus', function() {
+            expect(app.loadCasus).toHaveBeenCalled();
+        });
+        it('defers to renderArchiveList', function() {
+            expect(app.renderArchiveList).toHaveBeenCalled();
+        });
+        it('... and installs click handlers to load data', function() {
+            $('#plate-archive-list:first-child a').click();
+            console.log(jasmine.Ajax.requests);
+            expect(jasmine.Ajax.requests.mostRecent().url).toBe('/case/2');
+            jasmine.Ajax.requests.mostRecent().respondWith({
+                'responseText': ''
+            });
+            expect(app.loadCasus).toHaveBeenCalled();
+        });
+    });
 
     describe('onDeviceReady', function() {
         it('should report that it fired', function() {
