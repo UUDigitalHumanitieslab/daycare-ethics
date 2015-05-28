@@ -15,6 +15,7 @@ describe('app', function() {
         'background': '#998877'
     };
     var fakeReflectionData = {
+        'token': 'abcdefghijk',
         'id': 2,
         'title': 'testreflection',
         'publication': '2015-03-02',
@@ -161,6 +162,10 @@ describe('app', function() {
             expect($('#mirror .reflection-response')).toBeVisible();
             expect($('#mirror .reflection-closed-notice')).toBeHidden();
             expect($('#mirror .reflection-closure-announce')).toBeHidden();
+        });
+        it('sets the token if provided', function() {
+            app.loadReflection($('#mirror'), fakeReflectionData);
+            expect(localStorage.getItem('token')).toBe('abcdefghijk');
         });
         it('warns the user if a closure date is set', function() {
             this.date += 24 * 60 * 60 * 1000; // one day ahead
