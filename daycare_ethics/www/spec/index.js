@@ -110,7 +110,7 @@ describe('app', function() {
     });
     
     describe('preloadContent', function() {
-        it('fetches data from the server and passes them to other functions', function() {
+        xit('fetches data from the server and passes them to other functions', function() {
             spyOn(app, 'loadReflection');
             spyOn(app, 'loadTips');
             spyOn(app, 'loadCasusArchive');
