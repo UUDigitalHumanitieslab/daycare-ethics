@@ -282,6 +282,32 @@ describe('app', function() {
             expect(app.loadCasus).toHaveBeenCalled();
         });
     });
+    
+    describe('loadReflectionArchive', function() {
+        beforeEach(function() {
+            $(_.template($('#reflection-archive-format').html(), {}))
+                .appendTo('#stage').page();
+            var fakeData = { 'all': [
+                _.clone(fakeReflectionData),
+                fakeReflectionData
+            ]};
+            _.assign(fakeData.all[0], { 'id': 3, 'week': '11' });
+            spyOn(app, 'renderArchiveList').and.callThrough();
+            app.loadReflectionArchive(fakeData);
+        });
+        it('defers to renderArchiveList', function() {
+            expect(app.renderArchiveList).toHaveBeenCalled();
+        });
+        xit('... and installs click handlers to load data', function() {
+            $('#mirror-archive-list:first-child a').click();
+            console.log(jasmine.Ajax.requests);
+            expect(jasmine.Ajax.requests.mostRecent().url).toBe('/reflection/3');
+            jasmine.Ajax.requests.mostRecent().respondWith({
+                'responseText': ''
+            });
+            expect(app.loadReflection).toHaveBeenCalled();
+        });
+    });
 
     describe('onDeviceReady', function() {
         it('should report that it fired', function() {
