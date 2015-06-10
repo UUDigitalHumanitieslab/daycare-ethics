@@ -308,6 +308,35 @@ describe('app', function() {
             expect(app.loadReflection).toHaveBeenCalled();
         });
     });
+    
+    describe('renderArchiveList', function() {
+        beforeEach(function() {
+            var fakeData = { 'all': [
+                _.clone(fakeReflectionData),
+                fakeReflectionData
+            ]};
+            this.spy = jasmine.createSpy('spy');
+            app.insertPages();
+            $(_.template($('#reflection-archive-format').html(), {}))
+                .appendTo('#stage').page();
+            _.assign(fakeData.all[0], { 'id': 3, 'week': '11' });
+            app.renderArchiveList(fakeData.all, $('#mirror-archive-list'), this.spy);
+        });
+        it('creates a list item for each array element passed to it and inserts it into the html element passed to it', function() {
+            var items = $('#mirror-archive-list').children();
+            var anchors = items.find('a');
+            expect(items.length).toBe(2);
+            expect($(anchors[0]).data('identifier')).toBe(3);
+            expect($(anchors[1]).data('identifier')).toBe(2);
+        });
+        it('installs whatever click handler was passed to it', function() {
+            var anchors = $('#mirror-archive-list').children().find('a');
+            $(anchors[0]).click();
+            expect(this.spy).toHaveBeenCalled();
+            $(anchors[1]).click();
+            expect(this.spy.calls.count()).toBe(2);
+        });
+    });
 
     describe('onDeviceReady', function() {
         it('should report that it fired', function() {
