@@ -337,6 +337,76 @@ describe('app', function() {
             expect(this.spy.calls.count()).toBe(2);
         });
     });
+    
+    describe('submitVote', function() {
+        beforeEach(function() {
+            app.insertPages();
+            app.loadCasus($('#plate'), fakeLatestCaseData);
+            localStorage.setItem('token', 'qwertyuiop');
+            spyOn(app, 'displayVotes');
+        });
+        it('accepts "yes" votes and displays the results', function() {
+            app.submitVote($('#plate .vote-btn-yes'), 'yes');
+            var requests = jasmine.Ajax.requests;
+            expect(requests.count()).toBe(1);
+            var post = requests.at(0);
+            expect(post.method).toBe('POST');
+            expect(post.url).toBe('/case/vote');
+            expect(post.requestHeaders['Content-Type']).toBe('application/x-www-form-urlencoded; charset=UTF-8');
+            expect(post.requestHeaders['X-Requested-With']).toBe('XMLHttpRequest');
+            expect(post.params).toBe('id=1&choice=yes&t=qwertyuiop');
+            post.respondWith({
+                'status': 200,
+                'responseText': JSON.stringify({
+                    'token': '1234567890',
+                    'status': 'success'
+                }),
+                'contentType': 'application/json'
+            });
+            expect(localStorage.getItem('token')).toBe('1234567890');
+            expect(app.displayVotes).toHaveBeenCalledWith($('#plate'));
+        });
+        it('also accepts "no" votes', function() {
+            app.submitVote($('#plate .vote-btn-no'), 'no');
+            var requests = jasmine.Ajax.requests;
+            expect(requests.count()).toBe(1);
+            var post = requests.at(0);
+            expect(post.method).toBe('POST');
+            expect(post.url).toBe('/case/vote');
+            expect(post.requestHeaders['Content-Type']).toBe('application/x-www-form-urlencoded; charset=UTF-8');
+            expect(post.requestHeaders['X-Requested-With']).toBe('XMLHttpRequest');
+            expect(post.params).toBe('id=1&choice=no&t=qwertyuiop');
+        });
+        it('remembers that you have voted before', function() {
+            expect(localStorage.getItem('has_voted_1')).toBeFalsy();
+            app.submitVote($('#plate .vote-btn-yes'), 'yes');
+            expect(localStorage.getItem('has_voted_1')).toBeFalsy();
+            var requests = jasmine.Ajax.requests;
+            expect(requests.count()).toBe(1);
+            var post = requests.at(0);
+            post.respondWith({
+                'status': 200,
+                'responseText': JSON.stringify({
+                    'token': '1234567890',
+                    'status': 'success'
+                }),
+                'contentType': 'application/json'
+            });
+            expect(localStorage.getItem('has_voted_1')).toBeTruthy();
+            app.submitVote($('#plate .vote-btn-no'), 'no');
+            expect(requests.count()).toBe(1);
+        });
+        it('rejects votes other than "yes" or "no"', function() {
+            app.submitVote($('#plate .vote-btn-yes'), 'y');
+            app.submitVote($('#plate .vote-btn-yes'), 'n');
+            app.submitVote($('#plate .vote-btn-yes'), 'please');
+            app.submitVote($('#plate .vote-btn-yes'), 'nope');
+            app.submitVote($('#plate .vote-btn-yes'), 'YEAH');
+            app.submitVote($('#plate .vote-btn-yes'), 'nay');
+            expect(jasmine.Ajax.requests.count()).toBe(0);
+            expect(localStorage.getItem('has_voted_1')).toBeFalsy();
+        });
+    });
 
     describe('onDeviceReady', function() {
         it('should report that it fired', function() {
