@@ -407,6 +407,128 @@ describe('app', function() {
             expect(localStorage.getItem('has_voted_1')).toBeFalsy();
         });
     });
+    
+    describe('submitReply', function() {
+        beforeEach(function() {
+            app.insertPages();
+            app.loadReflection($('#mirror'), fakeReflectionData);
+            localStorage.setItem('token', 'qwertyuiop');
+            localStorage.setItem('last_retrieve', 'never');
+            this.form = $('#mirror .reflection-response');
+            this.form.find('[name="p"]').val('tester');
+            this.form.find('[name="r"]').val('this is a test response');
+            app.submitReply(this.form);
+            spyOn(app, 'appendReply');
+        });
+        it('submits reflection replies to the server', function() {
+            expect(this.form).toBeHidden();
+            var requests = jasmine.Ajax.requests;
+            expect(requests.count()).toBe(1);
+            var post = requests.at(0);
+            expect(post.method).toBe('POST');
+            expect(post.url).toBe('/reflection/2/reply');
+            expect(post.requestHeaders['X-Requested-With'])
+                .toBe('XMLHttpRequest');
+            expect(post.requestHeaders['Content-Type'])
+                .toBe('application/x-www-form-urlencoded; charset=UTF-8');
+            expect(post.params)
+                .toBe('p=tester&r=this+is+a+test+response&t=qwertyuiop&last-retrieve=never&ca=');
+        });
+        it('appends the reply and resets the form on success', function() {
+            var post = jasmine.Ajax.requests.at(0);
+            post.respondWith({
+                'status': 200,
+                'contentType': 'application/json',
+                'responseText': JSON.stringify({
+                    'status': 'success',
+                    'token': '1234567890'
+                })
+            });
+            expect(localStorage.getItem('token')).toBe('1234567890');
+            expect(app.appendReply).toHaveBeenCalledWith($('#mirror'), {
+                pseudonym: 'tester',
+                message: 'this is a test response'
+            });
+            expect(this.form.find('[name="r"]')).toHaveValue('');
+            expect(this.form).toBeVisible();
+        });
+        it('updates the thread and offers a retry in case of ninjas', function() {
+            var post = jasmine.Ajax.requests.at(0);
+            $('<p>').addClass('reply-submitted').appendTo('#mirror');
+            post.respondWith({
+                'status': 200,
+                'contentType': 'application/json',
+                'responseText': JSON.stringify({
+                    'status': 'ninja',
+                    'token': '1234567890',
+                    'since': 'now',
+                    'new': [{}, {}]
+                })
+            });
+            expect(localStorage.getItem('token')).toBe('1234567890');
+            expect(localStorage.getItem('last_retrieve')).toBe('now');
+            expect($('#mirror .reply-submitted')).not.toBeInDOM();
+            expect(app.appendReply.calls.count()).toBe(2);
+            expect(this.form.find('[name="r"]'))
+                .toHaveValue('this is a test response');
+            expect(this.form).toBeVisible();
+            expect($('#mirror .ninja-message')).toBeVisible();
+        });
+        it('presents a captcha challenge on server request', function() {
+            var post = jasmine.Ajax.requests.at(0);
+            post.respondWith({
+                'status': 200,
+                'contentType': 'application/json',
+                'responseText': JSON.stringify({
+                    'status': 'captcha',
+                    'token': '1234567890',
+                    'captcha_challenge': 'banana banana banana'
+                })
+            });
+            expect(localStorage.getItem('token')).toBe('1234567890');
+            expect(app.appendReply).not.toHaveBeenCalled();
+            expect(this.form.find('[name="r"]'))
+                .toHaveValue('this is a test response');
+            expect(this.form).toBeHidden();
+            expect($('#mirror .captcha-popup')).toBeVisible();
+            expect($('#mirror .captcha-challenge'))
+                .toHaveText('banana banana banana');
+        });
+        it('notifies the user if the thread has been closed', function() {
+            var post = jasmine.Ajax.requests.at(0);
+            var announcement = $('#mirror .reflection-closure-announce');
+            announcement.show();
+            post.respondWith({
+                'status': 400,
+                'contentType': 'application/json',
+                'responseText': JSON.stringify({
+                    'status': 'closed',
+                    'token': '1234567890'
+                })
+            });
+            expect(localStorage.getItem('token')).toBe('1234567890');
+            expect(app.appendReply).not.toHaveBeenCalled();
+            expect(this.form).toBeHidden();
+            expect(announcement).toBeHidden();
+            expect($('#mirror .reflection-closed-popup')).toBeVisible();
+            expect($('#mirror .reflection-closed-notice')).toBeVisible();
+        });
+        it('offers a retry if the submitted form was invalid', function() {
+            var post = jasmine.Ajax.requests.at(0);
+            post.respondWith({
+                'status': 400,
+                'contentType': 'application/json',
+                'responseText': JSON.stringify({
+                    'status': 'invalid',
+                    'token': '1234567890'
+                })
+            });
+            expect(localStorage.getItem('token')).toBe('1234567890');
+            expect(app.appendReply).not.toHaveBeenCalled();
+            expect(this.form).toBeVisible();
+            expect($('#mirror .reflection-invalid-popup')).toBeVisible();
+        });
+    });
 
     describe('onDeviceReady', function() {
         it('should report that it fired', function() {
