@@ -565,8 +565,27 @@ describe('app', function() {
         });
     });
     
-    xdescribe('appendReply', function() {
-        
+    describe('appendReply', function() {
+        beforeEach(function() {
+            app.insertPages();
+            this.responses = fakeReflectionData.responses;
+            spyOn(app, 'submitReplyVote');
+        });
+        it('appends moderatable reflection replies to the thread', function() {
+            _(this.responses).each(function(r) {
+                app.appendReply($('#mirror'), r);
+            });
+            expect($('.reply-1')).toBeInDOM();
+            expect($('.reply-1')).toContainHtml('<span class="reply-date">2015-03-02</span><span class="reply-nick">malbolge</span><span class="reply-content">&lt;script&gt;wreakHavoc();&lt;/script&gt;</span><br><a href="#" class="reply-vote ui-btn ui-icon-plus ui-btn-icon-left">leerzaam</a><a href="#" class="reply-vote ui-btn ui-icon-minus ui-btn-icon-right">ongewenst</a>');
+            expect($('.reply-1 > h3')).toBeInDOM();
+            expect($('.reply-1 > h3')).toContainHtml('<span class="reply-date">2015-03-02</span> <span class="reply-nick">spam</span>');
+            expect($('.reply-2')).toBeInDOM();
+            expect($('.reply-2')).toHaveHtml('<h3 class="reply-synopsis" style="display: none;"><span class="reply-date">2015-03-03</span> <span class="reply-nick">victim</span></h3><span class="reply-date">2015-03-03</span><span class="reply-nick">victim</span><span class="reply-content">help me</span><br><a href="#" class="reply-vote ui-btn ui-icon-plus ui-btn-icon-left">leerzaam</a><a href="#" class="reply-vote ui-btn ui-icon-minus ui-btn-icon-right">ongewenst</a>');
+            $('.reply-1 .reply-vote.ui-icon-minus').click();
+            expect(app.submitReplyVote).toHaveBeenCalledWith(1, 'down');
+            $('.reply-2 .reply-vote.ui-icon-plus').click();
+            expect(app.submitReplyVote).toHaveBeenCalledWith(2, 'up');
+        });
     });
 
     xdescribe('submitReplyVote', function() {
