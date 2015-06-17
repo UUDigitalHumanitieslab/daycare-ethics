@@ -564,6 +564,30 @@ describe('app', function() {
                 .toBe('p=tester&r=this+is+a+test+response&t=qwertyuiop&last-retrieve=never&ca=banana+banana+banana');
         });
     });
+    
+    xdescribe('appendReply', function() {
+        
+    });
+
+    xdescribe('submitReplyVote', function() {
+        
+    });
+
+    xdescribe('getScore', function() {
+        
+    });
+
+    xdescribe('displayVotes', function() {
+        
+    });
+
+    xdescribe('displayVoteButtons', function() {
+        
+    });
+
+    xdescribe('bindEvents', function() {
+        
+    });
 
     describe('onDeviceReady', function() {
         it('should report that it fired', function() {
