@@ -588,8 +588,47 @@ describe('app', function() {
         });
     });
 
-    xdescribe('submitReplyVote', function() {
-        
+    describe('submitReplyVote', function() {
+        beforeEach(function() {
+            app.insertPages();
+            app.loadReflection($('#mirror'), fakeReflectionData);
+            localStorage.setItem('token', 'qwertyuiop');
+        });
+        it('communicates thread moderation votes with the server', function() {
+            app.submitReplyVote(2, 'up');
+            var requests = jasmine.Ajax.requests;
+            expect(requests.count()).toBe(1);
+            var post = requests.at(0);
+            expect(post.method).toBe('POST');
+            expect(post.url).toBe('/reply/2/moderate/');
+            expect(post.requestHeaders['X-Requested-With'])
+                .toBe('XMLHttpRequest');
+            expect(post.requestHeaders['Content-Type'])
+                .toBe('application/x-www-form-urlencoded; charset=UTF-8');
+            expect(post.params).toBe('choice=up&t=qwertyuiop');
+            post.respondWith({
+                'status': 200,
+                'contentType': 'application/json',
+                'responseText': JSON.stringify({
+                    'status': 'success',
+                    'token': '1234567890'
+                })
+            });
+            expect(localStorage.getItem('token')).toBe('1234567890');
+            expect($('.reply-2 .reply-vote')).toBeHidden();
+            expect($('<div>').append($('.reply-2 > *:last'))).toHaveHtml(
+                '<em style="color: green;">Bedankt voor je stem!</em>'
+            );
+        });
+        it('rejects any vote value other than "up" or "down"', function() {
+            app.submitReplyVote(2, 'more');
+            app.submitReplyVote(2, 'less');
+            app.submitReplyVote(2, 'yes');
+            app.submitReplyVote(2, 'no');
+            app.submitReplyVote(2, 'UP');
+            app.submitReplyVote(2, 'DOWN');
+            expect(jasmine.Ajax.requests.count()).toBe(0);
+        });
     });
 
     xdescribe('getScore', function() {
