@@ -529,6 +529,41 @@ describe('app', function() {
             expect($('#mirror .reflection-invalid-popup')).toBeVisible();
         });
     });
+    
+    describe('submitCaptcha', function() {
+        beforeEach(function() {
+            app.insertPages();
+            app.loadReflection($('#mirror'), fakeReflectionData);
+            localStorage.setItem('token', 'qwertyuiop');
+            localStorage.setItem('last_retrieve', 'never');
+            this.form = $('#mirror .reflection-response');
+            this.form.find('[name="p"]').val('tester');
+            this.form.find('[name="r"]').val('this is a test response');
+            $('#mirror .captcha-popup').popup('open', {positionTo: 'window'});
+            spyOn(app, 'submitReply').and.callThrough();
+        });
+        it('defers to submitReply to send the captcha response', function() {
+            var captcha = $('#mirror .reflection-captcha');
+            var response = captcha.find('[name="ca"]');
+            response.val('banana banana banana');
+            app.submitCaptcha(captcha);
+            expect($('#mirror .captcha-popup').parent())
+                .toHaveClass('ui-popup-hidden');
+            expect(response).toHaveValue('');
+            expect(app.submitReply).toHaveBeenCalledWith(this.form);
+            var requests = jasmine.Ajax.requests;
+            expect(requests.count()).toBe(1);
+            var post = requests.at(0);
+            expect(post.method).toBe('POST');
+            expect(post.url).toBe('/reflection/2/reply');
+            expect(post.requestHeaders['X-Requested-With'])
+                .toBe('XMLHttpRequest');
+            expect(post.requestHeaders['Content-Type'])
+                .toBe('application/x-www-form-urlencoded; charset=UTF-8');
+            expect(post.params)
+                .toBe('p=tester&r=this+is+a+test+response&t=qwertyuiop&last-retrieve=never&ca=banana+banana+banana');
+        });
+    });
 
     describe('onDeviceReady', function() {
         it('should report that it fired', function() {
