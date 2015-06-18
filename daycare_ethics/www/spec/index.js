@@ -58,15 +58,15 @@ describe('app', function() {
         beforeEach(function() {
             spyOn(app, 'insertPages').and.callThrough();
             spyOn(app, 'findDimensions').and.callThrough();
-            spyOn(app, 'onDeviceReady');
             spyOn(app, 'preloadContent');
+            spyOn(app, 'bindEvents');
             app.initialize();
         });
         it('should call four other functions', function() {
             expect(app.insertPages).toHaveBeenCalled();
             expect(app.findDimensions).toHaveBeenCalled();
             expect(app.preloadContent).toHaveBeenCalled();
-            expect(app.onDeviceReady).toHaveBeenCalled();
+            expect(app.bindEvents).toHaveBeenCalled();
         });
         it('should validate the forms', function() {
             expect($('#stage').find('.reflection-response, .reflection-captcha').find('[aria-required]').length).toBe(6);
