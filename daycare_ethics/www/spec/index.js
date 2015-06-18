@@ -631,8 +631,55 @@ describe('app', function() {
         });
     });
 
-    xdescribe('getScore', function() {
-        
+    describe('getScore', function() {
+        it('calculates a score in the range [0, 1],', function() {
+            var test = app.getScore(0, 0);
+            expect(test).not.toBeGreaterThan(1);
+            expect(test).not.toBeLessThan(0);
+            test = app.getScore(0, 1e9);
+            expect(test).not.toBeGreaterThan(1);
+            expect(test).not.toBeLessThan(0);
+            test = app.getScore(1e9, 0);
+            expect(test).not.toBeGreaterThan(1);
+            expect(test).not.toBeLessThan(0);
+            test = app.getScore(1e9, 1e9);
+            expect(test).not.toBeGreaterThan(1);
+            expect(test).not.toBeLessThan(0);
+        });
+        it('where more upvotes begets a greater score,', function() {
+            var test1 = app.getScore( 0, 10);
+            var test2 = app.getScore( 5, 10);
+            var test3 = app.getScore(10, 10);
+            var test4 = app.getScore(15, 10);
+            expect(test1).toBeLessThan(test2);
+            expect(test2).toBeLessThan(test3);
+            expect(test3).toBeLessThan(test4);
+        });
+        it('where more downvotes begets a lesser score,', function() {
+            var test1 = app.getScore(10,  0);
+            var test2 = app.getScore(10,  5);
+            var test3 = app.getScore(10, 10);
+            var test4 = app.getScore(10, 15);
+            expect(test1).toBeGreaterThan(test2);
+            expect(test2).toBeGreaterThan(test3);
+            expect(test3).toBeGreaterThan(test4);
+        });
+        it('where the benefit of the doubt is given in the face of uncertainty,', function() {
+            var test1 = app.getScore(   1,    1);
+            var test2 = app.getScore(  10,   10);
+            var test3 = app.getScore( 100,  100);
+            var test4 = app.getScore(1000, 1000);
+            expect(test1).toBeGreaterThan(test2);
+            expect(test2).toBeGreaterThan(test3);
+            expect(test3).toBeGreaterThan(test4);
+        });
+        it('and where the score approaches the upvote proportion with increasing certainty', function() {
+            expect(app.getScore(1e9, 9e9)).toBeCloseTo(.1, 3);
+            expect(app.getScore(3e9, 7e9)).toBeCloseTo(.3, 3);
+            expect(app.getScore(5e9, 5e9)).toBeCloseTo(.5, 3);
+            expect(app.getScore(7e9, 3e9)).toBeCloseTo(.7, 3);
+            expect(app.getScore(9e9, 1e9)).toBeCloseTo(.9, 3);
+        });
     });
 
     xdescribe('displayVotes', function() {
