@@ -5,6 +5,7 @@
     Non-trivial fixtures that may be used across multiple suites.
 """
 
+from os.path import dirname, join
 from unittest import TestCase
 
 from .. import create_app, db
@@ -12,6 +13,7 @@ from .. import create_app, db
 
 class FixtureConfiguration (object):
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
+    CAPTCHA_DATA = join(dirname(__file__), 'data', 'test_captcha.json')
     SECRET_KEY = 'psiodfnvpsdojfnvpaosihrgt'
     TESTING = True
 

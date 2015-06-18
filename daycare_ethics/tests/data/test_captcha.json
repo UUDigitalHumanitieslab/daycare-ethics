@@ -1,0 +1,5 @@
+{
+    "color": ["red", "orange", "yellow", "green", "blue", "purple", "pink", "grey"],
+    "number": ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven"],
+    "City": ["Paris", "London", "Berlin", "Madrid", "Amsterdam", "Dublin", "Stockholm", "Utrecht"]
+}
