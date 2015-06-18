@@ -12,7 +12,9 @@ describe('app', function() {
         'text': 'some dummy text',
         'proposition': 'difficult question',
         'picture': null,
-        'background': '#998877'
+        'background': '#998877',
+        'yes': 10,
+        'no': 10
     };
     var fakeReflectionData = {
         'token': 'abcdefghijk',
@@ -682,8 +684,27 @@ describe('app', function() {
         });
     });
 
-    xdescribe('displayVotes', function() {
-        
+    describe('displayVotes', function() {
+        beforeEach(function() {
+            app.insertPages();
+            this.page = $('#plate');
+            app.loadCasus(this.page, fakeLatestCaseData);
+        });
+        it('hides the vote buttons and displays the yes/no ratio', function() {
+            var yes_count = this.page.find('.yes_count');
+            var no_count = this.page.find('.no_count');
+            var no_bar = this.page.find('.no_bar');
+            var yes_bar = this.page.find('.yes_bar');
+            app.displayVotes(this.page);
+            expect(this.page.children('a')).toBeHidden();
+            expect(yes_count).toBeVisible();
+            expect(yes_count).toHaveHtml('ja 10');
+            expect(no_count).toBeVisible();
+            expect(no_count).toHaveHtml('10 nee');
+            expect(no_bar).toBeVisible();
+            expect(yes_bar).toBeVisible();
+            expect(yes_bar.width() / no_bar.width()).toBeCloseTo(.5, 2);
+        });
     });
 
     xdescribe('displayVoteButtons', function() {
