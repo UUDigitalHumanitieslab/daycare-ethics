@@ -10,20 +10,26 @@
 <script src="lib/jasmine-2.1.2/jasmine.js"></script>
 <script src="lib/jasmine-2.1.2/jasmine-html.js"></script>
 <script src="lib/jasmine-2.1.2/boot.js"></script>
+<script src="lib/mock-ajax.js"></script>
 
 <!-- include source files here... -->
 <script src="../js/jquery-2.1.1.min.js"></script>
+<script src="lib/jasmine-jquery.js"></script>
+
 <script type="text/javascript">
     $(document).on("mobileinit", function(){
         $.mobile.autoInitializePage = false;
     });
 </script>
 <script src="../js/jquery.mobile-1.4.5.min.js"></script>
+
 <script src="../js/lodash.min.js"></script>
 <script src="../js/machina.min.js"></script>
 <script src="../js/jquery.validate.min.js"></script>
 <script src="../js/messages_nl.min.js"></script>
 <script src="../js/index.js"></script>
+
+<link rel="stylesheet" href="../css/index.css">
 
 <!-- include spec files here... -->
 <script src="helper.js"></script>
@@ -31,7 +37,7 @@
 
 </head><body>
 
-<div id="stage" style="display:none;"></div>
+<div id="stage"></div>
 
 <script type="text/template" id="casus-format">
     <div data-role="page" id="<%= pageid %>">
@@ -99,6 +105,47 @@
             Vul alsjeblieft beide velden in.
             <a href="#" data-role="button" data-rel="back">OK</a>
         </div>
+    </div>
+</script>
+
+<script type="text/template" id="tips-format">
+    <div data-role="page" id="links-tips">
+        <div data-role="header">
+            <a href="#shelf" data-icon="carat-l">Extra</a>
+            <span class="ui-title" />
+        </div>
+        <h4>Tips bij de beroepscode</h4>
+        <ul data-role="listview" data-inset="true" id="labour-code-tips" class="tips-list"></ul>
+        <h4>Links</h4>
+        <ul data-role="listview" data-inset="true" id="website-links" class="tips-list"></ul>
+        <h4>Boekentips</h4>
+        <ul data-role="listview" data-inset="true" id="book-tips" class="tips-list"></ul>
+    </div>
+</script>
+
+<script type="text/template" id="casus-archive-format">
+    <div data-role="page" id="plate-archive">
+        <div data-role="header">
+            <a href="#archive" data-icon="carat-l">Archief</a>
+            <span class="ui-title" />
+        </div>
+        <h3>Lijst van casus</h3>
+        <p>(op weeknummer)</p>
+        <ul data-role="listview" data-inset="true" id="plate-archive-list">
+        </ul>
+    </div>
+</script>
+
+<script type="text/template" id="reflection-archive-format">
+    <div data-role="page" id="mirror-archive">
+        <div data-role="header">
+            <a href="#archive" data-icon="carat-l">Archief</a>
+            <span class="ui-title" />
+        </div>
+        <h3>Lijst van reflecties</h3>
+        <p>(op weeknummer)</p>
+        <ul data-role="listview" data-inset="true" id="mirror-archive-list">
+        </ul>
     </div>
 </script>
 
