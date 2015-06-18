@@ -707,8 +707,23 @@ describe('app', function() {
         });
     });
 
-    xdescribe('displayVoteButtons', function() {
-        
+    describe('displayVoteButtons', function() {
+        beforeEach(function() {
+            app.insertPages();
+            this.page = $('#plate');
+            app.loadCasus(this.page, fakeLatestCaseData);
+            app.displayVotes(this.page);
+        });
+        it('hides the yes/no ratio and displays the vote buttons', function() {
+            var anchors = this.page.children('a');
+            expect(anchors).toBeHidden();
+            app.displayVoteButtons(this.page);
+            expect(anchors).toBeVisible();
+            expect(this.page.find('.yes_count')).toBeHidden();
+            expect(this.page.find('.no_count')).toBeHidden();
+            expect(this.page.find('.no_bar')).toBeHidden();
+            expect(this.page.find('.yes_bar')).toBeHidden();
+        });
     });
 
     xdescribe('bindEvents', function() {
