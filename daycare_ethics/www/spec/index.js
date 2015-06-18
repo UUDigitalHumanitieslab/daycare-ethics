@@ -55,17 +55,12 @@ describe('app', function() {
     });
     
     describe('initialize', function() {
-        var emulateDeviceReady = function(callback) {
-            app.initialize();
-            helper.trigger(window.document, 'deviceready');
-            callback();
-        };
-        beforeEach(function(done) {
+        beforeEach(function() {
             spyOn(app, 'insertPages').and.callThrough();
             spyOn(app, 'findDimensions').and.callThrough();
             spyOn(app, 'onDeviceReady');
             spyOn(app, 'preloadContent');
-            emulateDeviceReady(done);
+            app.initialize();
         });
         it('should call four other functions', function() {
             expect(app.insertPages).toHaveBeenCalled();
@@ -726,8 +721,34 @@ describe('app', function() {
         });
     });
 
-    xdescribe('bindEvents', function() {
-        
+    describe('bindEvents', function() {
+        var emulateDeviceReady = function(callback) {
+            helper.trigger(window.document, 'deviceready');
+            callback();
+        };
+        beforeEach(function(done) {
+            app.insertPages();
+            app.loadCasus($('#plate'), fakeLatestCaseData);
+            spyOn(app, 'submitVote');
+            spyOn(app, 'onDeviceReady');
+            app.bindEvents();
+            emulateDeviceReady(done);
+        });
+        it('installs click handlers on the casus voting buttons', function() {
+            var buttonYes = $('.vote-btn-yes');
+            var buttonNo = $('.vote-btn-no');
+            expect(buttonYes).toHandle('mousedown');
+            expect(buttonYes).toHandle('touchstart');
+            expect(buttonNo).toHandle('mousedown');
+            expect(buttonNo).toHandle('touchstart');
+            buttonYes.trigger('mousedown');
+            expect(app.submitVote).toHaveBeenCalledWith(buttonYes[0], 'yes');
+            buttonNo.trigger('mousedown');
+            expect(app.submitVote).toHaveBeenCalledWith(buttonNo[0], 'no');
+        });
+        it('installs a deviceready handler on window.document', function() {
+            expect(app.onDeviceReady).toHaveBeenCalled();
+        });
     });
 
     describe('onDeviceReady', function() {
