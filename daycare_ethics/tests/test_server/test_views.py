@@ -145,3 +145,130 @@ class CasusTestCase (BaseFixture):
             self.assertEqual(response_data['token'], session['token'])
         with self.request_context():
             self.assertEqual(Case.query.get(3).yes_votes, 1)
+
+class ReflectionTestCase (BaseFixture):
+    def setUp(self):
+        super(ReflectionTestCase, self).setUp()
+        now = datetime.today()
+        reflection1 = BrainTeaser(title='reflection1', publication=now - timedelta(weeks=3))
+        reflection2 = BrainTeaser(title='reflection2', publication=now - timedelta(weeks=2))
+        reflection3 = BrainTeaser(title='reflection3', publication=now - timedelta(weeks=1))
+        reflection4 = BrainTeaser(title='reflection4', publication=now + timedelta(weeks=1))
+        second = timedelta(seconds=1)
+        def next_date():
+            next_date.state += second
+            return next_date.state
+        next_date.state = now - timedelta(hours=1)
+        reflections = [reflection1, reflection2, reflection3, reflection4]
+        ses = db.session
+        with self.request_context():
+            for count, reflection in enumerate(reflections * 2):
+                ses.add(Response(
+                    submission=next_date(),
+                    pseudonym='test' + str(count % 3),
+                    message='banana' * count,
+                    brain_teaser=reflection
+                ))
+            ses.add(reflection4)
+            ses.commit()
+    
+    def test_current_reflection_redirect(self):
+        response = self.client.get('/reflection')
+        self.assertEqual(response.status_code, 301)
+    
+    def test_current_reflection(self):
+        response = self.client.get('/reflection/', headers={
+            'User-Agent': 'Flask test client',
+            'Referer': 'unittest',
+            'X-Requested-With': 'XMLHttpRequest',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('json', response.mimetype)
+        response_object = json.loads(response.data)
+        self.assertEqual(response_object['title'], 'reflection3')
+        self.assertLessEqual(response_object['publication'], datetime.today().isoformat())
+        
+    def test_retrieve_reflection(self):
+        response1 = self.client.get('/reflection/1/')
+        self.assertEqual(response1.status_code, 200)
+        self.assertIn('json', response1.mimetype)
+        response1_object = json.loads(response1.data)
+        self.assertEqual(response1_object['title'], 'reflection1')
+        response4 = self.client.get('/reflection/4/')
+        self.assertEqual(response4.status_code, 404)
+        response5 = self.client.get('/reflection/5/')
+        self.assertEqual(response5.status_code, 404)
+
+    def test_reflection2dict(self):
+        with self.request_context():
+            testreflection = BrainTeaser.query.get(2)
+            testdict = reflection2dict(testreflection, True)
+        self.assertEqual(testdict['title'], testreflection.title)
+        self.assertEqual(testdict['publication'], str(testreflection.publication))
+        self.assertEqual(testdict['week'], testreflection.publication.isocalendar()[1])
+        self.assertIsNone(testdict['closure'])
+        with self.request_context():
+            self.assertEqual(testdict['responses'], reflection_replies(2))
+
+    def test_available_reflection(self):
+        with self.request_context():
+            testoutput = available_reflection().all()
+            testreference = [
+                BrainTeaser.query.get(3),
+                BrainTeaser.query.get(2),
+                BrainTeaser.query.get(1),
+            ]
+        self.assertEqual(len(testoutput), 3)
+        for output, reference in zip(testoutput, testreference):
+            self.assertIs(output, reference)
+
+    # def test_reflection_archive(self):
+    #     response = self.client.get('/reflection/archive')
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertIn('json', response.mimetype)
+    #     response_object = json.loads(response.data)
+    #     with self.request_context():
+    #         reference_dict = map(reflection2dict, available_reflection().all())
+    #     self.assertEqual(response_object['all'], reference_dict)
+    #
+    # def test_vote_reflection_protection(self):
+    #     with self.client as c:
+    #         response1 = c.post('/reflection/vote', data={
+    #             'id': 3,
+    #             'choice': 'yes',
+    #         })
+    #         self.assertTrue(session['tainted'])
+    #     self.assertEqual(response1.status_code, 400)
+    #
+    # def test_vote_reflection_passthrough(self):
+    #     """ Warning: this is not a full coverage test.
+    #
+    #     All differences that you find between the session and the request
+    #     in this test and test_vote_reflection_protection are necessary
+    #     conditions for vote_reflection to succeed (pass through). For full
+    #     coverage, you would have to selectively omit each of those
+    #     differences independently; in each reflection, the response should have
+    #     status code 400 (though with different response data).
+    #     """
+    #     with self.client as c:
+    #         token = 'abcdef'
+    #         with c.session_transaction() as s:
+    #             s['token'] = token
+    #             s['last-request'] = datetime.now() - timedelta(hours=1)
+    #         response2 = c.post('/reflection/vote', data={
+    #             'id': 3,
+    #             'choice': 'yes',
+    #             't': token,
+    #         }, headers={
+    #             'User-Agent': 'Flask test client',
+    #             'Referer': 'unittest',
+    #             'X-Requested-With': 'XMLHttpRequest',
+    #         })
+    #         self.assertEqual(response2.status_code, 200)
+    #         self.assertIn('json', response2.mimetype)
+    #         response_data = json.loads(response2.data)
+    #         self.assertEqual(response_data['status'], 'success')
+    #         self.assertEqual(response_data['token'], session['token'])
+    #     with self.request_context():
+    #         self.assertEqual(BrainTeaser.query.get(3).yes_votes, 1)
+    #
