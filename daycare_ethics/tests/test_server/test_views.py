@@ -401,3 +401,86 @@ class ReflectionTestCase (BaseFixture):
             reply = Response.query.get(3)
             self.assertEqual(reply.upvotes, 1)
             self.assertEqual(reply.downvotes, 0)
+
+class TipsTestCase (BaseFixture):
+    def setUp(self):
+        super(TipsTestCase, self).setUp()
+        now = datetime.today()
+        ses = db.session
+        with self.request_context():
+            ses.add(Tip(
+                create=now - timedelta(hours=6),
+                update=now - timedelta(hours=5),
+                what='labour code',
+                title='test1'
+            ))
+            ses.add(Tip(
+                create=now - timedelta(hours=5),
+                update=now - timedelta(hours=4),
+                what='labour code',
+                title='test2'
+            ))
+            ses.add(Tip(
+                create=now - timedelta(hours=4),
+                update=now - timedelta(hours=3),
+                what='book',
+                title='test3'
+            ))
+            ses.add(Tip(
+                create=now - timedelta(hours=3),
+                update=now - timedelta(hours=2),
+                what='book',
+                title='test4'
+            ))
+            ses.add(Tip(
+                create=now - timedelta(hours=2),
+                update=now - timedelta(hours=1),
+                what='site',
+                title='test5'
+            ))
+            ses.add(Tip(
+                create=now - timedelta(hours=1),
+                update=now,
+                what='site',
+                title='test6'
+            ))
+            ses.commit()
+    
+    def test_tip2dict(self):
+        with self.request_context():
+            tip = Tip.query.get(1)
+        output = tip2dict(tip)
+        self.assertEqual(output['id'], tip.id)
+        self.assertEqual(output['created'], str(tip.create))
+        self.assertEqual(output['updated'], str(tip.update))
+        self.assertEqual(output['author'], tip.author)
+        self.assertEqual(output['title'], tip.title)
+        self.assertEqual(output['text'], tip.text)
+        self.assertEqual(output['href'], tip.href)
+    
+    def test_retrieve_tips(self):
+        with self.client as c:
+            response1 = c.get('/tips/')
+            self.assertEqual(response1.status_code, 200)
+            self.assertIn('json', response1.mimetype)
+            response1_data = json.loads(response1.data)
+            self.assertEqual(response1_data['labour'][0]['id'], 2)
+            self.assertEqual(response1_data['labour'][1]['id'], 1)
+            self.assertEqual(response1_data['book'][0]['id'], 4)
+            self.assertEqual(response1_data['book'][1]['id'], 3)
+            self.assertEqual(response1_data['site'][0]['id'], 6)
+            self.assertEqual(response1_data['site'][1]['id'], 5)
+            
+            Tip.query.get(5).update = datetime.today()
+            db.session.commit()
+            response2 = c.get('/tips/')
+            self.assertEqual(response2.status_code, 200)
+            self.assertIn('json', response2.mimetype)
+            response2_data = json.loads(response2.data)
+            self.assertEqual(response2_data['labour'][0]['id'], 2)
+            self.assertEqual(response2_data['labour'][1]['id'], 1)
+            self.assertEqual(response2_data['book'][0]['id'], 4)
+            self.assertEqual(response2_data['book'][1]['id'], 3)
+            self.assertEqual(response2_data['site'][0]['id'], 5)
+            self.assertEqual(response2_data['site'][1]['id'], 6)
+
