@@ -222,53 +222,182 @@ class ReflectionTestCase (BaseFixture):
         for output, reference in zip(testoutput, testreference):
             self.assertIs(output, reference)
 
-    # def test_reflection_archive(self):
-    #     response = self.client.get('/reflection/archive')
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertIn('json', response.mimetype)
-    #     response_object = json.loads(response.data)
-    #     with self.request_context():
-    #         reference_dict = map(reflection2dict, available_reflection().all())
-    #     self.assertEqual(response_object['all'], reference_dict)
-    #
-    # def test_vote_reflection_protection(self):
-    #     with self.client as c:
-    #         response1 = c.post('/reflection/vote', data={
-    #             'id': 3,
-    #             'choice': 'yes',
-    #         })
-    #         self.assertTrue(session['tainted'])
-    #     self.assertEqual(response1.status_code, 400)
-    #
-    # def test_vote_reflection_passthrough(self):
-    #     """ Warning: this is not a full coverage test.
-    #
-    #     All differences that you find between the session and the request
-    #     in this test and test_vote_reflection_protection are necessary
-    #     conditions for vote_reflection to succeed (pass through). For full
-    #     coverage, you would have to selectively omit each of those
-    #     differences independently; in each reflection, the response should have
-    #     status code 400 (though with different response data).
-    #     """
-    #     with self.client as c:
-    #         token = 'abcdef'
-    #         with c.session_transaction() as s:
-    #             s['token'] = token
-    #             s['last-request'] = datetime.now() - timedelta(hours=1)
-    #         response2 = c.post('/reflection/vote', data={
-    #             'id': 3,
-    #             'choice': 'yes',
-    #             't': token,
-    #         }, headers={
-    #             'User-Agent': 'Flask test client',
-    #             'Referer': 'unittest',
-    #             'X-Requested-With': 'XMLHttpRequest',
-    #         })
-    #         self.assertEqual(response2.status_code, 200)
-    #         self.assertIn('json', response2.mimetype)
-    #         response_data = json.loads(response2.data)
-    #         self.assertEqual(response_data['status'], 'success')
-    #         self.assertEqual(response_data['token'], session['token'])
-    #     with self.request_context():
-    #         self.assertEqual(BrainTeaser.query.get(3).yes_votes, 1)
-    #
+    def test_response2dict(self):
+        with self.request_context():
+            response3 = Response.query.get(3)
+        output = response2dict(response3)
+        self.assertEqual(response3.id, output['id'])
+        self.assertEqual(str(response3.submission.date()), output['submission'])
+        self.assertEqual(response3.pseudonym, output['pseudonym'])
+        self.assertEqual(response3.message, output['message'])
+        self.assertEqual(response3.upvotes, output['up'])
+        self.assertEqual(response3.downvotes, output['down'])
+
+    def test_reflection_replies(self):
+        with self.request_context():
+            output1 = reflection_replies(1)
+            output2 = reflection_replies(1, Response.query.get(2).submission)
+        self.assertListEqual(output1[1:], output2)
+        self.assertEqual(output1[0]['id'], 1)
+        self.assertEqual(output1[1]['id'], 5)
+
+    def test_reflection_archive(self):
+        response = self.client.get('/reflection/archive')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('json', response.mimetype)
+        response_object = json.loads(response.data)
+        with self.request_context():
+            reference_list = map(reflection2dict, available_reflection().all())
+        for result, reference in zip(response_object['all'], reference_list):
+            self.assertEqual(result['id'], reference['id'])
+            self.assertEqual(result['title'], reference['title'])
+            self.assertEqual(result['publication'], reference['publication'])
+            self.assertEqual(result['week'], reference['week'])
+            self.assertEqual(result['closure'], reference['closure'])
+            self.assertEqual(result['text'], reference['text'])
+            self.assertEqual(result['responses'], reference['responses'])
+
+    def test_reply_to_reflection_protection(self):
+        with self.client as c:
+            response1 = c.post('/reflection/3/reply', data={
+                'p': 'test4',
+                'r': 'testmessage',
+            })
+            self.assertTrue(session['tainted'])
+        self.assertEqual(response1.status_code, 400)
+
+    def test_reply_to_reflection_passthrough(self):
+        """ Warning: this is not a full coverage test.
+
+        All differences that you find between the session and the request
+        in this test and test_reply_to_reflection_protection are necessary
+        conditions for reply_to_reflection to succeed (pass through), and 
+        then some. For full coverage, you would have to selectively omit 
+        each of those differences independently; in each reflection, the 
+        response should have status code 400 (though with different 
+        response data).
+        """
+        with self.client as c:
+            token = 'abcdef'
+            with c.session_transaction() as s:
+                s['token'] = token
+                s['last-request'] = datetime.now() - timedelta(hours=1)
+            
+            response2 = c.post('/reflection/3/reply', data={
+                'p': 'test4',
+                'r': 'testmessage',
+                't': token,
+            }, headers={
+                'User-Agent': 'Flask test client',
+                'Referer': 'unittest',
+                'X-Requested-With': 'XMLHttpRequest',
+            })
+            self.assertEqual(response2.status_code, 200)
+            self.assertIn('json', response2.mimetype)
+            response_data = json.loads(response2.data)
+            self.assertEqual(response_data['status'], 'success')
+            self.assertEqual(response_data['token'], session['token'])
+            
+            with c.session_transaction() as s:
+                s['token'] = token
+                s['last-request'] = datetime.now() - timedelta(milliseconds=201)
+            
+            response3 = c.post('/reflection/3/reply', data={
+                'p': 'test4',
+                'r': 'testmessage',
+                't': token,
+            }, headers={
+                'User-Agent': 'Flask test client',
+                'Referer': 'unittest',
+                'X-Requested-With': 'XMLHttpRequest',
+            })
+            self.assertEqual(response3.status_code, 200)
+            self.assertIn('json', response3.mimetype)
+            response_data = json.loads(response3.data)
+            self.assertEqual(response_data['status'], 'captcha')
+            self.assertEqual(response_data['token'], session['token'])
+            
+            answer = ' '.join(session['captcha-answer'])
+            with c.session_transaction() as s:
+                s['token'] = token
+                s['last-request'] = datetime.now() - timedelta(milliseconds=201)
+            
+            response4 = c.post('/reflection/3/reply', data={
+                'p': 'test4',
+                'r': 'testmessage',
+                't': token,
+                'ca': answer,
+            }, headers={
+                'User-Agent': 'Flask test client',
+                'Referer': 'unittest',
+                'X-Requested-With': 'XMLHttpRequest',
+            })
+            self.assertEqual(response4.status_code, 200)
+            self.assertIn('json', response4.mimetype)
+            response_data = json.loads(response4.data)
+            self.assertEqual(response_data['status'], 'success')
+            self.assertEqual(response_data['token'], session['token'])
+            
+            with c.session_transaction() as s:
+                s['token'] = token
+                s['last-request'] = datetime.now() - timedelta(milliseconds=201)
+            
+            response5 = c.post('/reflection/3/reply', data={
+                'p': 'test4',
+                'r': 'testmessage',
+                't': token,
+                'last-retrieve': datetime.today() - timedelta(days=1),
+            }, headers={
+                'User-Agent': 'Flask test client',
+                'Referer': 'unittest',
+                'X-Requested-With': 'XMLHttpRequest',
+            })
+            self.assertEqual(response5.status_code, 200)
+            self.assertIn('json', response5.mimetype)
+            response_data = json.loads(response5.data)
+            self.assertEqual(response_data['status'], 'ninja')
+            self.assertEqual(len(response_data['new']), 4)
+            self.assertGreaterEqual(response_data['since'], str(datetime.today() - timedelta(seconds=2)))
+            self.assertEqual(response_data['token'], session['token'])
+
+    def test_moderate_reply_protection(self):
+        with self.client as c:
+            response1 = c.post('/reply/3/moderate/', data={
+                'choice': 'up',
+            })
+            self.assertTrue(session['tainted'])
+        self.assertEqual(response1.status_code, 400)
+
+    def test_moderate_reply_passthrough(self):
+        """ Warning: this is not a full coverage test.
+
+        All differences that you find between the session and the request
+        in this test and test_moderate_reply_protection are necessary
+        conditions for reply_to_reflection to succeed (pass through). For 
+        full coverage, you would have to selectively omit each of those 
+        differences independently; in each reflection, the response should 
+        have status code 400 (though with different response data).
+        """
+        with self.client as c:
+            token = 'abcdef'
+            with c.session_transaction() as s:
+                s['token'] = token
+                s['last-request'] = datetime.now() - timedelta(hours=1)
+            
+            response2 = c.post('/reply/3/moderate/', data={
+                'choice': 'up',
+                't': token,
+            }, headers={
+                'User-Agent': 'Flask test client',
+                'Referer': 'unittest',
+                'X-Requested-With': 'XMLHttpRequest',
+            })
+            self.assertEqual(response2.status_code, 200)
+            self.assertIn('json', response2.mimetype)
+            response_data = json.loads(response2.data)
+            self.assertEqual(response_data['status'], 'success')
+            self.assertEqual(response_data['token'], session['token'])
+            
+            reply = Response.query.get(3)
+            self.assertEqual(reply.upvotes, 1)
+            self.assertEqual(reply.downvotes, 0)
