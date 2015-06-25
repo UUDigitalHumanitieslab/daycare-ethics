@@ -39,7 +39,7 @@ def init_captcha():
     dice.shuffle(united)
     challenge = ' '.join(united)
     expiry = datetime.today() + AUTHENTICATION_TIME
-    session['captcha-answer'] = oddballs
+    session['captcha-answer'] = map(lambda s: s.lower(), oddballs)
     session['captcha-expires'] = expiry
     if 'captcha-quarantine' in session:
         del session['captcha-quarantine']
