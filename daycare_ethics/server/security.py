@@ -126,7 +126,7 @@ def session_protect(view):
     def wrap(**kwargs):
         now = datetime.today()
         verify_natural()
-        if (session.new or 't' not in request.form
+        if ('token' not in session or 't' not in request.form
              or request.form['t'] != session['token']
              or datetime.today() - session['last-request'] < HUMAN_LAG ):
             session['tainted'] = True
