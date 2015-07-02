@@ -7,6 +7,8 @@
 
 from os.path import dirname, join
 from unittest import TestCase
+from tempfile import mkdtemp
+from shutil import rmtree
 
 from .. import create_app, db
 
@@ -20,11 +22,13 @@ class FixtureConfiguration (object):
 
 class BaseFixture (TestCase):
     def setUp(self):
-        self.app = create_app(config_obj=FixtureConfiguration)
+        tmpdir = mkdtemp('daycare_ethics_instance')
+        self.app = create_app(config_obj=FixtureConfiguration, instance=tmpdir)
         self.client = self.app.test_client()
 
     def tearDown(self):
         db.drop_all(app=self.app)
+        rmtree(self.app.instance_path)
 
     def request_context(self):
         return self.app.test_request_context()
