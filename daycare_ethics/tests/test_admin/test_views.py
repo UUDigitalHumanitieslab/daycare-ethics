@@ -60,6 +60,35 @@ class VotesViewTestCase(BaseFixture):
             'Testcase;\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}(.\d+)?;True' )
 
 
+class ResponsesViewTestCase(BaseFixture):
+    def setUp(self):
+        super(ResponsesViewTestCase, self).setUp()
+        testreflection = BrainTeaser(title='Testreflection')
+        with self.request_context():
+            db.session.add(Response(brain_teaser=testreflection, submission=datetime.now(), pseudonym='test1', message='something short'))
+            db.session.add(Response(brain_teaser=testreflection, submission=datetime.now(), pseudonym='test2', message='something long'))
+            db.session.add(Response(brain_teaser=testreflection, submission=datetime.now(), pseudonym='test3', message='something short'))
+            db.session.commit()
+
+    def test_export_data(self):
+        response = self.client.post(
+            '/admin/response/action/',
+            content_type='application/x-www-form-urlencoded',
+            data='action=Export&rowid=1&rowid=2&rowid=3' )
+        self.assertTrue(
+            response
+            .headers['Content-Disposition']
+            .startswith('attachment; filename="')
+        )
+        self.assertEqual(response.headers['Content-Type'], 'text/csv; charset=utf-8')
+        self.assertRegexpMatches(
+            response.data,
+            'brain_teaser;submission;pseudonym;upvotes;downvotes;message\\r\\n' +
+            'Testreflection;\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}(.\d+)?;test1;0;0;something short\\r\\n' +
+            'Testreflection;\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}(.\d+)?;test2;0;0;something long\\r\\n' +
+            'Testreflection;\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}(.\d+)?;test3;0;0;something short' )
+
+
 class TipsViewTestCase(BaseFixture):
     def setUp(self):
         super(TipsViewTestCase, self).setUp()
