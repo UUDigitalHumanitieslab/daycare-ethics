@@ -8,6 +8,7 @@ from datetime import datetime
 from flask import request, make_response
 
 
+# tested indirectly through tests.test_admin.test_views.{Votes,Responses}ViewTestCase
 def download_csv(self, ids, tablename):
     headers = [c[0] if type(c) == tuple else c for c in self.get_list_columns()]
     data = self.model.query.filter(self.model.id.in_(ids)).all()
