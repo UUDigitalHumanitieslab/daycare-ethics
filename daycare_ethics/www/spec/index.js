@@ -181,7 +181,7 @@ describe('app', function() {
         it('warns the user if a closure date is set', function() {
             this.date += 24 * 60 * 60 * 1000; // one day ahead
             var date = (new Date(this.date)).toISOString().slice(0, 10)
-            var customFakeData = _(fakeReflectionData).clone();
+            var customFakeData = _.clone(fakeReflectionData);
             customFakeData.closure = date;
             app.loadReflection($('#mirror'), customFakeData);
             $('#stage, #mirror').show();
@@ -193,7 +193,7 @@ describe('app', function() {
         it('warns the user when replying is no longer possible', function() {
             this.date -= 24 * 60 * 60 * 1000; // one day prior
             var date = (new Date(this.date)).toISOString().slice(0, 10)
-            var customFakeData = _(fakeReflectionData).clone();
+            var customFakeData = _.clone(fakeReflectionData);
             customFakeData.closure = date;
             app.loadReflection($('#mirror'), customFakeData);
             $('#stage, #mirror').show();
