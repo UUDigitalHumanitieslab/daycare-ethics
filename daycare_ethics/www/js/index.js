@@ -104,7 +104,7 @@ var app = {
         page.find('.week-number').html(data.week);
         page.find('.reflection-text').html(data.text);
         page.find('.reflection-discussion').empty();
-        _(data.responses).each(function(datum) {
+        _.each(data.responses, function(datum) {
             app.appendReply(page, datum);
         });
         nickname = localStorage.getItem('nickname');
@@ -167,7 +167,7 @@ var app = {
     renderArchiveList: function(data, listElem, retrieve) {
         var item, anchor;
         var target = '#' + listElem.prop('id').slice(0, -4) + 'item';
-        _(data).each(function(datum) {
+        _.each(data, function(datum) {
             item = $('<li>');
             anchor = $('<a>').attr('href', target).text(datum.title)
                              .data('identifier', datum.id).click(retrieve)
@@ -230,7 +230,7 @@ var app = {
             case 'ninja':
                 page.find('.ninja-message').popup('open', {positionTo: 'window'});
                 page.find('.reply-submitted').remove();
-                _(data.new).each(function(datum) {
+                _.each(data.new, function(datum) {
                     app.appendReply(page, datum);
                 });
                 form.show();

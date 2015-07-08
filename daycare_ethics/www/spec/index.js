@@ -569,7 +569,7 @@ describe('app', function() {
             spyOn(app, 'submitReplyVote');
         });
         it('appends moderatable reflection replies to the thread', function() {
-            _(this.responses).each(function(r) {
+            _.each(this.responses, function(r) {
                 app.appendReply($('#mirror'), r);
             });
             expect($('.reply-1')).toBeInDOM();
