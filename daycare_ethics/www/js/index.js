@@ -20,22 +20,22 @@ var app = {
     },
     
     insertPages: function() {
-        var casusTemplate = $('#casus-format').html();
-        var reflectionTemplate = $('#reflection-format').html();
-        $(_.template(casusTemplate, {
+        var casusTemplate = _.template($('#casus-format').html());
+        var reflectionTemplate = _.template($('#reflection-format').html());
+        $(casusTemplate({
             pageid: 'plate',
             back: 'Doordenkertjes'
         })).appendTo(app.scope).page();
-        $(_.template(casusTemplate, {
+        $(casusTemplate({
             pageid: 'plate-archive-item',
             back: 'Archief'
         })).appendTo(app.scope).page();
-        $(_.template(reflectionTemplate, {
+        $(reflectionTemplate({
             pageid: 'mirror',
             back: 'Doordenkertjes',
             suffix: ''
         })).appendTo(app.scope).page();
-        $(_.template(reflectionTemplate, {
+        $(reflectionTemplate({
             pageid: 'mirror-archive-item',
             back: 'Archief',
             suffix: '-2'

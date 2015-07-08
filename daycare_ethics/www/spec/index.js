@@ -205,7 +205,7 @@ describe('app', function() {
     
     describe('loadTips', function() {
         beforeEach(function() {
-            $(_.template($('#tips-format').html(), {})).appendTo('#stage').page();
+            $(_.template($('#tips-format').html())()).appendTo('#stage').page();
             app.loadTips({
                 'labour': [
                     { 'title': 'labourtest1' },
@@ -252,7 +252,7 @@ describe('app', function() {
     
     describe('loadCasusArchive', function() {
         beforeEach(function() {
-            $(_.template($('#casus-archive-format').html(), {}))
+            $(_.template($('#casus-archive-format').html())())
                 .appendTo('#stage').page();
             var fakeData = { 'all': [
                 _.clone(fakeLatestCaseData),
@@ -282,7 +282,7 @@ describe('app', function() {
     
     describe('loadReflectionArchive', function() {
         beforeEach(function() {
-            $(_.template($('#reflection-archive-format').html(), {}))
+            $(_.template($('#reflection-archive-format').html())())
                 .appendTo('#stage').page();
             var fakeData = { 'all': [
                 _.clone(fakeReflectionData),
@@ -314,7 +314,7 @@ describe('app', function() {
             ]};
             this.spy = jasmine.createSpy('spy');
             app.insertPages();
-            $(_.template($('#reflection-archive-format').html(), {}))
+            $(_.template($('#reflection-archive-format').html())())
                 .appendTo('#stage').page();
             _.assign(fakeData.all[0], { 'id': 3, 'week': '11' });
             app.renderArchiveList(fakeData.all, $('#mirror-archive-list'), this.spy);
