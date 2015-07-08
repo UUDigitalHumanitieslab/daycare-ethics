@@ -1,6 +1,6 @@
 /*
 
-Jasmine-Ajax - v3.1.0: a set of helpers for testing AJAX requests under the Jasmine
+Jasmine-Ajax - v3.2.0: a set of helpers for testing AJAX requests under the Jasmine
 BDD framework for JavaScript.
 
 http://github.com/jasmine/jasmine-ajax
@@ -37,16 +37,70 @@ getJasmineRequireObj().ajax = function(jRequire) {
   $ajax.RequestTracker = jRequire.AjaxRequestTracker();
   $ajax.StubTracker = jRequire.AjaxStubTracker();
   $ajax.ParamParser = jRequire.AjaxParamParser();
-  $ajax.eventBus = jRequire.AjaxEventBus();
+  $ajax.event = jRequire.AjaxEvent();
+  $ajax.eventBus = jRequire.AjaxEventBus($ajax.event);
   $ajax.fakeRequest = jRequire.AjaxFakeRequest($ajax.eventBus);
   $ajax.MockAjax = jRequire.MockAjax($ajax);
 
   return $ajax.MockAjax;
 };
 
-getJasmineRequireObj().AjaxEventBus = function() {
-  function EventBus() {
+getJasmineRequireObj().AjaxEvent = function() {
+  function now() {
+    return new Date().getTime();
+  }
+
+  function noop() {
+  }
+
+  // Event object
+  // https://dom.spec.whatwg.org/#concept-event
+  function XMLHttpRequestEvent(xhr, type) {
+    this.type = type;
+    this.bubbles = false;
+    this.cancelable = false;
+    this.timeStamp = now();
+
+    this.isTrusted = false;
+    this.defaultPrevented = false;
+
+    // Event phase should be "AT_TARGET"
+    // https://dom.spec.whatwg.org/#dom-event-at_target
+    this.eventPhase = 2;
+
+    this.target = xhr;
+    this.currentTarget = xhr;
+  }
+
+  XMLHttpRequestEvent.prototype.preventDefault = noop;
+  XMLHttpRequestEvent.prototype.stopPropagation = noop;
+  XMLHttpRequestEvent.prototype.stopImmediatePropagation = noop;
+
+  function XMLHttpRequestProgressEvent() {
+    XMLHttpRequestEvent.apply(this, arguments);
+
+    this.lengthComputable = false;
+    this.loaded = 0;
+    this.total = 0;
+  }
+
+  // Extend prototype
+  XMLHttpRequestProgressEvent.prototype = XMLHttpRequestEvent.prototype;
+
+  return {
+    event: function(xhr, type) {
+      return new XMLHttpRequestEvent(xhr, type);
+    },
+
+    progressEvent: function(xhr, type) {
+      return new XMLHttpRequestProgressEvent(xhr, type);
+    }
+  };
+};
+getJasmineRequireObj().AjaxEventBus = function(eventFactory) {
+  function EventBus(source) {
     this.eventList = {};
+    this.source = source;
   }
 
   function ensureEvent(eventList, name) {
@@ -81,19 +135,31 @@ getJasmineRequireObj().AjaxEventBus = function() {
   };
 
   EventBus.prototype.trigger = function(event) {
+    var evt;
+
+    // Event 'readystatechange' is should be a simple event.
+    // Others are progress event.
+    // https://xhr.spec.whatwg.org/#events
+    if (event === 'readystatechange') {
+      evt = eventFactory.event(this.source, event);
+    } else {
+      evt = eventFactory.progressEvent(this.source, event);
+    }
+
     var eventListeners = this.eventList[event];
 
-    if(eventListeners){
-      for(var i = 0; i < eventListeners.length; i++){
-        eventListeners[i]();
+    if (eventListeners) {
+      for (var i = 0; i < eventListeners.length; i++) {
+        eventListeners[i].call(this.source, evt);
       }
     }
   };
 
-  return function() {
-    return new EventBus();
+  return function(source) {
+    return new EventBus(source);
   };
 };
+
 getJasmineRequireObj().AjaxFakeRequest = function(eventBusFactory) {
   function extend(destination, source, propertiesToSkip) {
     propertiesToSkip = propertiesToSkip || [];
@@ -117,12 +183,13 @@ getJasmineRequireObj().AjaxFakeRequest = function(eventBusFactory) {
   function wrapProgressEvent(xhr, eventName) {
     return function() {
       if (xhr[eventName]) {
-        xhr[eventName]();
+        xhr[eventName].apply(xhr, arguments);
       }
     };
   }
 
   function initializeEvents(xhr) {
+    xhr.eventBus.addEventListener('readystatechange', wrapProgressEvent(xhr, 'onreadystatechange'));
     xhr.eventBus.addEventListener('loadstart', wrapProgressEvent(xhr, 'onloadstart'));
     xhr.eventBus.addEventListener('load', wrapProgressEvent(xhr, 'onload'));
     xhr.eventBus.addEventListener('loadend', wrapProgressEvent(xhr, 'onloadend'));
@@ -145,7 +212,7 @@ getJasmineRequireObj().AjaxFakeRequest = function(eventBusFactory) {
   function fakeRequest(global, requestTracker, stubTracker, paramParser) {
     function FakeXMLHttpRequest() {
       requestTracker.track(this);
-      this.eventBus = eventBusFactory();
+      this.eventBus = eventBusFactory(this);
       initializeEvents(this);
       this.requestHeaders = {};
       this.overriddenMimeType = null;
@@ -211,7 +278,7 @@ getJasmineRequireObj().AjaxFakeRequest = function(eventBusFactory) {
         this.username = arguments[3];
         this.password = arguments[4];
         this.readyState = 1;
-        this.onreadystatechange();
+        this.eventBus.trigger('readystatechange');
       },
 
       setRequestHeader: function(header, value) {
@@ -230,7 +297,7 @@ getJasmineRequireObj().AjaxFakeRequest = function(eventBusFactory) {
         this.readyState = 0;
         this.status = 0;
         this.statusText = "abort";
-        this.onreadystatechange();
+        this.eventBus.trigger('readystatechange');
         this.eventBus.trigger('progress');
         this.eventBus.trigger('abort');
         this.eventBus.trigger('loadend');
@@ -245,14 +312,12 @@ getJasmineRequireObj().AjaxFakeRequest = function(eventBusFactory) {
       onload: null,
       ontimeout: null,
       onloadend: null,
-
-      onreadystatechange: function(isTimeout) {
-      },
+      onreadystatechange: null,
 
       addEventListener: function() {
         this.eventBus.addEventListener.apply(this.eventBus, arguments);
       },
-      
+
       removeEventListener: function(event, callback) {
         this.eventBus.removeEventListener.apply(this.eventBus, arguments);
       },
@@ -261,13 +326,17 @@ getJasmineRequireObj().AjaxFakeRequest = function(eventBusFactory) {
 
       send: function(data) {
         this.params = data;
-        this.readyState = 2;
         this.eventBus.trigger('loadstart');
-        this.onreadystatechange();
 
         var stub = stubTracker.findStub(this.url, data, this.method);
         if (stub) {
-          this.respondWith(stub);
+          if (stub.isReturn()) {
+            this.respondWith(stub);
+          } else if (stub.isError()) {
+            this.responseError();
+          } else if (stub.isTimeout()) {
+            this.responseTimeout();
+          }
         }
       },
 
@@ -334,12 +403,16 @@ getJasmineRequireObj().AjaxFakeRequest = function(eventBusFactory) {
         if (this.readyState === 4) {
           throw new Error("FakeXMLHttpRequest already completed");
         }
+
         this.status = response.status;
         this.statusText = response.statusText || "";
+        this.responseHeaders = normalizeHeaders(response.responseHeaders, response.contentType);
+        this.readyState = 2;
+        this.eventBus.trigger('readystatechange');
+
         this.responseText = response.responseText || "";
         this.responseType = response.responseType || "";
         this.readyState = 4;
-        this.responseHeaders = normalizeHeaders(response.responseHeaders, response.contentType);
         this.responseXML = getResponseXml(response.responseText, this.getResponseHeader('content-type') || '');
         if (this.responseXML) {
           this.responseType = 'document';
@@ -351,7 +424,7 @@ getJasmineRequireObj().AjaxFakeRequest = function(eventBusFactory) {
           this.response = this.responseValue();
         }
 
-        this.onreadystatechange();
+        this.eventBus.trigger('readystatechange');
         this.eventBus.trigger('progress');
         this.eventBus.trigger('load');
         this.eventBus.trigger('loadend');
@@ -363,7 +436,7 @@ getJasmineRequireObj().AjaxFakeRequest = function(eventBusFactory) {
         }
         this.readyState = 4;
         jasmine.clock().tick(30000);
-        this.onreadystatechange('timeout');
+        this.eventBus.trigger('readystatechange');
         this.eventBus.trigger('progress');
         this.eventBus.trigger('timeout');
         this.eventBus.trigger('loadend');
@@ -374,7 +447,7 @@ getJasmineRequireObj().AjaxFakeRequest = function(eventBusFactory) {
           throw new Error("FakeXMLHttpRequest already completed");
         }
         this.readyState = 4;
-        this.onreadystatechange();
+        this.eventBus.trigger('readystatechange');
         this.eventBus.trigger('progress');
         this.eventBus.trigger('error');
         this.eventBus.trigger('loadend');
@@ -495,6 +568,10 @@ getJasmineRequireObj().AjaxParamParser = function() {
 };
 
 getJasmineRequireObj().AjaxRequestStub = function() {
+  var RETURN = 0,
+      ERROR = 1,
+      TIMEOUT = 2;
+
   function RequestStub(url, stubData, method) {
     var normalizeQuery = function(query) {
       return query ? query.split('&').sort().join('&') : undefined;
@@ -509,10 +586,11 @@ getJasmineRequireObj().AjaxRequestStub = function() {
       this.query = split.length > 1 ? normalizeQuery(split[1]) : undefined;
     }
 
-    this.data = normalizeQuery(stubData);
+    this.data = (stubData instanceof RegExp) ? stubData : normalizeQuery(stubData);
     this.method = method;
 
     this.andReturn = function(options) {
+      this.action = RETURN;
       this.status = options.status || 200;
 
       this.contentType = options.contentType;
@@ -521,18 +599,44 @@ getJasmineRequireObj().AjaxRequestStub = function() {
       this.responseHeaders = options.responseHeaders;
     };
 
+    this.isReturn = function() {
+      return this.action === RETURN;
+    };
+
+    this.andError = function() {
+      this.action = ERROR;
+    };
+
+    this.isError = function() {
+      return this.action === ERROR;
+    };
+
+    this.andTimeout = function() {
+      this.action = TIMEOUT;
+    };
+
+    this.isTimeout = function() {
+      return this.action === TIMEOUT;
+    };
+
     this.matches = function(fullUrl, data, method) {
-      var matches = false;
+      var urlMatches = false;
       fullUrl = fullUrl.toString();
       if (this.url instanceof RegExp) {
-        matches = this.url.test(fullUrl);
+        urlMatches = this.url.test(fullUrl);
       } else {
         var urlSplit = fullUrl.split('?'),
             url = urlSplit[0],
             query = urlSplit[1];
-        matches = this.url === url && this.query === normalizeQuery(query);
+        urlMatches = this.url === url && this.query === normalizeQuery(query);
       }
-      return matches && (!this.data || this.data === normalizeQuery(data)) && (!this.method || this.method === method);
+      var dataMatches = false;
+      if (this.data instanceof RegExp) {
+        dataMatches = this.data.test(data);
+      } else {
+        dataMatches = !this.data || this.data === normalizeQuery(data);
+      }
+      return urlMatches && dataMatches && (!this.method || this.method === method);
     };
   }
 
