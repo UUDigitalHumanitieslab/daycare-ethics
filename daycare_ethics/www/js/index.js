@@ -2,6 +2,7 @@
     (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
     Authors: Julian Gonggrijp, Martijn van der Klis
 */
+'use strict';
 var app = {
     scope: document.body,
     
@@ -109,7 +110,7 @@ var app = {
         _.each(data.responses, function(datum) {
             app.appendReply(page, datum);
         });
-        nickname = localStorage.getItem('nickname');
+        var nickname = localStorage.getItem('nickname');
         if (nickname) page.find('[name="p"]').val(nickname);
         if (data.closure) {
             if (new Date(data.closure) <= new Date()) {
@@ -245,7 +246,7 @@ var app = {
         }).fail(function(jqXHR) {
             if ( jqXHR.status == 400 &&
                  jqXHR.responseText && jqXHR.responseText[0] == '{' ) {
-                data = JSON.parse(jqXHR.responseText);
+                var data = JSON.parse(jqXHR.responseText);
                 localStorage.setItem('token', data.token);
                 switch (data.status) {
                 case 'closed':
