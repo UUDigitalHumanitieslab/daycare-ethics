@@ -70,11 +70,13 @@ var app = {
         page.find('.week-number').html(data.week);
         page.find('.case-text').html(data.text);
         page.find('.case-proposition').html(data.proposition);
+        var display = page.find('.case-display');
+        display.empty();
         var image_size = Math.ceil((Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio);
         var img = $('<img>')
             .attr('src', '/media/' + data.picture + '/' + image_size)
             .load(function() {
-                page.find('.case-display').empty().append(img);
+                display.append(img);
             });
         if (app.viewport.pixelRatio != 1) {
             // The pageshow event is deprecated as of JQM 1.4.0 and will be
@@ -87,7 +89,7 @@ var app = {
                 img.width(img.width() / app.viewport.pixelRatio);
             });
         }
-        page.css('background-color', data.background);
+        page.css('background-color', data.background || '#f9f9f9');
         if (localStorage.getItem('has_voted_' + data.id) ||
                 data.closure && new Date(data.closure) <= new Date()) {
             app.displayVotes(page);
