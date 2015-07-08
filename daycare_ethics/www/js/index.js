@@ -20,22 +20,22 @@ var app = {
     },
     
     insertPages: function() {
-        var casusTemplate = $('#casus-format').html();
-        var reflectionTemplate = $('#reflection-format').html();
-        $(_.template(casusTemplate, {
+        var casusTemplate = _.template($('#casus-format').html());
+        var reflectionTemplate = _.template($('#reflection-format').html());
+        $(casusTemplate({
             pageid: 'plate',
             back: 'Doordenkertjes'
         })).appendTo(app.scope).page();
-        $(_.template(casusTemplate, {
+        $(casusTemplate({
             pageid: 'plate-archive-item',
             back: 'Archief'
         })).appendTo(app.scope).page();
-        $(_.template(reflectionTemplate, {
+        $(reflectionTemplate({
             pageid: 'mirror',
             back: 'Doordenkertjes',
             suffix: ''
         })).appendTo(app.scope).page();
-        $(_.template(reflectionTemplate, {
+        $(reflectionTemplate({
             pageid: 'mirror-archive-item',
             back: 'Archief',
             suffix: '-2'
@@ -70,11 +70,13 @@ var app = {
         page.find('.week-number').html(data.week);
         page.find('.case-text').html(data.text);
         page.find('.case-proposition').html(data.proposition);
+        var display = page.find('.case-display');
+        display.empty();
         var image_size = Math.ceil((Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio);
         var img = $('<img>')
             .attr('src', '/media/' + data.picture + '/' + image_size)
             .load(function() {
-                page.find('.case-display').empty().append(img);
+                display.append(img);
             });
         if (app.viewport.pixelRatio != 1) {
             // The pageshow event is deprecated as of JQM 1.4.0 and will be
@@ -87,7 +89,7 @@ var app = {
                 img.width(img.width() / app.viewport.pixelRatio);
             });
         }
-        page.css('background-color', data.background);
+        page.css('background-color', data.background || '#f9f9f9');
         if (localStorage.getItem('has_voted_' + data.id) ||
                 data.closure && new Date(data.closure) <= new Date()) {
             app.displayVotes(page);
@@ -104,7 +106,7 @@ var app = {
         page.find('.week-number').html(data.week);
         page.find('.reflection-text').html(data.text);
         page.find('.reflection-discussion').empty();
-        _(data.responses).each(function(datum) {
+        _.each(data.responses, function(datum) {
             app.appendReply(page, datum);
         });
         nickname = localStorage.getItem('nickname');
@@ -167,7 +169,7 @@ var app = {
     renderArchiveList: function(data, listElem, retrieve) {
         var item, anchor;
         var target = '#' + listElem.prop('id').slice(0, -4) + 'item';
-        _(data).each(function(datum) {
+        _.each(data, function(datum) {
             item = $('<li>');
             anchor = $('<a>').attr('href', target).text(datum.title)
                              .data('identifier', datum.id).click(retrieve)
@@ -230,7 +232,7 @@ var app = {
             case 'ninja':
                 page.find('.ninja-message').popup('open', {positionTo: 'window'});
                 page.find('.reply-submitted').remove();
-                _(data.new).each(function(datum) {
+                _.each(data.new, function(datum) {
                     app.appendReply(page, datum);
                 });
                 form.show();

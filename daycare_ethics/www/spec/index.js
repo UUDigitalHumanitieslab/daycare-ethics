@@ -181,7 +181,7 @@ describe('app', function() {
         it('warns the user if a closure date is set', function() {
             this.date += 24 * 60 * 60 * 1000; // one day ahead
             var date = (new Date(this.date)).toISOString().slice(0, 10)
-            var customFakeData = _(fakeReflectionData).clone();
+            var customFakeData = _.clone(fakeReflectionData);
             customFakeData.closure = date;
             app.loadReflection($('#mirror'), customFakeData);
             $('#stage, #mirror').show();
@@ -193,7 +193,7 @@ describe('app', function() {
         it('warns the user when replying is no longer possible', function() {
             this.date -= 24 * 60 * 60 * 1000; // one day prior
             var date = (new Date(this.date)).toISOString().slice(0, 10)
-            var customFakeData = _(fakeReflectionData).clone();
+            var customFakeData = _.clone(fakeReflectionData);
             customFakeData.closure = date;
             app.loadReflection($('#mirror'), customFakeData);
             $('#stage, #mirror').show();
@@ -205,7 +205,7 @@ describe('app', function() {
     
     describe('loadTips', function() {
         beforeEach(function() {
-            $(_.template($('#tips-format').html(), {})).appendTo('#stage').page();
+            $(_.template($('#tips-format').html())()).appendTo('#stage').page();
             app.loadTips({
                 'labour': [
                     { 'title': 'labourtest1' },
@@ -252,7 +252,7 @@ describe('app', function() {
     
     describe('loadCasusArchive', function() {
         beforeEach(function() {
-            $(_.template($('#casus-archive-format').html(), {}))
+            $(_.template($('#casus-archive-format').html())())
                 .appendTo('#stage').page();
             var fakeData = { 'all': [
                 _.clone(fakeLatestCaseData),
@@ -282,7 +282,7 @@ describe('app', function() {
     
     describe('loadReflectionArchive', function() {
         beforeEach(function() {
-            $(_.template($('#reflection-archive-format').html(), {}))
+            $(_.template($('#reflection-archive-format').html())())
                 .appendTo('#stage').page();
             var fakeData = { 'all': [
                 _.clone(fakeReflectionData),
@@ -314,7 +314,7 @@ describe('app', function() {
             ]};
             this.spy = jasmine.createSpy('spy');
             app.insertPages();
-            $(_.template($('#reflection-archive-format').html(), {}))
+            $(_.template($('#reflection-archive-format').html())())
                 .appendTo('#stage').page();
             _.assign(fakeData.all[0], { 'id': 3, 'week': '11' });
             app.renderArchiveList(fakeData.all, $('#mirror-archive-list'), this.spy);
@@ -569,7 +569,7 @@ describe('app', function() {
             spyOn(app, 'submitReplyVote');
         });
         it('appends moderatable reflection replies to the thread', function() {
-            _(this.responses).each(function(r) {
+            _.each(this.responses, function(r) {
                 app.appendReply($('#mirror'), r);
             });
             expect($('.reply-1')).toBeInDOM();
