@@ -2,10 +2,33 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 from datetime import datetime
+import os
 import os.path as op
+from unittest import skip
 
 from ..common_fixtures import BaseFixture
 from ...database.models import *
+from ...util import TARGET_WIDTHS, image_variants
+
+
+class MediaViewTestCase(BaseFixture):
+    @skip('seems to suffer from a bug in one of the frameworks')
+    def test_upload(self):
+        test_image_name = 'openclipart_hector_gomez_landscape.png'
+        tests_dir = op.dirname(op.dirname(__file__))
+        test_image_path = op.join(tests_dir, 'data', test_image_name)
+        with self.client as c:
+            c.post('/admin/picture/new/', data={
+                'name': 'testimage',
+                'path': (test_image_path, test_image_name),
+            })
+            images = Picture.query.all()
+        self.assertEqual(len(images), 1)
+        self.assertEqual(images[0].path, test_image_name)
+        directory = os.listdir(self.app.instance_path)
+        self.assertEqual(len(directory), len(TARGET_WIDTHS) + 1)
+        self.assertIn(test_image_name, directory)
+        self.assertTrue(all((f in directory for f in image_variants(test_image_name))))
 
 
 class VotesViewTestCase(BaseFixture):
@@ -37,6 +60,35 @@ class VotesViewTestCase(BaseFixture):
             'Testcase;\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}(.\d+)?;True' )
 
 
+class ResponsesViewTestCase(BaseFixture):
+    def setUp(self):
+        super(ResponsesViewTestCase, self).setUp()
+        testreflection = BrainTeaser(title='Testreflection')
+        with self.request_context():
+            db.session.add(Response(brain_teaser=testreflection, submission=datetime.now(), pseudonym='test1', message='something short'))
+            db.session.add(Response(brain_teaser=testreflection, submission=datetime.now(), pseudonym='test2', message='something long'))
+            db.session.add(Response(brain_teaser=testreflection, submission=datetime.now(), pseudonym='test3', message='something short'))
+            db.session.commit()
+
+    def test_export_data(self):
+        response = self.client.post(
+            '/admin/response/action/',
+            content_type='application/x-www-form-urlencoded',
+            data='action=Export&rowid=1&rowid=2&rowid=3' )
+        self.assertTrue(
+            response
+            .headers['Content-Disposition']
+            .startswith('attachment; filename="')
+        )
+        self.assertEqual(response.headers['Content-Type'], 'text/csv; charset=utf-8')
+        self.assertRegexpMatches(
+            response.data,
+            'brain_teaser;submission;pseudonym;upvotes;downvotes;message\\r\\n' +
+            'Testreflection;\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}(.\d+)?;test1;0;0;something short\\r\\n' +
+            'Testreflection;\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}(.\d+)?;test2;0;0;something long\\r\\n' +
+            'Testreflection;\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}(.\d+)?;test3;0;0;something short' )
+
+
 class TipsViewTestCase(BaseFixture):
     def setUp(self):
         super(TipsViewTestCase, self).setUp()
@@ -65,20 +117,3 @@ class TipsViewTestCase(BaseFixture):
         with self.request_context():
             self.assertNotEqual(Tip.query.filter_by(id=1).one().update, self.old_age)
             self.assertEqual(Tip.query.filter_by(id=2).one().update, self.old_age)
-
-
-class MediaViewTestCase(BaseFixture):
-    def test_upload(self):
-        test_image_name = 'openclipart_hector_gomez_landscape.png'
-        tests_dir = op.dirname(op.dirname(__file__))
-        test_image_path = op.join(tests_dir, 'data', test_image_name)
-        # test_image_file = open(test_image_path, 'rb')
-        # print test_image_path
-        self.client.post(
-            '/admin/picture/new/',
-            data = {
-                'name': 'testimage',
-                'path': (test_image_path, test_image_name),
-            } )
-        with self.request_context():
-            pass

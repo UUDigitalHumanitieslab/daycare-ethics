@@ -2,18 +2,34 @@
 <html><head>
 
 <meta charset="utf-8">
-<title>Jasmine Spec Runner v2.1.2</title>
+<title>Jasmine Spec Runner v2.3.4</title>
 
-<link rel="shortcut icon" type="image/png" href="lib/jasmine-2.1.2/jasmine_favicon.png">
-<link rel="stylesheet" href="lib/jasmine-2.1.2/jasmine.css">
+<link rel="shortcut icon" type="image/png" href="lib/jasmine-2.3.4/jasmine_favicon.png">
+<link rel="stylesheet" href="lib/jasmine-2.3.4/jasmine.css">
 
-<script src="lib/jasmine-2.1.2/jasmine.js"></script>
-<script src="lib/jasmine-2.1.2/jasmine-html.js"></script>
-<script src="lib/jasmine-2.1.2/boot.js"></script>
+<script src="lib/jasmine-2.3.4/jasmine.js"></script>
+<script src="lib/jasmine-2.3.4/jasmine-html.js"></script>
+<script src="lib/jasmine-2.3.4/boot.js"></script>
+<script src="lib/mock-ajax.js"></script>
 
 <!-- include source files here... -->
-<script src="../js/jquery-2.1.1.min.js"></script>
+<script src="../js/jquery-2.1.4.min.js"></script>
+<script src="lib/jasmine-jquery.js"></script>
+
+<script type="text/javascript">
+    $(document).on("mobileinit", function(){
+        $.mobile.autoInitializePage = false;
+    });
+</script>
+<script src="../js/jquery.mobile-1.4.5.min.js"></script>
+
+<script src="../js/lodash.min.js"></script>
+<script src="../js/machina.min.js"></script>
+<script src="../js/jquery.validate.min.js"></script>
+<script src="../js/messages_nl.min.js"></script>
 <script src="../js/index.js"></script>
+
+<link rel="stylesheet" href="../css/index.css">
 
 <!-- include spec files here... -->
 <script src="helper.js"></script>
@@ -21,6 +37,116 @@
 
 </head><body>
 
-<div id="stage" style="display:none;"></div>
+<div id="stage"></div>
+
+<script type="text/template" id="casus-format">
+    <div data-role="page" id="<%= pageid %>">
+        <div data-role="header">
+            <a href="#" data-rel="back" data-icon="carat-l"><%= back %></a>
+            <span class="ui-title" />
+        </div>
+        <h3>Casus van week <span class="week-number"></span></h3>
+        <div class="ui-grid-a flex-col">
+            <div class="case-display ui-block-a"></div>
+            <div class="ui-block-b">
+                <p class="case-text"></p>
+                <p class="case-proposition"></p>
+            </div>
+        </div>
+        <span class="yes_count"></span>
+        <span class="no_bar"><span class="yes_bar"></span></span>
+        <span class="no_count"></span>
+        <a href="#" class="vote-btn-yes ui-btn ui-btn-inline ui-corner-all">Ja</a>
+        <a href="#" class="vote-btn-no ui-btn ui-btn-inline ui-corner-all">Nee</a>
+    </div>
+</script>
+
+<script type="text/template" id="reflection-format">
+    <div data-role="page" id="<%= pageid %>">
+        <div data-role="header">
+            <a href="#" data-rel="back" data-icon="carat-l"><%= back %></a>
+            <span class="ui-title" />
+        </div>
+        <h3>Reflectie van week <span class="week-number"></span></h3>
+        <p class="reflection-text"></p>
+        <div class="reflection-discussion"></div>
+        <form class="reflection-response">
+            <label for="form-field-p<%= suffix %>">Schuilnaam:</label>
+            <input type="text" inputmode="verbatim" maxlength="30" required spellcheck="false" id="form-field-p<%= suffix %>" name="p">
+            <label for="form-field-r<%= suffix %>">Reactie:</label>
+            <textarea autocomplete=off required minlength=10 maxlength=400 id="form-field-r<%= suffix %>" name="r"></textarea>
+            <input type="submit" value="Reageer">
+        </form>
+        <div data-role="popup" class="ninja-message ui-content">
+            Er zijn één of meer reacties binnengekomen terwijl je typte. Je kunt je eigen reactie hier nu op aanpassen als je dat wilt.<br>
+            <strong>Let op</strong>: je reactie is dus nog niet opgeslagen!
+            <a href="#" data-role="button" data-rel="back">OK</a>
+        </div>
+        <div data-role="popup" class="captcha-popup ui-content" data-dismissible="false">
+            Welke <strong>drie</strong> woorden horen niet in onderstaand rijtje? Plaats alleen spaties tussen de woorden.<br>
+            <span class="captcha-challenge"></span>
+            <form class="reflection-captcha">
+                <label for="form-field-ca<%= suffix %>">Antwoord:</label>
+                <input type=text inputmode=verbatim required spellcheck=false id="form-field-ca<%= suffix %>" name="ca" pattern="[a-z]+( +[a-z+]){2}" placeholder="maan roos vis">
+                <input type=submit value="Stuur op">
+            </form>
+        </div>
+        <p class="reflection-closed-notice" style="clear: both;">
+            Deze reflectie is gesloten voor reacties.
+        </p>
+        <p class="reflection-closure-announce" style="clear: both;">
+            Reageren is mogelijk tot <span class="reflection-closure-date"></span>.
+        </p>
+        <div data-role="popup" class="reflection-closed-popup ui-content">
+            Sorry, deze reflectie is gesloten voor reacties.
+            <a href="#" data-role="button" data-rel="back">OK</a>
+        </div>
+        <div data-role="popup" class="reflection-invalid-popup ui-content">
+            Vul alsjeblieft beide velden in.
+            <a href="#" data-role="button" data-rel="back">OK</a>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="tips-format">
+    <div data-role="page" id="links-tips">
+        <div data-role="header">
+            <a href="#shelf" data-icon="carat-l">Extra</a>
+            <span class="ui-title" />
+        </div>
+        <h4>Tips bij de beroepscode</h4>
+        <ul data-role="listview" data-inset="true" id="labour-code-tips" class="tips-list"></ul>
+        <h4>Links</h4>
+        <ul data-role="listview" data-inset="true" id="website-links" class="tips-list"></ul>
+        <h4>Boekentips</h4>
+        <ul data-role="listview" data-inset="true" id="book-tips" class="tips-list"></ul>
+    </div>
+</script>
+
+<script type="text/template" id="casus-archive-format">
+    <div data-role="page" id="plate-archive">
+        <div data-role="header">
+            <a href="#archive" data-icon="carat-l">Archief</a>
+            <span class="ui-title" />
+        </div>
+        <h3>Lijst van casus</h3>
+        <p>(op weeknummer)</p>
+        <ul data-role="listview" data-inset="true" id="plate-archive-list">
+        </ul>
+    </div>
+</script>
+
+<script type="text/template" id="reflection-archive-format">
+    <div data-role="page" id="mirror-archive">
+        <div data-role="header">
+            <a href="#archive" data-icon="carat-l">Archief</a>
+            <span class="ui-title" />
+        </div>
+        <h3>Lijst van reflecties</h3>
+        <p>(op weeknummer)</p>
+        <ul data-role="listview" data-inset="true" id="mirror-archive-list">
+        </ul>
+    </div>
+</script>
 
 </body></html>

@@ -39,7 +39,7 @@ def init_captcha():
     dice.shuffle(united)
     challenge = ' '.join(united)
     expiry = datetime.today() + AUTHENTICATION_TIME
-    session['captcha-answer'] = oddballs
+    session['captcha-answer'] = map(lambda s: s.lower(), oddballs)
     session['captcha-expires'] = expiry
     if 'captcha-quarantine' in session:
         del session['captcha-quarantine']
@@ -126,7 +126,7 @@ def session_protect(view):
     def wrap(**kwargs):
         now = datetime.today()
         verify_natural()
-        if (session.new or 't' not in request.form
+        if ('token' not in session or 't' not in request.form
              or request.form['t'] != session['token']
              or datetime.today() - session['last-request'] < HUMAN_LAG ):
             session['tainted'] = True
