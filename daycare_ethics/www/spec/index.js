@@ -44,6 +44,35 @@ describe('app', function() {
             }
         ]
     };
+    var fakeTipsData = {
+        'labour': [
+            { 'title': 'labourtest1' },
+            {
+                'title': 'labourtest2',
+                'text': 'you can do something with this tip'
+            }
+        ],
+        'site': [
+            {
+                'href': 'http://www.example.com',
+                'title': 'sitetest'
+            }
+        ],
+        'book': [
+            {
+                'title': 'interesting book',
+                'author': 'interesting author'
+            },
+            {
+                'title': 'amusing book',
+                'author': 'amusing author'
+            },
+            {
+                'title': 'annoying book',
+                'author': 'annoying author'
+            }
+        ]
+    };
     
     beforeEach(function() {
         app.scope = $('#stage');
@@ -204,45 +233,57 @@ describe('app', function() {
         });
     });
     
+    describe('renderTip', function() {
+        it('composes appropriate bare html code for any tip', function() {
+            var test1 = fakeTipsData.labour[0];
+            var test2 = fakeTipsData.labour[1];
+            var test3 = fakeTipsData.site[0];
+            var test4 = fakeTipsData.book[0];
+            var test5 = _.assign({}, test2, test3);
+            var test6 = _.assign({}, test5, test4);
+            var test7 = _.assign({}, test2, test4);
+            var test8 = _.assign({}, test3, test4);
+            expect(app.renderTip(test1)[0].outerHTML).toBe(
+                '<li><h3 style="white-space: normal;">labourtest1</h3></li>'
+            );
+            expect(app.renderTip(test2)[0].outerHTML).toBe(
+                '<li><h3 style="white-space: normal;">labourtest2</h3><p>you can do something with this tip</p></li>'
+            );
+            expect(app.renderTip(test3)[0].outerHTML).toBe(
+                '<li><a href="http://www.example.com" target="_blank"><h3 style="white-space: normal;">sitetest</h3></a></li>'
+            );
+            expect(app.renderTip(test4)[0].outerHTML).toBe(
+                '<li><h3 style="white-space: normal;">interesting book</h3><p>interesting author</p></li>'
+            );
+            expect(app.renderTip(test5)[0].outerHTML).toBe(
+                '<li><a href="http://www.example.com" target="_blank"><h3 style="white-space: normal;">sitetest</h3><p>you can do something with this tip</p></a></li>'
+            );
+            expect(app.renderTip(test6)[0].outerHTML).toBe(
+                '<li><a href="http://www.example.com" target="_blank"><h3 style="white-space: normal;">interesting book</h3><p>interesting author</p><p>you can do something with this tip</p></a></li>'
+            );
+            expect(app.renderTip(test7)[0].outerHTML).toBe(
+                '<li><h3 style="white-space: normal;">interesting book</h3><p>interesting author</p><p>you can do something with this tip</p></li>'
+            );
+            expect(app.renderTip(test8)[0].outerHTML).toBe(
+                '<li><a href="http://www.example.com" target="_blank"><h3 style="white-space: normal;">interesting book</h3><p>interesting author</p></a></li>'
+            );
+        });
+    });
+    
     describe('loadTips', function() {
         beforeEach(function() {
             $(_.template($('#tips-format').html())()).appendTo('#stage').page();
-            app.loadTips({
-                'labour': [
-                    { 'title': 'labourtest1' },
-                    { 'title': 'labourtest2' }
-                ],
-                'site': [
-                    {
-                        'href': 'http://www.example.com',
-                        'title': 'sitetest'
-                    }
-                ],
-                'book': [
-                    {
-                        'title': 'interesting book',
-                        'author': 'interesting author'
-                    },
-                    {
-                        'title': 'amusing book',
-                        'author': 'amusing author'
-                    },
-                    {
-                        'title': 'annoying book',
-                        'author': 'annoying author'
-                    }
-                ]
-            });
+            app.loadTips(fakeTipsData);
         });
         it('inserts labour code tips in the first list', function() {
             var items = $('#labour-code-tips > *');
             expect(items).toHaveLength(2);
-            expect(items[0].outerHTML).toBe('<li class="ui-li-static ui-body-inherit ui-first-child">labourtest1</li>');
+            expect(items[0].outerHTML).toBe('<li class="ui-li-static ui-body-inherit ui-first-child"><h3 style="white-space: normal;">labourtest1</h3></li>');
         });
         it('inserts website tips in the second list', function() {
             var items = $('#website-links > *');
             expect(items).toHaveLength(1);
-            expect(items[0].outerHTML).toBe('<li class="ui-first-child ui-last-child"><a href="http://www.example.com" target="_blank" class="ui-btn ui-btn-icon-right ui-icon-carat-r">sitetest</a></li>');
+            expect(items[0].outerHTML).toBe('<li class="ui-first-child ui-last-child"><a href="http://www.example.com" target="_blank" class="ui-btn ui-btn-icon-right ui-icon-carat-r"><h3 style="white-space: normal;">sitetest</h3></a></li>');
         });
         it('inserts book tips in the third list', function() {
             var items = $('#book-tips > *');

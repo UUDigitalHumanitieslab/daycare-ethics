@@ -126,24 +126,26 @@ var app = {
         }
     },
     
+    renderTip: function(data) {
+        var item = $('<li>');
+        var tip = item;
+        if (data.href) {
+            tip = $('<a>').attr('href', data.href).attr('target', '_blank');
+            tip.appendTo(item);
+        }
+        $('<h3>').html(data.title).css('white-space', 'normal').appendTo(tip);
+        if (data.author) $('<p>').html(data.author).appendTo(tip);
+        if (data.text) $('<p>').html(data.text).appendTo(tip);
+        return item;
+    },
+    
     loadTips: function(data) {
         // Load labour code tips
-        $.each(data.labour, function( index, labour ) {
-            var tip = $('<li>').html(labour.title);
-            $("#labour-code-tips").append(tip);
-        });
+        $("#labour-code-tips").append(_.map(data.labour, app.renderTip));
         // Load website links
-        $.each(data.site, function( index, site ) {
-            var tip = $('<li>').html('<a href="' + site.href + '" target="_blank">' + site.title + '</a>');
-            $("#website-links").append(tip);
-        });
+        $("#website-links").append(_.map(data.site, app.renderTip));
         // Load book tips
-        $.each(data.book, function( index, book ) {
-            var tip = $('<li>')
-                .append($('<h3>').html(book.title).css('white-space', 'normal'))
-                .append($('<p>').html(book.author));
-            $("#book-tips").append(tip);
-        });
+        $("#book-tips").append(_.map(data.book, app.renderTip));
         // We need to refresh the listviews on load.
         $('.tips-list').listview('refresh');
     },
