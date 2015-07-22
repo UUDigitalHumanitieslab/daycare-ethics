@@ -2,7 +2,104 @@
     (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
     Authors: Julian Gonggrijp, Martijn van der Klis
 */
+
 'use strict';
+
+// var Stethoscope = function() {
+//     this.settings = ;
+//     this.handle = $(this);
+// };
+// _.extend(Stethoscope.prototype, {
+//     on: function(event, handler) {
+//         this.handle.on(event, handler);
+//     },
+//     off: function(event, handler) {
+//         this.handle.off(event, handler);
+//     },
+//     trigger: function(event) {
+//         this.handle.trigger(event);
+//     }
+// });
+
+var ConnectivityFsm = machina.Fsm.extend({
+    namespace: 'connectivity',
+
+    initialState: "offline",
+    
+    requestData: {
+        url: '/ping',
+        method: 'GET',
+        timeout: 5000
+    },
+
+    checkHeartbeat: function() {
+        var self = this;
+        self.emit('checking-heartbeat');
+        $.ajax(self.requestData).done(function() {
+            self.emit('heartbeat');
+        }).fail(function() {
+            self.emit('no-heartbeat');
+        });
+    },
+
+    initialize: function() {
+        var self = this;
+        $( window ).bind( "online", function() {
+            self.handle( "window.online" );
+        } );
+
+        $( window ).bind( "offline", function() {
+            self.handle( "window.offline" );
+        } );
+
+        $( window.applicationCache ).bind( "error", function() {
+            self.handle( "appCache.error" );
+        } );
+
+        $( window.applicationCache ).bind( "downloading", function() {
+            self.handle( "appCache.downloading" );
+        } );
+
+        $( document ).on( "resume", function () {
+            self.handle( "device.resume" );
+        });
+    },
+
+    states: {
+        probing: {
+            _onEnter: function() {
+                this.checkHeartbeat();
+            },
+            'heartbeat': "online",
+            "no-heartbeat": "disconnected",
+            "go.offline": "offline",
+            "*": function() {
+                this.deferUntilTransition();
+            }
+        },
+
+        online: {
+            "window.offline": "probing",
+            "appCache.error": "probing",
+            "request.timeout": "probing",
+            "device.resume"   : "probing",
+            "go.offline": "offline"
+        },
+
+        disconnected: {
+            "window.online": "probing",
+            "appCache.downloading": "probing",
+            "go.online": "probing",
+            "device.resume"   : "probing",
+            "go.offline": "offline"
+        },
+
+        offline: {
+            "go.online": "probing"
+        }
+    }
+});
+
 var app = {
     scope: document.body,
     

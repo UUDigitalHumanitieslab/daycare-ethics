@@ -2,7 +2,56 @@
     (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
     Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 */
+
 'use strict';
+
+beforeEach(function() {
+    app.scope = $('#stage');
+    jasmine.Ajax.install();
+});
+
+afterEach(function() {
+    jasmine.Ajax.uninstall();
+    localStorage.clear();
+});
+
+describe('ConnectivityFsm', function() {
+    beforeEach(function() {
+        this.fsm = new ConnectivityFsm();
+        this.fsm.on('*', function (eventName){
+            console.log('fsm fired event:', eventName);
+        });
+    });
+
+    describe('state probing', function() {
+        beforeEach(function() {
+            var self = this;
+            this.fsm.on('checking-heartbeat', function() {
+                self.fired = true;
+            });
+            this.fsm.on('heartbeat', function() {
+                self.success = true;
+            });
+            this.fsm.transition('probing');
+        });
+        it('sends a heartbeat check to the server', function() {
+            expect(this.fired).toBe(true);
+            expect(jasmine.Ajax.requests.count()).toBe(1);
+            var r = jasmine.Ajax.requests.at(0);
+            expect(r.url).toBe('/ping');
+            expect(r.method).toBe('GET');
+            expect(r.requestHeaders['X-Requested-With']).toBe('XMLHttpRequest');
+        });
+        it('transitions the fsm to online if the server replies', function() {
+            expect(jasmine.Ajax.requests.count()).toBe(1);
+            var r = jasmine.Ajax.requests.at(0);
+            r.respondWith({responseText: 'pong', status: 200});
+            expect(this.success).toBe(true);
+            expect(this.fsm.state).toBe('online');
+        });
+    });
+});
+
 describe('app', function() {
     var fakeLatestCaseData = {
         'id': 1,
@@ -73,16 +122,6 @@ describe('app', function() {
             }
         ]
     };
-    
-    beforeEach(function() {
-        app.scope = $('#stage');
-        jasmine.Ajax.install();
-    });
-    
-    afterEach(function() {
-        jasmine.Ajax.uninstall();
-        localStorage.clear();
-    });
     
     describe('initialize', function() {
         beforeEach(function() {
