@@ -5,22 +5,6 @@
 
 'use strict';
 
-// var Stethoscope = function() {
-//     this.settings = ;
-//     this.handle = $(this);
-// };
-// _.extend(Stethoscope.prototype, {
-//     on: function(event, handler) {
-//         this.handle.on(event, handler);
-//     },
-//     off: function(event, handler) {
-//         this.handle.off(event, handler);
-//     },
-//     trigger: function(event) {
-//         this.handle.trigger(event);
-//     }
-// });
-
 var ConnectivityFsm = machina.Fsm.extend({
     namespace: 'connectivity',
 
@@ -28,7 +12,7 @@ var ConnectivityFsm = machina.Fsm.extend({
     
     requestData: {
         url: '/ping',
-        method: 'GET',
+        method: 'HEAD',
         timeout: 5000
     },
 
@@ -44,6 +28,15 @@ var ConnectivityFsm = machina.Fsm.extend({
 
     initialize: function() {
         var self = this;
+        
+        self.on('heartbeat', function() {
+            self.handle('heartbeat');
+        });
+        
+        self.on('no-heartbeat', function() {
+            self.handle('no-heartbeat');
+        });
+        
         $( window ).bind( "online", function() {
             self.handle( "window.online" );
         } );

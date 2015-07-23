@@ -18,11 +18,8 @@ afterEach(function() {
 describe('ConnectivityFsm', function() {
     beforeEach(function() {
         this.fsm = new ConnectivityFsm();
-        this.fsm.on('*', function (eventName){
-            console.log('fsm fired event:', eventName);
-        });
     });
-
+    
     describe('state probing', function() {
         beforeEach(function() {
             var self = this;
@@ -32,22 +29,37 @@ describe('ConnectivityFsm', function() {
             this.fsm.on('heartbeat', function() {
                 self.success = true;
             });
+            this.fsm.on('no-heartbeat', function() {
+                self.failure = true;
+            });
+            jasmine.clock().install();
             this.fsm.transition('probing');
+        });
+        afterEach(function() {
+            jasmine.clock().uninstall();
         });
         it('sends a heartbeat check to the server', function() {
             expect(this.fired).toBe(true);
             expect(jasmine.Ajax.requests.count()).toBe(1);
             var r = jasmine.Ajax.requests.at(0);
             expect(r.url).toBe('/ping');
-            expect(r.method).toBe('GET');
+            expect(r.method).toBe('HEAD');
             expect(r.requestHeaders['X-Requested-With']).toBe('XMLHttpRequest');
         });
         it('transitions the fsm to online if the server replies', function() {
             expect(jasmine.Ajax.requests.count()).toBe(1);
             var r = jasmine.Ajax.requests.at(0);
-            r.respondWith({responseText: 'pong', status: 200});
+            r.respondWith({status: 200});
             expect(this.success).toBe(true);
             expect(this.fsm.state).toBe('online');
+        });
+        it('... or to disconnected if the server doesn\'t reply', function() {
+            expect(jasmine.Ajax.requests.count()).toBe(1);
+            var r = jasmine.Ajax.requests.at(0);
+            expect(this.failure).toBeFalsy();
+            jasmine.clock().tick(5001);
+            expect(this.failure).toBe(true);
+            expect(this.fsm.state).toBe('disconnected');
         });
     });
 });
