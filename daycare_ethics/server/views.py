@@ -21,6 +21,11 @@ ISOFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 POST_INTERVAL = timedelta(minutes=10)
 
 
+@public.route('/ping', methods=['HEAD'])
+def ping():
+    return current_app.response_class()
+
+
 @public.route('/')
 def index():
     return send_from_directory(public.static_folder, 'index.html')

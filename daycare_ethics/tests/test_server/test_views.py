@@ -11,6 +11,12 @@ from ...database.db import db
 from ...server.views import *
 
 
+class PingTestCase (BaseFixture):
+    def test_ping(self):
+        response = self.client.head('/ping')
+        self.assertEqual(response.status_code, 200)
+
+
 class IndexTestCase (BaseFixture):
     def test_index(self):
         response = self.client.get('/')
