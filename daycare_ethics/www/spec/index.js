@@ -17,7 +17,7 @@ afterEach(function() {
 
 describe('ConnectivityFsm', function() {
     beforeEach(function() {
-        this.fsm = new ConnectivityFsm();
+        this.fsm = new ConnectivityFsm({initialState: 'disconnected'});
     });
     
     describe('state probing', function() {

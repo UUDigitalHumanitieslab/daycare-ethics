@@ -11,7 +11,7 @@
 var ConnectivityFsm = machina.Fsm.extend({
     namespace: 'connectivity',
 
-    initialState: 'offline',
+    initialState: 'probing',
     
     requestData: {
         url: '/ping',
@@ -61,27 +61,17 @@ var ConnectivityFsm = machina.Fsm.extend({
             },
             'heartbeat': 'online',
             'no-heartbeat': 'disconnected',
-            'go.offline': 'offline',
-            '*': function() {
-                this.deferUntilTransition();
-            }
         },
         online: {
             'window.offline': 'probing',
             'appCache.error': 'probing',
             'request.timeout': 'probing',
             'device.resume': 'probing',
-            'go.offline': 'offline'
         },
         disconnected: {
             'window.online': 'probing',
             'appCache.downloading': 'probing',
-            'go.online': 'probing',
             'device.resume': 'probing',
-            'go.offline': 'offline'
-        },
-        offline: {
-            'go.online': 'probing'
         }
     }
 });
