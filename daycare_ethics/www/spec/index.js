@@ -62,6 +62,42 @@ describe('ConnectivityFsm', function() {
             expect(this.fsm.state).toBe('disconnected');
         });
     });
+    
+    describe('state online', function() {
+        beforeEach(function() {
+            this.fsm.transition('online');
+        });
+        it('transitions to probing on the window offline event', function() {
+            $(window).trigger('offline');
+            expect(this.fsm.state).toBe('probing');
+        });
+        it('transitions to probing on the appcache error event', function() {
+            $(window.applicationCache).trigger('error');
+            expect(this.fsm.state).toBe('probing');
+        });
+        it('transitions to probing on the device resume event', function() {
+            $(document).trigger('resume');
+            expect(this.fsm.state).toBe('probing');
+        });
+    });
+    
+    describe('state disconnected', function() {
+        beforeEach(function() {
+            this.fsm.transition('disconnected');
+        });
+        it('transitions to probing on the window online event', function() {
+            $(window).trigger('online');
+            expect(this.fsm.state).toBe('probing');
+        });
+        it('transitions to probing on the appcache downloading event', function() {
+            $(window.applicationCache).trigger('downloading');
+            expect(this.fsm.state).toBe('probing');
+        });
+        it('transitions to probing on the device resume event', function() {
+            $(document).trigger('resume');
+            expect(this.fsm.state).toBe('probing');
+        });
+    });
 });
 
 describe('app', function() {
