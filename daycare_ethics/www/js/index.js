@@ -5,10 +5,13 @@
 
 'use strict';
 
+// ConnectivityFsm is based directly on the example from machina-js.org.
+// Most important difference is that checkHeartbeat is simply a member
+// of the state machine itself.
 var ConnectivityFsm = machina.Fsm.extend({
     namespace: 'connectivity',
 
-    initialState: "offline",
+    initialState: 'offline',
     
     requestData: {
         url: '/ping',
@@ -28,33 +31,26 @@ var ConnectivityFsm = machina.Fsm.extend({
 
     initialize: function() {
         var self = this;
-        
         self.on('heartbeat', function() {
             self.handle('heartbeat');
         });
-        
         self.on('no-heartbeat', function() {
             self.handle('no-heartbeat');
         });
-        
-        $( window ).bind( "online", function() {
-            self.handle( "window.online" );
-        } );
-
-        $( window ).bind( "offline", function() {
-            self.handle( "window.offline" );
-        } );
-
-        $( window.applicationCache ).bind( "error", function() {
-            self.handle( "appCache.error" );
-        } );
-
-        $( window.applicationCache ).bind( "downloading", function() {
-            self.handle( "appCache.downloading" );
-        } );
-
-        $( document ).on( "resume", function () {
-            self.handle( "device.resume" );
+        $(window).bind('online', function() {
+            self.handle('window.online');
+        });
+        $(window).bind( 'offline', function() {
+            self.handle('window.offline');
+        });
+        $(window.applicationCache).bind('error', function() {
+            self.handle('appCache.error');
+        });
+        $(window.applicationCache).bind('downloading', function() {
+            self.handle('appCache.downloading');
+        });
+        $(document).on('resume', function () {
+            self.handle('device.resume');
         });
     },
 
@@ -63,32 +59,29 @@ var ConnectivityFsm = machina.Fsm.extend({
             _onEnter: function() {
                 this.checkHeartbeat();
             },
-            'heartbeat': "online",
-            "no-heartbeat": "disconnected",
-            "go.offline": "offline",
-            "*": function() {
+            'heartbeat': 'online',
+            'no-heartbeat': 'disconnected',
+            'go.offline': 'offline',
+            '*': function() {
                 this.deferUntilTransition();
             }
         },
-
         online: {
-            "window.offline": "probing",
-            "appCache.error": "probing",
-            "request.timeout": "probing",
-            "device.resume"   : "probing",
-            "go.offline": "offline"
+            'window.offline': 'probing',
+            'appCache.error': 'probing',
+            'request.timeout': 'probing',
+            'device.resume': 'probing',
+            'go.offline': 'offline'
         },
-
         disconnected: {
-            "window.online": "probing",
-            "appCache.downloading": "probing",
-            "go.online": "probing",
-            "device.resume"   : "probing",
-            "go.offline": "offline"
+            'window.online': 'probing',
+            'appCache.downloading': 'probing',
+            'go.online': 'probing',
+            'device.resume': 'probing',
+            'go.offline': 'offline'
         },
-
         offline: {
-            "go.online": "probing"
+            'go.online': 'probing'
         }
     }
 });
