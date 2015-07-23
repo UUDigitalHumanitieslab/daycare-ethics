@@ -86,6 +86,7 @@ var ConnectivityFsm = machina.Fsm.extend({
     }
 });
 
+// The app object contains the core logic of the client side.
 var app = {
     scope: document.body,
     
