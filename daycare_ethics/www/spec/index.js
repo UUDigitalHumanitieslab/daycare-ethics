@@ -20,6 +20,15 @@ describe('ConnectivityFsm', function() {
         this.fsm = new ConnectivityFsm({initialState: 'disconnected'});
     });
     
+    it('permits the request origin to be overridden', function() {
+        var overriddenFsm = new ConnectivityFsm({origin: 'http://test.com'});
+        expect(overriddenFsm.requestData).not.toBe(this.fsm.requestData);
+        expect(jasmine.Ajax.requests.count()).toBe(1);
+        var r = jasmine.Ajax.requests.mostRecent();
+        expect(r.url).toBe('http://test.com/ping');
+        expect(r.method).toBe('HEAD');
+    });
+    
     describe('state probing', function() {
         beforeEach(function() {
             var self = this;
@@ -178,6 +187,18 @@ describe('app', function() {
             spyOn(app, 'preloadContent');
             spyOn(app, 'bindEvents');
             app.initialize();
+        });
+        it('should set an empty base URL when the protocol is HTTP(S)', function() {
+            if (window.location.protocol === 'file:') pending();
+            expect(app.base).toBe('');
+        });
+        it('should set the base URL to the origin otherwise', function() {
+            if (window.location.protocol !== 'file:') pending();
+            expect(app.base).toBe(app.origin);
+        });
+        it('should create a ConnectivityFsm with the right origin', function() {
+            expect(app.connectivity).toBeDefined();
+            expect(app.connectivity.origin).toBe(app.base);
         });
         it('should call four other functions', function() {
             expect(app.insertPages).toHaveBeenCalled();

@@ -52,6 +52,9 @@ var ConnectivityFsm = machina.Fsm.extend({
         $(document).on('resume', function () {
             self.handle('device.resume');
         });
+        if (self.origin) self.requestData = _.create(self.requestData, {
+            url: self.origin + self.requestData.url
+        });
     },
 
     states: {
@@ -79,9 +82,12 @@ var ConnectivityFsm = machina.Fsm.extend({
 // The app object contains the core logic of the client side.
 var app = {
     scope: document.body,
+    origin: '',
     
     // Application Constructor
     initialize: function() {
+        this.detectBase();
+        this.connectivity = new ConnectivityFsm({origin: this.base});
         this.insertPages();
         this.findDimensions();
         this.preloadContent();
@@ -92,6 +98,10 @@ var app = {
         $('.reflection-captcha').each(function() {
             $(this).validate({submitHandler: app.submitCaptcha});
         });
+    },
+    
+    detectBase: function() {
+        this.base = window.location.protocol === 'file:' && this.origin || '';
     },
     
     insertPages: function() {
