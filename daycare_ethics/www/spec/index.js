@@ -255,10 +255,10 @@ describe('app', function() {
             app.preloadContent();
             var requests = jasmine.Ajax.requests;
             expect(requests.count()).toBe(4);
-            expect(requests.at(0).url).toBe('/reflection/');
-            expect(requests.at(1).url).toBe('/tips/');
-            expect(requests.at(2).url).toBe('/case/archive');
-            expect(requests.at(3).url).toBe('/reflection/archive');
+            expect(requests.at(0).url).toBe(app.base + '/reflection/');
+            expect(requests.at(1).url).toBe(app.base + '/tips/');
+            expect(requests.at(2).url).toBe(app.base + '/case/archive');
+            expect(requests.at(3).url).toBe(app.base + '/reflection/archive');
             requests.at(0).respondWith({responseText: ''});
             requests.at(1).respondWith({responseText: ''});
             requests.at(2).respondWith({responseText: ''});
@@ -422,7 +422,7 @@ describe('app', function() {
         xit('... and installs click handlers to load data', function() {
             $('#plate-archive-list:first-child a').click();
             console.log(jasmine.Ajax.requests);
-            expect(jasmine.Ajax.requests.mostRecent().url).toBe('/case/2');
+            expect(jasmine.Ajax.requests.mostRecent().url).toBe(app.base + '/case/2');
             jasmine.Ajax.requests.mostRecent().respondWith({
                 'responseText': ''
             });
@@ -448,7 +448,7 @@ describe('app', function() {
         xit('... and installs click handlers to load data', function() {
             $('#mirror-archive-list:first-child a').click();
             console.log(jasmine.Ajax.requests);
-            expect(jasmine.Ajax.requests.mostRecent().url).toBe('/reflection/3');
+            expect(jasmine.Ajax.requests.mostRecent().url).toBe(app.base + '/reflection/3');
             jasmine.Ajax.requests.mostRecent().respondWith({
                 'responseText': ''
             });
@@ -498,7 +498,7 @@ describe('app', function() {
             expect(requests.count()).toBe(1);
             var post = requests.at(0);
             expect(post.method).toBe('POST');
-            expect(post.url).toBe('/case/vote');
+            expect(post.url).toBe(app.base + '/case/vote');
             expect(post.requestHeaders['Content-Type']).toBe('application/x-www-form-urlencoded; charset=UTF-8');
             expect(post.requestHeaders['X-Requested-With']).toBe('XMLHttpRequest');
             expect(post.params).toBe('id=1&choice=yes&t=qwertyuiop');
@@ -519,7 +519,7 @@ describe('app', function() {
             expect(requests.count()).toBe(1);
             var post = requests.at(0);
             expect(post.method).toBe('POST');
-            expect(post.url).toBe('/case/vote');
+            expect(post.url).toBe(app.base + '/case/vote');
             expect(post.requestHeaders['Content-Type']).toBe('application/x-www-form-urlencoded; charset=UTF-8');
             expect(post.requestHeaders['X-Requested-With']).toBe('XMLHttpRequest');
             expect(post.params).toBe('id=1&choice=no&t=qwertyuiop');
@@ -573,7 +573,7 @@ describe('app', function() {
             expect(requests.count()).toBe(1);
             var post = requests.at(0);
             expect(post.method).toBe('POST');
-            expect(post.url).toBe('/reflection/2/reply');
+            expect(post.url).toBe(app.base + '/reflection/2/reply');
             expect(post.requestHeaders['X-Requested-With'])
                 .toBe('XMLHttpRequest');
             expect(post.requestHeaders['Content-Type'])
@@ -702,7 +702,7 @@ describe('app', function() {
             expect(requests.count()).toBe(1);
             var post = requests.at(0);
             expect(post.method).toBe('POST');
-            expect(post.url).toBe('/reflection/2/reply');
+            expect(post.url).toBe(app.base + '/reflection/2/reply');
             expect(post.requestHeaders['X-Requested-With'])
                 .toBe('XMLHttpRequest');
             expect(post.requestHeaders['Content-Type'])
@@ -747,7 +747,7 @@ describe('app', function() {
             expect(requests.count()).toBe(1);
             var post = requests.at(0);
             expect(post.method).toBe('POST');
-            expect(post.url).toBe('/reply/2/moderate/');
+            expect(post.url).toBe(app.base + '/reply/2/moderate/');
             expect(post.requestHeaders['X-Requested-With'])
                 .toBe('XMLHttpRequest');
             expect(post.requestHeaders['Content-Type'])

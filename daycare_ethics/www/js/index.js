@@ -87,7 +87,7 @@ var app = {
     // Application Constructor
     initialize: function() {
         this.detectBase();
-        this.connectivity = new ConnectivityFsm({origin: this.base});
+        this.connectivity = new ConnectivityFsm({origin: this.base});app.base + 
         this.insertPages();
         this.findDimensions();
         this.preloadContent();
@@ -141,12 +141,12 @@ var app = {
     },
     
     preloadContent: function() {
-        $.get('/reflection/').done(function(data) {
+        $.get(app.base + '/reflection/').done(function(data) {
             app.loadReflection($('#mirror'), data);
         });
-        $.get('/tips/').done(app.loadTips);
-        $.get('/case/archive').done(app.loadCasusArchive);
-        $.get('/reflection/archive').done(app.loadReflectionArchive);
+        $.get(app.base + '/tips/').done(app.loadTips);
+        $.get(app.base + '/case/archive').done(app.loadCasusArchive);
+        $.get(app.base + '/reflection/archive').done(app.loadReflectionArchive);
     },
     
     loadCasus: function(page, data) {
@@ -159,7 +159,7 @@ var app = {
         display.empty();
         var image_size = Math.ceil((Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio);
         var img = $('<img>')
-            .attr('src', '/media/' + data.picture + '/' + image_size)
+            .attr('src', app.base + '/media/' + data.picture + '/' + image_size)
             .load(function() {
                 display.append(img);
             });
@@ -238,7 +238,7 @@ var app = {
         app.loadCasus($('#plate'), data.all[0]);
         app.renderArchiveList(data.all, $('#plate-archive-list'), function(ev) {
             var id = $(ev.target).data('identifier');
-            $.get('/case/' + id).done(function(data) {
+            $.get(app.base + '/case/' + id).done(function(data) {
                 app.loadCasus($('#plate-archive-item'), data);
             });
         });
@@ -247,7 +247,7 @@ var app = {
     loadReflectionArchive: function(data) {
         app.renderArchiveList(data.all, $('#mirror-archive-list'), function(ev) {
             var id = $(ev.target).data('identifier');
-            $.get('/reflection/' + id + '/').done(function(data) {
+            $.get(app.base + '/reflection/' + id + '/').done(function(data) {
                 app.loadReflection($('#mirror-archive-item'), data);
             });
         });
@@ -274,7 +274,7 @@ var app = {
             page = $(target).parent();
         if (localStorage.getItem('has_voted_' + id)) return;
         if (choice === 'yes' || choice === 'no') {
-            $.post('/case/vote', {
+            $.post(app.base + '/case/vote', {
                 'id': id,
                 'choice': choice,
                 't': localStorage.getItem('token')
@@ -299,7 +299,7 @@ var app = {
             nickname = form.find('[name="p"]').val(),
             message = form.find('[name="r"]').val();
         localStorage.setItem('nickname', nickname);
-        $.post('/reflection/' + id + '/reply', {
+        $.post(app.base + '/reflection/' + id + '/reply', {
             p: nickname,
             r: message,
             t: localStorage.getItem('token'),
@@ -399,7 +399,7 @@ var app = {
 
     submitReplyVote: function(id, choice) {
         if (choice === 'up' || choice === 'down') {
-            $.post('/reply/' + id + '/moderate/', {
+            $.post(app.base + '/reply/' + id + '/moderate/', {
                 'choice': choice,
                 't': localStorage.getItem('token')
             }).done(function(data) {
