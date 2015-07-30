@@ -263,28 +263,13 @@ class SessionEnableTestCase (BaseFixture):
         def testview():
             return {'status': 'success'}
     
-    def test_session_enable_verification(self):
+    def test_session_enable(self):
         with self.client as c:
-            self.assertEqual(c.post('/test').status_code, 400)
-            self.assertNotIn('token', session)
-            self.assertIn('tainted', session)
-    
-    def test_session_enable_tokenization(self):
-        with self.client as c:
-            result = c.post('/test', headers={
-                'X-Requested-With': 'XMLHttpRequest',
-                'User-Agent': 'Flask test client',
-                'Referer': 'unittest',
-            })
+            result = c.post('/test')
             self.assertEqual(result.status_code, 200)
             self.assertIn('json', result.mimetype)
             content = json.loads(result.get_data())
             self.assertIn('token', content)
-            self.assertIn('token', session)
-            self.assertEqual(content['token'], session['token'])
-            
-            result2 = c.post('/test')
-            self.assertEqual(result.status_code, 200)
             self.assertIn('token', session)
             self.assertEqual(content['token'], session['token'])
 
