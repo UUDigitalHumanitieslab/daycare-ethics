@@ -274,18 +274,10 @@ var app = {
             page = $(target).parent();
         if (localStorage.getItem('has_voted_' + id)) return;
         if (choice === 'yes' || choice === 'no') {
-            $.ajax({
-                url: app.base + '/case/vote',
-                method: 'POST',
-                data: {
-                    'id': id,
-                    'choice': choice,
-                    't': localStorage.getItem('token')
-                },
-                headers: {
-                    'Access-Control-Allow-Headers': 'X-Requested-With',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+            $.post(app.base + '/case/vote', {
+                'id': id,
+                'choice': choice,
+                't': localStorage.getItem('token')
             }).done(function(data) {
                 localStorage.setItem('token', data.token);
                 if (data.status === 'success') {
@@ -307,20 +299,12 @@ var app = {
             nickname = form.find('[name="p"]').val(),
             message = form.find('[name="r"]').val();
         localStorage.setItem('nickname', nickname);
-        $.ajax({
-            url: app.base + '/reflection/' + id + '/reply',
-            data: {
-                p: nickname,
-                r: message,
-                t: localStorage.getItem('token'),
-                'last-retrieve': localStorage.getItem('last_retrieve'),
-                ca: page.find('[name="ca"]').val()
-            },
-            method: 'POST',
-            headers: {
-                'Access-Control-Allow-Headers': 'X-Requested-With',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+        $.post(app.base + '/reflection/' + id + '/reply', {
+            p: nickname,
+            r: message,
+            t: localStorage.getItem('token'),
+            'last-retrieve': localStorage.getItem('last_retrieve'),
+            ca: page.find('[name="ca"]').val()
         }).done(function(data) {
             localStorage.setItem('token', data.token);
             switch (data.status) {
@@ -415,17 +399,9 @@ var app = {
 
     submitReplyVote: function(id, choice) {
         if (choice === 'up' || choice === 'down') {
-            $.ajax({
-                url: app.base + '/reply/' + id + '/moderate/',
-                data: {
-                    'choice': choice,
-                    't': localStorage.getItem('token')
-                },
-                method: 'POST',
-                headers: {
-                    'Access-Control-Allow-Headers': 'X-Requested-With',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+            $.post(app.base + '/reply/' + id + '/moderate/', {
+                'choice': choice,
+                't': localStorage.getItem('token')
             }).done(function(data) {
                 localStorage.setItem('token', data.token);
                 if (data.status === 'success') {
