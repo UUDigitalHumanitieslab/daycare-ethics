@@ -53,7 +53,6 @@ describe('ConnectivityFsm', function() {
             var r = jasmine.Ajax.requests.at(0);
             expect(r.url).toBe('/ping');
             expect(r.method).toBe('HEAD');
-            expect(r.requestHeaders['X-Requested-With']).toBe('XMLHttpRequest');
         });
         it('transitions the fsm to online if the server replies', function() {
             expect(jasmine.Ajax.requests.count()).toBe(1);
@@ -500,7 +499,6 @@ describe('app', function() {
             expect(post.method).toBe('POST');
             expect(post.url).toBe(app.base + '/case/vote');
             expect(post.requestHeaders['Content-Type']).toBe('application/x-www-form-urlencoded; charset=UTF-8');
-            expect(post.requestHeaders['X-Requested-With']).toBe('XMLHttpRequest');
             expect(post.params).toBe('id=1&choice=yes&t=qwertyuiop');
             post.respondWith({
                 'status': 200,
@@ -521,7 +519,6 @@ describe('app', function() {
             expect(post.method).toBe('POST');
             expect(post.url).toBe(app.base + '/case/vote');
             expect(post.requestHeaders['Content-Type']).toBe('application/x-www-form-urlencoded; charset=UTF-8');
-            expect(post.requestHeaders['X-Requested-With']).toBe('XMLHttpRequest');
             expect(post.params).toBe('id=1&choice=no&t=qwertyuiop');
         });
         it('remembers that you have voted before', function() {
@@ -574,8 +571,6 @@ describe('app', function() {
             var post = requests.at(0);
             expect(post.method).toBe('POST');
             expect(post.url).toBe(app.base + '/reflection/2/reply');
-            expect(post.requestHeaders['X-Requested-With'])
-                .toBe('XMLHttpRequest');
             expect(post.requestHeaders['Content-Type'])
                 .toBe('application/x-www-form-urlencoded; charset=UTF-8');
             expect(post.params)
@@ -703,8 +698,6 @@ describe('app', function() {
             var post = requests.at(0);
             expect(post.method).toBe('POST');
             expect(post.url).toBe(app.base + '/reflection/2/reply');
-            expect(post.requestHeaders['X-Requested-With'])
-                .toBe('XMLHttpRequest');
             expect(post.requestHeaders['Content-Type'])
                 .toBe('application/x-www-form-urlencoded; charset=UTF-8');
             expect(post.params)
@@ -748,8 +741,6 @@ describe('app', function() {
             var post = requests.at(0);
             expect(post.method).toBe('POST');
             expect(post.url).toBe(app.base + '/reply/2/moderate/');
-            expect(post.requestHeaders['X-Requested-With'])
-                .toBe('XMLHttpRequest');
             expect(post.requestHeaders['Content-Type'])
                 .toBe('application/x-www-form-urlencoded; charset=UTF-8');
             expect(post.params).toBe('choice=up&t=qwertyuiop');

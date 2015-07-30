@@ -163,22 +163,20 @@ class VerifyNaturalTestCase (BaseFixture):
     
     def test_verify_natural(self):
         with self.client as c:
-            for flags in range(16):  # lo2hi: xhr, user agent, referer, tainted
+            for flags in range(8):  # lo2hi: xhr, user agent, referer, tainted
                 headerfields = {}
                 with c.session_transaction() as s:
                     s.clear()
                 if flags & 1:
-                    headerfields['X-Requested-With'] = 'XMLHttpRequest'
-                if flags & 2:
                     headerfields['User-Agent'] = 'Flask test client'
-                if flags & 4:
+                if flags & 2:
                     headerfields['Referer'] = 'unittest'
-                if flags & 8:
+                if flags & 4:
                     with c.session_transaction() as s:
                         s['tainted'] = True
                 status = c.post('/test', headers=headerfields).status_code
                 tainted = 'tainted' in session
-                if flags == 7:
+                if flags == 3:
                     self.assertTrue(status == 200 and not tainted)
                 else:
                     self.assertTrue(status == 400 and tainted)
@@ -295,7 +293,6 @@ class SessionProtectTestCase (BaseFixture):
             self.assertEqual(c.post('/test', data={
                 't': 'qwertyuiop',
             }, headers={
-                'X-Requested-With': 'XMLHttpRequest',
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
             }).status_code, 400)
@@ -313,7 +310,6 @@ class SessionProtectTestCase (BaseFixture):
         self.prepare()
         with self.client as c:
             self.assertEqual(c.post('/test', headers={
-                'X-Requested-With': 'XMLHttpRequest',
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
             }).status_code, 400)
@@ -325,7 +321,6 @@ class SessionProtectTestCase (BaseFixture):
             self.assertEqual(c.post('/test', data={
                 't': 'qwertyuio',
             }, headers={
-                'X-Requested-With': 'XMLHttpRequest',
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
             }).status_code, 400)
@@ -339,7 +334,6 @@ class SessionProtectTestCase (BaseFixture):
             self.assertEqual(c.post('/test', data={
                 't': 'qwertyuiop',
             }, headers={
-                'X-Requested-With': 'XMLHttpRequest',
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
             }).status_code, 400)
@@ -351,7 +345,6 @@ class SessionProtectTestCase (BaseFixture):
             result = c.post('/test', data={
                 't': 'qwertyuiop',
             }, headers={
-                'X-Requested-With': 'XMLHttpRequest',
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
             })

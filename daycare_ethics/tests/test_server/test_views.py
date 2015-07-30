@@ -142,7 +142,6 @@ class CasusTestCase (BaseFixture):
             }, headers={
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
-                'X-Requested-With': 'XMLHttpRequest',
             })
             self.assertEqual(response2.status_code, 200)
             self.assertIn('json', response2.mimetype)
@@ -186,7 +185,6 @@ class ReflectionTestCase (BaseFixture):
         response = self.client.get('/reflection/', headers={
             'User-Agent': 'Flask test client',
             'Referer': 'unittest',
-            'X-Requested-With': 'XMLHttpRequest',
         })
         self.assertEqual(response.status_code, 200)
         self.assertIn('json', response.mimetype)
@@ -296,7 +294,6 @@ class ReflectionTestCase (BaseFixture):
             }, headers={
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
-                'X-Requested-With': 'XMLHttpRequest',
             })
             self.assertEqual(response2.status_code, 200)
             self.assertIn('json', response2.mimetype)
@@ -315,7 +312,6 @@ class ReflectionTestCase (BaseFixture):
             }, headers={
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
-                'X-Requested-With': 'XMLHttpRequest',
             })
             self.assertEqual(response3.status_code, 200)
             self.assertIn('json', response3.mimetype)
@@ -336,7 +332,6 @@ class ReflectionTestCase (BaseFixture):
             }, headers={
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
-                'X-Requested-With': 'XMLHttpRequest',
             })
             self.assertEqual(response4.status_code, 200)
             self.assertIn('json', response4.mimetype)
@@ -356,7 +351,6 @@ class ReflectionTestCase (BaseFixture):
             }, headers={
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
-                'X-Requested-With': 'XMLHttpRequest',
             })
             self.assertEqual(response5.status_code, 200)
             self.assertIn('json', response5.mimetype)
@@ -396,7 +390,6 @@ class ReflectionTestCase (BaseFixture):
             }, headers={
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
-                'X-Requested-With': 'XMLHttpRequest',
             })
             self.assertEqual(response2.status_code, 200)
             self.assertIn('json', response2.mimetype)

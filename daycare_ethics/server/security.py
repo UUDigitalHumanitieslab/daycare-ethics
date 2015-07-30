@@ -79,8 +79,7 @@ def captcha_safe():
 
 
 def verify_natural():
-    if ( not request.is_xhr
-         or 'User-Agent' not in request.headers
+    if ( 'User-Agent' not in request.headers
          or request.headers['User-Agent'] == ''
          or 'Referer' not in request.headers
          or request.headers['Referer'] == '' ):
