@@ -16,7 +16,8 @@ QUARANTINE_TIME = timedelta(minutes=30)
 AUTHENTICATION_TIME = timedelta(minutes=2)
 HUMAN_LAG = timedelta(milliseconds=200)
 KEY_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-KEY_LENGTH = 30
+KEY_LENGTH = 30  # WARNING: this is also hardcoded in ..database.models.Session
+                 # so you have to update the key length in two places!
 NORMALS = 7
 ODDBALLS = 3
 

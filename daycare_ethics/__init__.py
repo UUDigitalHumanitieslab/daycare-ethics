@@ -10,7 +10,7 @@
 from flask import Flask
 
 from .database import db
-from .server import public, security
+from .server import public, security, session
 from .admin import create_admin
 
 
@@ -27,6 +27,7 @@ def create_app(config_file=None, config_obj=None, instance=None):
     else:
         raise TypeError('no configuration argument provided')
 
+    app.session_interface = session.SessionInterface()
     db.init_app(app)
     db.create_all(app=app)  # pass app because of Flask-SQLAlchemy contexts
     app.register_blueprint(public)

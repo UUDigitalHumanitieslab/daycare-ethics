@@ -177,9 +177,11 @@ class VerifyNaturalTestCase (BaseFixture):
                 status = c.post('/test', headers=headerfields).status_code
                 tainted = 'tainted' in session
                 if flags == 3:
-                    self.assertTrue(status == 200 and not tainted)
+                    self.assertFalse(tainted)
+                    self.assertEqual(status, 200)
                 else:
-                    self.assertTrue(status == 400 and tainted)
+                    self.assertTrue(tainted)
+                    self.assertEqual(status, 400)
 
 
 class TokenizeResponseTestCase (BaseFixture):
