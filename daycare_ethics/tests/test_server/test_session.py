@@ -2,15 +2,13 @@
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 from unittest import TestCase
-from random import SystemRandom
 
 from ...server.session import *
 
 
 class BasicsTestCase (TestCase):
     def test_generate_key(self):
-        rng = SystemRandom()
-        keys = [generate_key(rng) for i in range(10)]
+        keys = [generate_key() for i in range(10)]
         
         # probabilistic test: this one may fail at most once during your 
         # lifetime (p = 7.6e-53).

@@ -5,7 +5,7 @@
     Server-side session support.
 """
 
-from random import SystemRandom
+import random
 
 import flask.sessions as fs
 
@@ -17,8 +17,9 @@ KEY_LENGTH = 30  # WARNING: this is also hardcoded in ..database.models.Session
                  # so you have to update the key length in two places!
 
 
-def generate_key(generator):
-    return ''.join((generator.choice(KEY_CHARS) for i in range(KEY_LENGTH)))
+def generate_key():
+    rng = random.SystemRandom()
+    return ''.join((rng.choice(KEY_CHARS) for i in range(KEY_LENGTH)))
 
 
 class Session(dict, fs.SessionMixin):
@@ -27,7 +28,7 @@ class Session(dict, fs.SessionMixin):
     new = True
     
     def renew_token(self):
-        key = generate_key(SystemRandom())
+        key = generate_key()
         self['token'] = key
         return key
     
