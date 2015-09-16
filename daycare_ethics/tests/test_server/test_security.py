@@ -3,7 +3,6 @@
 # Credits: Jeremy Allen helped to fix issues. (http://stackoverflow.com/a/32597959/1166087)
 
 from datetime import datetime, timedelta
-from random import SystemRandom
 
 from flask import json, session
 
@@ -19,18 +18,6 @@ class BasicsTestCase (BaseFixture):
             set(u'Paris London Berlin Madrid Amsterdam Dublin Stockholm Utrecht'.split()),
         ])
     
-    def test_generate_key(self):
-        rng = SystemRandom()
-        keys = [generate_key(rng) for i in range(10)]
-        
-        # probabilistic test: this one may fail at most once during your 
-        # lifetime (p = 7.6e-53).
-        self.assertEqual(len(set(keys)), 10)
-        
-        for k in keys:
-            self.assertRegexpMatches(k, '[a-zA-Z0-9]{30}')
-            self.assertEqual(len(k), KEY_LENGTH)
-
     def test_init_captcha(self):
         with self.request_context():
             now = datetime.today()

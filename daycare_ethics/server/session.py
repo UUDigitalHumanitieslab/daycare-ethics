@@ -5,15 +5,35 @@
     Server-side session support.
 """
 
+from random import SystemRandom
+
 import flask.sessions as fs
 
 from ..database import models as m
+
+
+KEY_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+KEY_LENGTH = 30  # WARNING: this is also hardcoded in ..database.models.Session
+                 # so you have to update the key length in two places!
+
+
+def generate_key(generator):
+    return ''.join((generator.choice(KEY_CHARS) for i in range(KEY_LENGTH)))
 
 
 class Session(dict, fs.SessionMixin):
     """ Vehicle for our server-side session objects. """
     former = None
     new = True
+    
+    def renew_token(self):
+        key = generate_key(SystemRandom())
+        self['token'] = key
+        return key
+    
+    def __init__(self):
+        super(Session, self).__init__()
+        self.renew_token()
 
 
 class SessionInterface(fs.SessionInterface):

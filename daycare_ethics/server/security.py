@@ -15,9 +15,6 @@ from flask import current_app, session, request, jsonify, abort, json
 QUARANTINE_TIME = timedelta(minutes=30)
 AUTHENTICATION_TIME = timedelta(minutes=2)
 HUMAN_LAG = timedelta(milliseconds=200)
-KEY_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-KEY_LENGTH = 30  # WARNING: this is also hardcoded in ..database.models.Session
-                 # so you have to update the key length in two places!
 NORMALS = 7
 ODDBALLS = 3
 
@@ -25,10 +22,6 @@ ODDBALLS = 3
 def init_app(app):
     data = json.load(open(app.config['CAPTCHA_DATA']))
     app.captcha_data = map(set, data.values())
-
-
-def generate_key(generator):
-    return ''.join((generator.choice(KEY_CHARS) for i in range(KEY_LENGTH)))
 
 
 def init_captcha():
@@ -91,8 +84,7 @@ def verify_natural():
 
 
 def tokenize_response(response, request_start):
-    key = generate_key(SystemRandom())
-    session['token'] = key
+    key = session.renew_token()
     session['last-request'] = request_start
     if isinstance(response, tuple):
         if len(response) == 3:
