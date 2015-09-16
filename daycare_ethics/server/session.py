@@ -51,7 +51,7 @@ class SessionInterface(fs.SessionInterface):
             alleged_token = request.form['t']
         elif cookie_name in request.cookies:
             alleged_token = request.cookies[cookie_name]
-        if alleged_token is not None:
+        if alleged_token is not None and len(alleged_token) <= KEY_LENGTH:
             data = m.Session.query.get(alleged_token)
             if data:
                 s.update(data.payload)
