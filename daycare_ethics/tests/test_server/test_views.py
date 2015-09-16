@@ -1,5 +1,6 @@
 # (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
+# Credits: Jeremy Allen helped to fix issues. (http://stackoverflow.com/a/32597959/1166087)
 
 from datetime import datetime, timedelta
 
@@ -322,7 +323,9 @@ class ReflectionTestCase (BaseFixture):
             self.assertEqual(response_data['status'], 'success')
             self.assertEqual(response_data['token'], session['token'])
             
-            with c.session_transaction() as s:
+            with c.session_transaction(method='POST', data={
+                't': session['token'],
+            }) as s:
                 s['token'] = token
                 s['last-request'] = datetime.now() - timedelta(milliseconds=201)
             
@@ -342,7 +345,9 @@ class ReflectionTestCase (BaseFixture):
             self.assertEqual(response_data['token'], session['token'])
             
             answer = ' '.join(session['captcha-answer'])
-            with c.session_transaction() as s:
+            with c.session_transaction(method='POST', data={
+                't': session['token'],
+            }) as s:
                 s['token'] = token
                 s['last-request'] = datetime.now() - timedelta(milliseconds=201)
             
@@ -362,7 +367,9 @@ class ReflectionTestCase (BaseFixture):
             self.assertEqual(response_data['status'], 'success')
             self.assertEqual(response_data['token'], session['token'])
             
-            with c.session_transaction() as s:
+            with c.session_transaction(method='POST', data={
+                't': session['token'],
+            }) as s:
                 s['token'] = token
                 s['last-request'] = datetime.now() - timedelta(milliseconds=201)
             
