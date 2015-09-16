@@ -1,4 +1,4 @@
-# (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+# (c) 2014, 2015 Digital Humanities Lab, Utrecht University
 # Authors: Julian Gonggrijp, j.gonggrijp@uu.nl,
 #          Martijn van der Klis, m.h.vanderklis@uu.nl
 
