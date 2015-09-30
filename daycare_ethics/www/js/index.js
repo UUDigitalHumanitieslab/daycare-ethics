@@ -147,7 +147,44 @@ var app = {
         $.get(app.base + '/reflection/', data).done(function(data) {
             app.loadReflection($('#mirror'), data);
         });
-        $.get(app.base + '/tips/').done(app.loadTips);
+        app.tipsFsm = new machina.Fsm({
+            namespace: 'tipsFsm',
+            url: app.base + '/tips/',
+            element: $('#links-tips'),
+            initialState: 'empty',
+            initialize: function() {
+                var self = this;
+                app.connectivity.on('heartbeat', function() {
+                    self.handle('online');
+                });
+                app.connectivity.on('no-heartbeat', function() {
+                    self.handle('disconnected');
+                });
+            },
+            refresh: function(data) {
+                this.element.find('.disconnected').hide();
+                app.loadTips(data);
+                localStorage.setItem('tips', JSON.stringify(data));
+            },
+            states: {
+                empty: {
+                    online: 'current',
+                    disconnected: 'archived'
+                },
+                archived: {
+                    _onEnter: function() {
+                        var archive = localStorage.getItem('tips');
+                        if (archive) app.loadTips(JSON.parse(archive));
+                    },
+                    online: 'current'
+                },
+                current: {
+                    _onEnter: function() {
+                        $.get(this.url).done(_.bind(this.refresh, this));
+                    }
+                }
+            }
+        });
         $.get(app.base + '/case/archive').done(app.loadCasusArchive);
         $.get(app.base + '/reflection/archive').done(app.loadReflectionArchive);
     },
@@ -228,11 +265,11 @@ var app = {
     
     loadTips: function(data) {
         // Load labour code tips
-        $("#labour-code-tips").append(_.map(data.labour, app.renderTip));
+        $("#labour-code-tips").empty().append(_.map(data.labour, app.renderTip));
         // Load website links
-        $("#website-links").append(_.map(data.site, app.renderTip));
+        $("#website-links").empty().append(_.map(data.site, app.renderTip));
         // Load book tips
-        $("#book-tips").append(_.map(data.book, app.renderTip));
+        $("#book-tips").empty().append(_.map(data.book, app.renderTip));
         // We need to refresh the listviews on load.
         $('.tips-list').listview('refresh');
     },
