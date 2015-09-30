@@ -47,8 +47,8 @@ class SessionInterface(fs.SessionInterface):
         s = Session()
         cookie_name = app.config['SESSION_COOKIE_NAME']
         alleged_token = None
-        if 't' in request.form:
-            alleged_token = request.form['t']
+        if 't' in request.values:
+            alleged_token = request.values['t']
         elif cookie_name in request.cookies:
             alleged_token = request.cookies[cookie_name]
         if alleged_token is not None and len(alleged_token) <= KEY_LENGTH:
