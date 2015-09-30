@@ -87,7 +87,7 @@ var app = {
     // Application Constructor
     initialize: function() {
         this.detectBase();
-        this.connectivity = new ConnectivityFsm({origin: this.base});app.base + 
+        this.connectivity = new ConnectivityFsm({origin: this.base});
         this.insertPages();
         this.findDimensions();
         this.preloadContent();
