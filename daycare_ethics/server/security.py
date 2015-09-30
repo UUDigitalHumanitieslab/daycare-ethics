@@ -74,9 +74,7 @@ def captcha_safe():
 
 def verify_natural():
     if ( 'User-Agent' not in request.headers
-         or request.headers['User-Agent'] == ''
-         or 'Referer' not in request.headers
-         or request.headers['Referer'] == '' ):
+         or request.headers['User-Agent'] == '' ):
         session['tainted'] = True
         abort(400)
     if 'tainted' in session:

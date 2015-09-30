@@ -184,7 +184,7 @@ class VerifyNaturalTestCase (BaseFixture):
         with self.client as c:
             with c.session_transaction() as s:
                 s['token'] = token
-            for flags in range(8):  # lo2hi: user agent, referer, tainted
+            for flags in range(4):  # lo2hi: user agent, tainted
                 headerfields = {}
                 with c.session_transaction(method='POST', data={
                     't': token,
@@ -194,8 +194,6 @@ class VerifyNaturalTestCase (BaseFixture):
                 if flags & 1:
                     headerfields['User-Agent'] = 'Flask test client'
                 if flags & 2:
-                    headerfields['Referer'] = 'unittest'
-                if flags & 4:
                     with c.session_transaction(method='POST', data={
                         't': token,
                     }) as s:
@@ -204,7 +202,7 @@ class VerifyNaturalTestCase (BaseFixture):
                     't': token,
                 }).status_code
                 tainted = 'tainted' in session
-                if flags == 3:
+                if flags == 1:
                     self.assertFalse(tainted)
                     self.assertEqual(status, 200)
                 else:
