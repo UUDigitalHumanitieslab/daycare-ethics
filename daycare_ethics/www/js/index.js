@@ -141,7 +141,10 @@ var app = {
     },
     
     preloadContent: function() {
-        $.get(app.base + '/reflection/').done(function(data) {
+        var data = {};
+        var token = localStorage.getItem('token');
+        if (token) data.t = token;
+        $.get(app.base + '/reflection/', data).done(function(data) {
             app.loadReflection($('#mirror'), data);
         });
         $.get(app.base + '/tips/').done(app.loadTips);
