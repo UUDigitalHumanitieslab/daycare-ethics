@@ -80,9 +80,9 @@ var ConnectivityFsm = machina.Fsm.extend({
 });
 
 // Manage the content and interactivity of a page that depends on connectivity.
-// When instantiating, provide at least the keys `namespace`, `url`, `element`
-// and `archive`. You probably need to override `refresh`. Optionally also
-// override `activate` and `deactivate`.
+// When instantiating, provide at least the keys `namespace`, `url`, `page`
+// and `archive`. You probably need to override `display`. Optionally also
+// override `fetch`, `load`, `store`, `activate` and `deactivate`.
 var ConnectivitySensitiveContentFsm = machina.Fsm.extend({
     initialState: 'empty',
     initialize: function() {
@@ -94,18 +94,29 @@ var ConnectivitySensitiveContentFsm = machina.Fsm.extend({
             self.handle('disconnected');
         });
     },
-    refresh: function(data) {},
-    cycle: function(data) {
-        this.refresh(data);
+    fetch: function() {
+        return $.get(this.url);
+    },
+    load: function() {
+        var data = localStorage.getItem(this.archive);
+        if (!data) return false;
+        return JSON.parse(data);
+    },
+    store: function(data) {
         localStorage.setItem(this.archive, JSON.stringify(data));
     },
+    display: function(data) {},
+    cycle: function(data) {
+        this.display(data);
+        this.store(data);
+    },
     activate: function() {
-        this.element.find('.disconnected').hide();
-        this.element.find('.online').show();
+        this.page.find('.disconnected').hide();
+        this.page.find('.online').show();
     },
     deactivate: function() {
-        this.element.find('.online').hide();
-        this.element.find('.disconnected').show();
+        this.page.find('.online').hide();
+        this.page.find('.disconnected').show();
     },
     states: {
         empty: {
@@ -115,14 +126,14 @@ var ConnectivitySensitiveContentFsm = machina.Fsm.extend({
         archived: {
             _onEnter: function() {
                 this.deactivate();
-                var archive = localStorage.getItem(this.archive);
-                if (archive) this.refresh(JSON.parse(archive));
+                var archive = this.load();
+                if (archive) this.display(archive);
             },
             online: 'active'
         },
         active: {
             _onEnter: function() {
-                $.get(this.url).done(_.bind(this.cycle, this));
+                this.fetch().done(_.bind(this.cycle, this));
                 this.activate();
             },
             disconnected: 'inactive'
@@ -207,9 +218,9 @@ var app = {
         app.tipsFsm = new ConnectivitySensitiveContentFsm({
             namespace: 'tipsFsm',
             url: app.base + '/tips/',
-            element: $('#links-tips'),
+            page: $('#links-tips'),
             archive: 'tips',
-            refresh: app.loadTips
+            display: app.loadTips
         });
         $.get(app.base + '/case/archive').done(app.loadCasusArchive);
         $.get(app.base + '/reflection/archive').done(app.loadReflectionArchive);
