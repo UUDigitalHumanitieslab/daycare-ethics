@@ -79,6 +79,63 @@ var ConnectivityFsm = machina.Fsm.extend({
     }
 });
 
+// Manage the content and interactivity of a page that depends on connectivity.
+// When instantiating, provide at least the keys `namespace`, `url`, `element`
+// and `archive`. You probably need to override `refresh`. Optionally also
+// override `activate` and `deactivate`.
+var ConnectivitySensitiveContentFsm = machina.Fsm.extend({
+    initialState: 'empty',
+    initialize: function() {
+        var self = this;
+        app.connectivity.on('heartbeat', function() {
+            self.handle('online');
+        });
+        app.connectivity.on('no-heartbeat', function() {
+            self.handle('disconnected');
+        });
+    },
+    refresh: function(data) {},
+    cycle: function(data) {
+        this.refresh(data);
+        localStorage.setItem(this.archive, JSON.stringify(data));
+    },
+    activate: function() {
+        this.element.find('.disconnected').hide();
+        this.element.find('.online').show();
+    },
+    deactivate: function() {
+        this.element.find('.online').hide();
+        this.element.find('.disconnected').show();
+    },
+    states: {
+        empty: {
+            online: 'active',
+            disconnected: 'archived'
+        },
+        archived: {
+            _onEnter: function() {
+                this.deactivate();
+                var archive = localStorage.getItem(this.archive);
+                if (archive) this.refresh(JSON.parse(archive));
+            },
+            online: 'active'
+        },
+        active: {
+            _onEnter: function() {
+                $.get(this.url).done(_.bind(this.cycle, this));
+                this.activate();
+            },
+            disconnected: 'inactive'
+        },
+        inactive: {
+            _onEnter: function() {
+                this.deactivate();
+            },
+            online: 'active'
+        }
+    }
+});
+
 // The app object contains the core logic of the client side.
 var app = {
     scope: document.body,
@@ -147,43 +204,12 @@ var app = {
         $.get(app.base + '/reflection/', data).done(function(data) {
             app.loadReflection($('#mirror'), data);
         });
-        app.tipsFsm = new machina.Fsm({
+        app.tipsFsm = new ConnectivitySensitiveContentFsm({
             namespace: 'tipsFsm',
             url: app.base + '/tips/',
             element: $('#links-tips'),
-            initialState: 'empty',
-            initialize: function() {
-                var self = this;
-                app.connectivity.on('heartbeat', function() {
-                    self.handle('online');
-                });
-                app.connectivity.on('no-heartbeat', function() {
-                    self.handle('disconnected');
-                });
-            },
-            refresh: function(data) {
-                this.element.find('.disconnected').hide();
-                app.loadTips(data);
-                localStorage.setItem('tips', JSON.stringify(data));
-            },
-            states: {
-                empty: {
-                    online: 'current',
-                    disconnected: 'archived'
-                },
-                archived: {
-                    _onEnter: function() {
-                        var archive = localStorage.getItem('tips');
-                        if (archive) app.loadTips(JSON.parse(archive));
-                    },
-                    online: 'current'
-                },
-                current: {
-                    _onEnter: function() {
-                        $.get(this.url).done(_.bind(this.refresh, this));
-                    }
-                }
-            }
+            archive: 'tips',
+            refresh: app.loadTips
         });
         $.get(app.base + '/case/archive').done(app.loadCasusArchive);
         $.get(app.base + '/reflection/archive').done(app.loadReflectionArchive);
