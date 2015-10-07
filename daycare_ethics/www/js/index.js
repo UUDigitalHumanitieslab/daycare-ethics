@@ -209,11 +209,32 @@ var app = {
     },
     
     preloadContent: function() {
-        var data = {};
-        var token = localStorage.getItem('token');
-        if (token) data.t = token;
-        $.get(app.base + '/reflection/', data).done(function(data) {
-            app.loadReflection($('#mirror'), data);
+        app.reflectionFsm = new ConnectivitySensitiveContentFsm({
+            namespace: 'reflectionFsm',
+            url: app.base + '/reflection/',
+            page: $('#mirror'),
+            fetch: function() {
+                var data = {};
+                var token = localStorage.getItem('token');
+                if (token) data.t = token;
+                return $.get(app.base + '/reflection/', data);
+            },
+            load: function() {
+                var id = localStorage.getItem('latest_reflection');
+                if (!id) return false;
+                return JSON.parse(localStorage.getItem('reflection_data_' + id));
+            },
+            store: function(data) {
+                localStorage.setItem('latest_reflection', data.id);
+                localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
+                localStorage.setItem('last_retrieve', data.since);
+            },
+            cycle: function(data) {
+                if (data.token) localStorage.setItem('token', data.token);
+                this.display(data);
+                this.store(data);
+            },
+            display: app.loadReflection
         });
         app.tipsFsm = new ConnectivitySensitiveContentFsm({
             namespace: 'tipsFsm',
@@ -260,30 +281,27 @@ var app = {
         }
     },
     
-    loadReflection: function(page, data) {
-        if (data.token) localStorage.setItem('token', data.token);
+    loadReflection: function(data) {
         app.current_reflection = data.id;
-        localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
-        localStorage.setItem('last_retrieve', data.since);
-        page.find('.week-number').html(data.week);
-        page.find('.reflection-text').html(data.text);
-        page.find('.reflection-discussion').empty();
-        _.each(data.responses, function(datum) {
-            app.appendReply(page, datum);
-        });
+        this.page.find('.week-number').html(data.week);
+        this.page.find('.reflection-text').html(data.text);
+        this.page.find('.reflection-discussion').empty();
+        _.each(data.responses, _.bind(function(datum) {
+            app.appendReply(this.page, datum);
+        }, this));
         var nickname = localStorage.getItem('nickname');
-        if (nickname) page.find('[name="p"]').val(nickname);
+        if (nickname) this.page.find('[name="p"]').val(nickname);
         if (data.closure) {
             if (new Date(data.closure) <= new Date()) {
-                page.find('.reflection-response').hide();
-                page.find('.reflection-closure-announce').hide();
+                this.page.find('.reflection-response').hide();
+                this.page.find('.reflection-closure-announce').hide();
             } else {
-                page.find('.reflection-closure-date').text(data.closure);
-                page.find('.reflection-closed-notice').hide();
+                this.page.find('.reflection-closure-date').text(data.closure);
+                this.page.find('.reflection-closed-notice').hide();
             }
         } else {
-            page.find('.reflection-closed-notice').hide();
-            page.find('.reflection-closure-announce').hide();
+            this.page.find('.reflection-closed-notice').hide();
+            this.page.find('.reflection-closure-announce').hide();
         }
     },
     
@@ -448,13 +466,13 @@ var app = {
         if (data.id) {
             div.append('<br>');
             div.append($('<a href="#">leerzaam</a>')
-                        .addClass('reply-vote ui-btn ui-icon-plus ui-btn-icon-left')
+                        .addClass('reply-vote online ui-btn ui-icon-plus ui-btn-icon-left')
                         .data('for', data.id)
                         .click(function() {
                             app.submitReplyVote(data.id, 'up');
                         }));
             div.append($('<a href="#">ongewenst</a>')
-                        .addClass('reply-vote ui-btn ui-icon-minus ui-btn-icon-right')
+                        .addClass('reply-vote online ui-btn ui-icon-minus ui-btn-icon-right')
                         .data('for', data.id)
                         .click(function() {
                             app.submitReplyVote(data.id, 'down');
