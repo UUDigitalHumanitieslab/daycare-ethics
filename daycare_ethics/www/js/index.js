@@ -83,7 +83,7 @@ var ConnectivityFsm = machina.Fsm.extend({
 // When instantiating, provide at least the keys `namespace`, `url`, `page`
 // and `archive`. You probably need to override `display`. Optionally also
 // override `fetch`, `load`, `store`, `activate` and `deactivate`.
-var ConnectivitySensitiveContentFsm = machina.Fsm.extend({
+var PageFsm = machina.Fsm.extend({
     initialState: 'empty',
     initialize: function() {
         var self = this;
@@ -209,7 +209,7 @@ var app = {
     },
     
     preloadContent: function() {
-        app.reflectionFsm = new ConnectivitySensitiveContentFsm({
+        app.reflectionFsm = new PageFsm({
             namespace: 'reflectionFsm',
             url: app.base + '/reflection/',
             page: $('#mirror'),
@@ -236,7 +236,7 @@ var app = {
             },
             display: app.loadReflection
         });
-        app.tipsFsm = new ConnectivitySensitiveContentFsm({
+        app.tipsFsm = new PageFsm({
             namespace: 'tipsFsm',
             url: app.base + '/tips/',
             page: $('#links-tips'),
