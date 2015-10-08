@@ -82,7 +82,7 @@ var ConnectivityFsm = machina.Fsm.extend({
 // Manage the content and interactivity of a page that depends on connectivity.
 // When instantiating, provide at least the keys `namespace`, `url`, `page`
 // and `archive`. You probably need to override `display`. Optionally also
-// override `fetch`, `load`, `store`, `activate` and `deactivate`.
+// override the other member functions.
 var PageFsm = machina.Fsm.extend({
     initialState: 'empty',
     initialize: function() {
@@ -93,7 +93,9 @@ var PageFsm = machina.Fsm.extend({
         app.connectivity.on('no-heartbeat', function() {
             self.handle('disconnected');
         });
+        this.initHook();
     },
+    initHook: function() {},
     fetch: function() {
         return $.get(this.url);
     },
@@ -147,6 +149,62 @@ var PageFsm = machina.Fsm.extend({
     }
 });
 
+var CurrentReflectionFsm = PageFsm.extend({
+    is_open: true,
+    initHook: function() {
+        this.page.find('.reflection-response')
+            .validate({submitHandler: _.bind(app.submitReply, this)});
+        this.page.find('.reflection-captcha')
+            .validate({submitHandler: _.bind(app.submitCaptcha, this)});
+    },
+    fetch: function() {
+        var data = {};
+        var token = localStorage.getItem('token');
+        if (token) data.t = token;
+        return $.get(app.base + '/reflection/', data);
+    },
+    load: function() {
+        var id = localStorage.getItem('latest_reflection');
+        if (!id) return false;
+        return JSON.parse(localStorage.getItem('reflection_data_' + id));
+    },
+    store: function(data) {
+        localStorage.setItem('latest_reflection', data.id);
+        localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
+        localStorage.setItem('last_retrieve', data.since);
+    },
+    cycle: function(data) {
+        if (data.token) localStorage.setItem('token', data.token);
+        this.display(data);
+        this.store(data);
+    },
+    display: function(data) {
+        var self = this;
+        this.id = data.id;
+        this.page.find('.week-number').html(data.week);
+        this.page.find('.reflection-text').html(data.text);
+        this.page.find('.reflection-discussion').empty();
+        _.each(data.responses, function(datum) {
+            app.appendReply(self.page, datum);
+        });
+        var nickname = localStorage.getItem('nickname');
+        if (nickname) this.page.find('[name="p"]').val(nickname);
+        if (data.closure) {
+            if (new Date(data.closure) <= new Date()) {
+                this.page.find('.reflection-response').hide();
+                this.page.find('.reflection-closure-announce').hide();
+                this.is_open = false;
+            } else {
+                this.page.find('.reflection-closure-date').text(data.closure);
+                this.page.find('.reflection-closed-notice').hide();
+            }
+        } else {
+            this.page.find('.reflection-closed-notice').hide();
+            this.page.find('.reflection-closure-announce').hide();
+        }
+    }
+});
+
 // The app object contains the core logic of the client side.
 var app = {
     scope: document.body,
@@ -160,12 +218,6 @@ var app = {
         this.findDimensions();
         this.preloadContent();
         this.bindEvents();
-        $('.reflection-response').each(function() {
-            $(this).validate({submitHandler: app.submitReply});
-        });
-        $('.reflection-captcha').each(function() {
-            $(this).validate({submitHandler: app.submitCaptcha});
-        });
     },
     
     detectBase: function() {
@@ -209,32 +261,10 @@ var app = {
     },
     
     preloadContent: function() {
-        app.reflectionFsm = new PageFsm({
+        app.reflectionFsm = new CurrentReflectionFsm({
             namespace: 'reflectionFsm',
             url: app.base + '/reflection/',
-            page: $('#mirror'),
-            fetch: function() {
-                var data = {};
-                var token = localStorage.getItem('token');
-                if (token) data.t = token;
-                return $.get(app.base + '/reflection/', data);
-            },
-            load: function() {
-                var id = localStorage.getItem('latest_reflection');
-                if (!id) return false;
-                return JSON.parse(localStorage.getItem('reflection_data_' + id));
-            },
-            store: function(data) {
-                localStorage.setItem('latest_reflection', data.id);
-                localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
-                localStorage.setItem('last_retrieve', data.since);
-            },
-            cycle: function(data) {
-                if (data.token) localStorage.setItem('token', data.token);
-                this.display(data);
-                this.store(data);
-            },
-            display: app.loadReflection
+            page: $('#mirror')
         });
         app.tipsFsm = new PageFsm({
             namespace: 'tipsFsm',
@@ -278,30 +308,6 @@ var app = {
             app.displayVotes(page);
         } else {
             app.displayVoteButtons(page);
-        }
-    },
-    
-    loadReflection: function(data) {
-        app.current_reflection = data.id;
-        this.page.find('.week-number').html(data.week);
-        this.page.find('.reflection-text').html(data.text);
-        this.page.find('.reflection-discussion').empty();
-        _.each(data.responses, _.bind(function(datum) {
-            app.appendReply(this.page, datum);
-        }, this));
-        var nickname = localStorage.getItem('nickname');
-        if (nickname) this.page.find('[name="p"]').val(nickname);
-        if (data.closure) {
-            if (new Date(data.closure) <= new Date()) {
-                this.page.find('.reflection-response').hide();
-                this.page.find('.reflection-closure-announce').hide();
-            } else {
-                this.page.find('.reflection-closure-date').text(data.closure);
-                this.page.find('.reflection-closed-notice').hide();
-            }
-        } else {
-            this.page.find('.reflection-closed-notice').hide();
-            this.page.find('.reflection-closure-announce').hide();
         }
     },
     
@@ -385,26 +391,26 @@ var app = {
         }
     },
     
+    // bound to the reflection FSM when called
     submitReply: function(form) {
         form = $(form);
         form.hide();
-        var page = form.parent(),
-            id = app.current_reflection,
-            reflection_data = JSON.parse(localStorage.getItem('reflection_data_' + id)),
+        var fsm = this,
+            reflection_data = JSON.parse(localStorage.getItem('reflection_data_' + fsm.id)),
             nickname = form.find('[name="p"]').val(),
             message = form.find('[name="r"]').val();
         localStorage.setItem('nickname', nickname);
-        $.post(app.base + '/reflection/' + id + '/reply', {
+        $.post(app.base + '/reflection/' + fsm.id + '/reply', {
             p: nickname,
             r: message,
             t: localStorage.getItem('token'),
             'last-retrieve': localStorage.getItem('last_retrieve'),
-            ca: page.find('[name="ca"]').val()
+            ca: fsm.page.find('[name="ca"]').val()
         }).done(function(data) {
             localStorage.setItem('token', data.token);
             switch (data.status) {
             case 'success':
-                app.appendReply(page, {
+                app.appendReply(fsm.page, {
                     pseudonym: nickname,
                     'message': message
                 });
@@ -412,17 +418,17 @@ var app = {
                 form.show();
                 break;
             case 'ninja':
-                page.find('.ninja-message').popup('open', {positionTo: 'window'});
-                page.find('.reply-submitted').remove();
+                fsm.page.find('.ninja-message').popup('open', {positionTo: 'window'});
+                fsm.page.find('.reply-submitted').remove();
                 _.each(data.new, function(datum) {
-                    app.appendReply(page, datum);
+                    app.appendReply(fsm.page, datum);
                 });
                 form.show();
                 localStorage.setItem('last_retrieve', data.since);
                 break;
             case 'captcha':
-                page.find('.captcha-challenge').text(data.captcha_challenge);
-                page.find('.captcha-popup').popup('open', {positionTo: 'window'});
+                fsm.page.find('.captcha-challenge').text(data.captcha_challenge);
+                fsm.page.find('.captcha-popup').popup('open', {positionTo: 'window'});
             }
         }).fail(function(jqXHR) {
             if ( jqXHR.status == 400 &&
@@ -431,20 +437,21 @@ var app = {
                 localStorage.setItem('token', data.token);
                 switch (data.status) {
                 case 'closed':
-                    page.find('.reflection-closed-popup').popup('open', {positionTo: 'window'});
-                    page.find('.reflection-closure-announce').hide();
-                    page.find('.reflection-closed-notice').show();
+                    fsm.page.find('.reflection-closed-popup').popup('open', {positionTo: 'window'});
+                    fsm.page.find('.reflection-closure-announce').hide();
+                    fsm.page.find('.reflection-closed-notice').show();
                     break;
                 case 'invalid':
-                    page.find('.reflection-invalid-popup').popup('open', {positionTo: 'window'});
-                    page.find('.reflection-response').show();
+                    fsm.page.find('.reflection-invalid-popup').popup('open', {positionTo: 'window'});
+                    fsm.page.find('.reflection-response').show();
                 }
             }
         });
     },
     
+    // bound to the reflection FSM when called
     submitCaptcha: function(form) {
-        var page = $(form).parents('[data-role="page"]');
+        var page = this.page;
         page.find('.captcha-popup').popup('close');
         app.submitReply(page.find('.reflection-response'));
         $(form).find('[name="ca"]').val('');
