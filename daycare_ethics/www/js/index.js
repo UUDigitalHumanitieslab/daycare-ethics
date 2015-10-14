@@ -149,7 +149,7 @@ var PageFsm = machina.Fsm.extend({
     }
 });
 
-var CurrentReflectionFsm = PageFsm.extend({
+var ReflectionFsm = PageFsm.extend({
     is_open: true,
     initHook: function() {
         this.page.find('.reflection-response')
@@ -157,26 +157,12 @@ var CurrentReflectionFsm = PageFsm.extend({
         this.page.find('.reflection-captcha')
             .validate({submitHandler: _.bind(app.submitCaptcha, this)});
     },
-    fetch: function() {
-        var data = {};
-        var token = localStorage.getItem('token');
-        if (token) data.t = token;
-        return $.get(app.base + '/reflection/', data);
-    },
     load: function() {
-        var id = localStorage.getItem('latest_reflection');
-        if (!id) return false;
-        this.archive = 'reflection_data_' + id;
-        return JSON.parse(localStorage.getItem(this.archive));
-    },
-    store: function(data) {
-        localStorage.setItem('latest_reflection', data.id);
-        this.archive = 'reflection_data_' + data.id;
-        localStorage.setItem(this.archive, JSON.stringify(data));
+        var fulltext = localStorage.getItem(this.archive);
+        var list = localStorage.getItem('reflection_list');
+        return JSON.parse(fulltext) || JSON.parse(list)[this.id];
     },
     cycle: function(data) {
-        if (data.token) localStorage.setItem('token', data.token);
-        delete data.token;
         this.data = data;
         this.display(data);
         this.store(data);
@@ -212,6 +198,35 @@ var CurrentReflectionFsm = PageFsm.extend({
             this.page.find('.reflection-closed-notice').hide();
             this.page.find('.reflection-closure-announce').hide();
         }
+    }
+});
+
+var CurrentReflectionFsm = ReflectionFsm.extend({
+    fetch: function() {
+        var data = {};
+        var token = localStorage.getItem('token');
+        if (token) data.t = token;
+        return $.get(app.base + '/reflection/', data);
+    },
+    load: function() {
+        var id = localStorage.getItem('latest_reflection');
+        if (!id) return false;
+        this.archive = 'reflection_data_' + id;
+        return JSON.parse(localStorage.getItem(this.archive));
+    },
+    store: function(data) {
+        localStorage.setItem('latest_reflection', data.id);
+        this.archive = 'reflection_data_' + data.id;
+        localStorage.setItem(this.archive, JSON.stringify(data));
+    },
+    cycle: function(data) {
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+            delete data.token;
+        }
+        this.data = data;
+        this.display(data);
+        this.store(data);
     }
 });
 
