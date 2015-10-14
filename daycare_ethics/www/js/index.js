@@ -453,7 +453,7 @@ var app = {
     submitCaptcha: function(form) {
         var page = this.page;
         page.find('.captcha-popup').popup('close');
-        app.submitReply(page.find('.reflection-response'));
+        _.bind(app.submitReply, this)(page.find('.reflection-response'));
         $(form).find('[name="ca"]').val('');
     },
     
