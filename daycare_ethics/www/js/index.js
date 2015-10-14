@@ -87,13 +87,13 @@ var PageFsm = machina.Fsm.extend({
     initialState: 'empty',
     initialize: function() {
         var self = this;
+        this.initHook();
         app.connectivity.on('heartbeat', function() {
             self.handle('online');
         });
         app.connectivity.on('no-heartbeat', function() {
             self.handle('disconnected');
         });
-        this.initHook();
     },
     initHook: function() {},
     fetch: function() {
