@@ -290,10 +290,17 @@ var app = {
     },
     
     preloadContent: function() {
-        app.reflectionFsm = new CurrentReflectionFsm({
-            namespace: 'reflectionFsm',
+        app.currentReflectionFsm = new CurrentReflectionFsm({
+            namespace: 'currentReflectionFsm',
             url: app.base + '/reflection/',
             page: $('#mirror')
+        });
+        app.reflectionListFsm = new PageFsm({
+            namespace: 'reflectionListFsm',
+            url: app.base + '/reflection/archive',
+            page: $('#mirror-archive'),
+            archive: 'reflection_list',
+            display: app.loadReflectionArchive
         });
         app.tipsFsm = new PageFsm({
             namespace: 'tipsFsm',
@@ -303,7 +310,6 @@ var app = {
             display: app.loadTips
         });
         $.get(app.base + '/case/archive').done(app.loadCasusArchive);
-        $.get(app.base + '/reflection/archive').done(app.loadReflectionArchive);
     },
     
     loadCasus: function(page, data) {
@@ -375,17 +381,30 @@ var app = {
     },
     
     loadReflectionArchive: function(data) {
-        app.renderArchiveList(data.all, $('#mirror-archive-list'), function(ev) {
-            var id = $(ev.target).data('identifier');
-            $.get(app.base + '/reflection/' + id + '/').done(function(data) {
-                app.loadReflection($('#mirror-archive-item'), data);
-            });
+        app.renderArchiveList(
+            data.all,
+            $('#mirror-archive-list'),
+            app.archivedReflectionHandler
+        );
+    },
+    
+    archivedReflectionHandler: function(ev) {
+        var id = $(ev.target).data('identifier');
+        if (app.oldReflectionFsm && app.oldReflectionFsm.id === id) return;
+        // the next statement deletes the former app.oldReflectionFsm (if any)
+        app.oldReflectionFsm = new ReflectionFsm({
+            namespace: 'oldReflectionFsm_' + id,
+            url: app.base + '/reflection/' + id + '/',
+            page: $('#mirror-archive-item'),
+            archive: 'reflection_data_' + id,
+            id: id
         });
     },
     
     renderArchiveList: function(data, listElem, retrieve) {
         var item, anchor;
         var target = '#' + listElem.prop('id').slice(0, -4) + 'item';
+        listElem.empty();
         _.each(data, function(datum) {
             item = $('<li>');
             anchor = $('<a>').attr('href', target).text(datum.title)
