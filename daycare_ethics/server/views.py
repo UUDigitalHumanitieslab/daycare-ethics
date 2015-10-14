@@ -238,12 +238,12 @@ def reply_to_reflection(id):
     if ( 'last-reply' in session and
          now - session['last-reply'] < POST_INTERVAL and
          not 'captcha-answer' in session ):
-        return dict(status='captcha', **init_captcha())
+        return dict(status='captcha', since=str(now), **init_captcha())
     # code below does not enforce quarantine period.
     # in order to make it happen, return {status: quarantine} if not 
     # captcha_safe.
     if (not captcha_safe() or 'captcha-quarantine' in session):
-        return dict(status='captcha', **init_captcha())
+        return dict(status='captcha', since=str(now), **init_captcha())
     db.session.add(Response(
         brain_teaser=topic,
         submission=now,
@@ -252,7 +252,11 @@ def reply_to_reflection(id):
     ))
     db.session.commit()
     session['last-reply'] = now
-    return {'status': 'success'}
+    return {
+        'status': 'success',
+        'since': str(now),
+        'new': reflection_replies(id, now),
+    }
 
 
 @public.route('/reply/<int:id>/moderate/', methods=['POST'])

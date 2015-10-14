@@ -166,17 +166,27 @@ var CurrentReflectionFsm = PageFsm.extend({
     load: function() {
         var id = localStorage.getItem('latest_reflection');
         if (!id) return false;
-        return JSON.parse(localStorage.getItem('reflection_data_' + id));
+        this.archive = 'reflection_data_' + id;
+        return JSON.parse(localStorage.getItem(this.archive));
     },
     store: function(data) {
         localStorage.setItem('latest_reflection', data.id);
-        localStorage.setItem('reflection_data_' + data.id, JSON.stringify(data));
-        localStorage.setItem('last_retrieve', data.since);
+        this.archive = 'reflection_data_' + data.id;
+        localStorage.setItem(this.archive, JSON.stringify(data));
     },
     cycle: function(data) {
         if (data.token) localStorage.setItem('token', data.token);
+        delete data.token;
+        this.data = data;
         this.display(data);
         this.store(data);
+    },
+    update: function(since, newresponses) {
+        _.assign(this.data, {
+            since: since,
+            responses: this.data.responses.concat(newresponses)
+        });
+        this.store(this.data);
     },
     display: function(data) {
         var self = this;
@@ -396,7 +406,6 @@ var app = {
         form = $(form);
         form.hide();
         var fsm = this,
-            reflection_data = JSON.parse(localStorage.getItem('reflection_data_' + fsm.id)),
             nickname = form.find('[name="p"]').val(),
             message = form.find('[name="r"]').val();
         localStorage.setItem('nickname', nickname);
@@ -404,31 +413,31 @@ var app = {
             p: nickname,
             r: message,
             t: localStorage.getItem('token'),
-            'last-retrieve': localStorage.getItem('last_retrieve'),
+            'last-retrieve': fsm.data.since,
             ca: fsm.page.find('[name="ca"]').val()
         }).done(function(data) {
             localStorage.setItem('token', data.token);
             switch (data.status) {
             case 'success':
-                app.appendReply(fsm.page, {
-                    pseudonym: nickname,
-                    'message': message
+                _.each(data.new, function(datum) {
+                    app.appendReply(fsm.page, datum);
                 });
                 form.find('[name="r"]').val('');
                 form.show();
+                fsm.update(data.since, data.new);
                 break;
             case 'ninja':
                 fsm.page.find('.ninja-message').popup('open', {positionTo: 'window'});
-                fsm.page.find('.reply-submitted').remove();
                 _.each(data.new, function(datum) {
                     app.appendReply(fsm.page, datum);
                 });
                 form.show();
-                localStorage.setItem('last_retrieve', data.since);
+                fsm.update(data.since, data.new);
                 break;
             case 'captcha':
                 fsm.page.find('.captcha-challenge').text(data.captcha_challenge);
                 fsm.page.find('.captcha-popup').popup('open', {positionTo: 'window'});
+                fsm.update(data.since, []);
             }
         }).fail(function(jqXHR) {
             if ( jqXHR.status == 400 &&
