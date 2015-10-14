@@ -94,6 +94,9 @@ var PageFsm = machina.Fsm.extend({
         app.connectivity.on('no-heartbeat', function() {
             self.handle('disconnected');
         });
+        if (app.connectivity.state !== 'probing') {
+            self.handle(app.connectivity.state);
+        }
     },
     initHook: function() {},
     fetch: function() {
