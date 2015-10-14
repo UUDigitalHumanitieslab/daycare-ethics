@@ -127,9 +127,9 @@ var PageFsm = machina.Fsm.extend({
         },
         archived: {
             _onEnter: function() {
-                this.deactivate();
                 var archive = this.load();
                 if (archive) this.display(archive);
+                this.deactivate();
             },
             online: 'active'
         },
