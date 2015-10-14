@@ -163,7 +163,8 @@ var ReflectionFsm = PageFsm.extend({
     load: function() {
         var fulltext = localStorage.getItem(this.archive);
         var list = localStorage.getItem('reflection_list');
-        return JSON.parse(fulltext) || JSON.parse(list)[this.id];
+        return JSON.parse(fulltext) ||
+               list && _.findWhere(JSON.parse(list).all, {id: this.id});
     },
     cycle: function(data) {
         this.data = data;
