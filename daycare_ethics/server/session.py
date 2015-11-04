@@ -81,5 +81,6 @@ class SessionInterface(fs.SessionInterface):
                 cookie_name,
                 value=session['token'],
                 max_age=max_lifetime if session.permanent else None,
-                httponly=app.config['SESSION_COOKIE_HTTPONLY']
+                httponly=app.config['SESSION_COOKIE_HTTPONLY'],
+                path=app.config['APPLICATION_ROOT']
             )

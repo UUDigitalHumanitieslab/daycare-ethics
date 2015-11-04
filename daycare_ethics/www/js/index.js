@@ -14,7 +14,7 @@ var ConnectivityFsm = machina.Fsm.extend({
     initialState: 'probing',
     
     requestData: {
-        url: '/ping',
+        url: 'ping',
         method: 'HEAD',
         timeout: 5000
     },
@@ -210,7 +210,7 @@ var CurrentReflectionFsm = ReflectionFsm.extend({
         var data = {};
         var token = localStorage.getItem('token');
         if (token) data.t = token;
-        return $.get(app.base + '/reflection/', data);
+        return $.get(app.base + 'reflection/', data);
     },
     load: function() {
         var id = localStorage.getItem('latest_reflection');
@@ -292,24 +292,24 @@ var app = {
     preloadContent: function() {
         app.currentReflectionFsm = new CurrentReflectionFsm({
             namespace: 'currentReflectionFsm',
-            url: app.base + '/reflection/',
+            url: app.base + 'reflection/',
             page: $('#mirror')
         });
         app.reflectionListFsm = new PageFsm({
             namespace: 'reflectionListFsm',
-            url: app.base + '/reflection/archive',
+            url: app.base + 'reflection/archive',
             page: $('#mirror-archive'),
             archive: 'reflection_list',
             display: app.loadReflectionArchive
         });
         app.tipsFsm = new PageFsm({
             namespace: 'tipsFsm',
-            url: app.base + '/tips/',
+            url: app.base + 'tips/',
             page: $('#links-tips'),
             archive: 'tips',
             display: app.loadTips
         });
-        $.get(app.base + '/case/archive').done(app.loadCasusArchive);
+        $.get(app.base + 'case/archive').done(app.loadCasusArchive);
     },
     
     loadCasus: function(page, data) {
@@ -322,7 +322,7 @@ var app = {
         display.empty();
         var image_size = Math.ceil((Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio);
         var img = $('<img>')
-            .attr('src', app.base + '/media/' + data.picture + '/' + image_size)
+            .attr('src', app.base + 'media/' + data.picture + '/' + image_size)
             .load(function() {
                 display.append(img);
             });
@@ -374,7 +374,7 @@ var app = {
         app.loadCasus($('#plate'), data.all[0]);
         app.renderArchiveList(data.all, $('#plate-archive-list'), function(ev) {
             var id = $(ev.target).data('identifier');
-            $.get(app.base + '/case/' + id).done(function(data) {
+            $.get(app.base + 'case/' + id).done(function(data) {
                 app.loadCasus($('#plate-archive-item'), data);
             });
         });
@@ -394,7 +394,7 @@ var app = {
         // the next statement deletes the former app.oldReflectionFsm (if any)
         app.oldReflectionFsm = new ReflectionFsm({
             namespace: 'oldReflectionFsm_' + id,
-            url: app.base + '/reflection/' + id + '/',
+            url: app.base + 'reflection/' + id + '/',
             page: $('#mirror-archive-item'),
             archive: 'reflection_data_' + id,
             id: id
@@ -423,7 +423,7 @@ var app = {
             page = $(target).parent();
         if (localStorage.getItem('has_voted_' + id)) return;
         if (choice === 'yes' || choice === 'no') {
-            $.post(app.base + '/case/vote', {
+            $.post(app.base + 'case/vote', {
                 'id': id,
                 'choice': choice,
                 't': localStorage.getItem('token')
@@ -447,7 +447,7 @@ var app = {
             nickname = form.find('[name="p"]').val(),
             message = form.find('[name="r"]').val();
         localStorage.setItem('nickname', nickname);
-        $.post(app.base + '/reflection/' + fsm.id + '/reply', {
+        $.post(app.base + 'reflection/' + fsm.id + '/reply', {
             p: nickname,
             r: message,
             t: localStorage.getItem('token'),
@@ -548,7 +548,7 @@ var app = {
 
     submitReplyVote: function(id, choice) {
         if (choice === 'up' || choice === 'down') {
-            $.post(app.base + '/reply/' + id + '/moderate/', {
+            $.post(app.base + 'reply/' + id + '/moderate/', {
                 'choice': choice,
                 't': localStorage.getItem('token')
             }).done(function(data) {
