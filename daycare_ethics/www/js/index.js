@@ -234,6 +234,100 @@ var CurrentReflectionFsm = ReflectionFsm.extend({
     }
 });
 
+// CasusFsm is a bit different because it relies on app.casusListFsm for
+// data retrieval.
+var CasusFsm = PageFsm.extend({
+    is_open: true,
+    archive: 'casus_list',
+    initHook: function() {
+        app.casusListFsm.on('fetch', function() {
+            this.cycle(this.load());
+        });
+    },
+    load: function() {
+        var list = localStorage.getItem(this.archive);
+        return list && _.findWhere(JSON.parse(list).all, {id: this.id});
+    },
+    store: function(data) {
+        var list = localStorage.getItem(this.archive);
+        var archive = list && JSON.parse(list) || {all: []};
+        var index = _.findIndex(archive.all, {id: this.id});
+        if (index >= 0) {
+            archive.all[index] = data;
+        } else {
+            archive.all.push(data);
+        }
+        localStorage.setItem(this.archive, JSON.stringify(archive));
+    },
+    cycle: function(data) {
+        this.data = data;
+        this.id = data.id;
+        this.display(data);
+        this.store(data);
+    },
+    activate: function() {
+        if (
+            localStorage.getItem('has_voted_' + this.id) ||
+            this.data.closure && new Date(this.data.closure) <= new Date()
+        ) {
+            this.displayVotes();
+        } else {
+            this.displayVoteButtons();
+        }
+    },
+    deactivate: function() {
+        if (
+            localStorage.getItem('has_voted_' + this.id) ||
+            this.data.closure && new Date(this.data.closure) <= new Date()
+        ) {
+            this.displayVotes();
+        } else {
+            this.hideVoteButtons();
+        }
+    },
+    display: function(data) {
+        this.page.find('.week-number').html(data.week);
+        this.page.find('.case-text').html(data.text);
+        this.page.find('.case-proposition').html(data.proposition);
+        var display = this.page.find('.case-display');
+        display.empty();
+        var image_size = Math.ceil((Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio);
+        var img = $('<img>')
+            .attr('src', app.base + 'media/' + data.picture + '/' + image_size)
+            .load(function() {
+                display.append(img);
+            });
+        if (app.viewport.pixelRatio != 1) {
+            // The pageshow event is deprecated as of JQM 1.4.0 and will be
+            // removed in JQM 1.6.0. However, at this time no suitable
+            // alternative is available. If there is still no suitable
+            // alternative by that time, we can emply the technique described
+            // here: 
+            // http://viralpatel.net/blogs/jquery-trigger-custom-event-show-hide-element/
+            this.page.one('pageshow', function() {
+                img.width(img.width() / app.viewport.pixelRatio);
+            });
+        }
+        this.page.css('background-color', data.background || '#f9f9f9');
+    },
+    displayVotes: function() {
+        var yes_count = this.data.yes,
+            no_count = this.data.no;
+        this.hideVoteButtons();
+        this.page.find('.yes_count').html('ja ' + yes_count).show();
+        this.page.find('.no_count').html(no_count + ' nee').show();
+        this.page.find('.no_bar').width(app.viewport.width - 15 * 8).show();
+        this.page.find('.yes_bar').css('width', 100 * yes_count / (yes_count + no_count) + '%').show();
+    },
+    displayVoteButtons: function() {
+        this.page.children('a').show();
+        this.page.find('.yes_count, .no_count, .no_bar, .yes_bar').hide();
+    },
+    hideVoteButtons: function() {
+        this.page.children('a').hide();
+    }
+});
+
 // The app object contains the core logic of the client side.
 var app = {
     scope: document.body,
@@ -310,40 +404,6 @@ var app = {
             display: app.loadTips
         });
         $.get(app.base + 'case/archive').done(app.loadCasusArchive);
-    },
-    
-    loadCasus: function(page, data) {
-        app.current_casus = data.id;
-        localStorage.setItem('case_data_' + data.id, JSON.stringify(data));
-        page.find('.week-number').html(data.week);
-        page.find('.case-text').html(data.text);
-        page.find('.case-proposition').html(data.proposition);
-        var display = page.find('.case-display');
-        display.empty();
-        var image_size = Math.ceil((Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio);
-        var img = $('<img>')
-            .attr('src', app.base + 'media/' + data.picture + '/' + image_size)
-            .load(function() {
-                display.append(img);
-            });
-        if (app.viewport.pixelRatio != 1) {
-            // The pageshow event is deprecated as of JQM 1.4.0 and will be
-            // removed in JQM 1.6.0. However, at this time no suitable
-            // alternative is available. If there is still no suitable
-            // alternative by that time, we can emply the technique described
-            // here: 
-            // http://viralpatel.net/blogs/jquery-trigger-custom-event-show-hide-element/
-            page.one('pageshow', function() {
-                img.width(img.width() / app.viewport.pixelRatio);
-            });
-        }
-        page.css('background-color', data.background || '#f9f9f9');
-        if (localStorage.getItem('has_voted_' + data.id) ||
-                data.closure && new Date(data.closure) <= new Date()) {
-            app.displayVotes(page);
-        } else {
-            app.displayVoteButtons(page);
-        }
     },
     
     renderTip: function(data) {
@@ -579,23 +639,6 @@ var app = {
             enumerator = upObserved + errorTerm + rootTerm,
             denominator = 1 + zz / total;
         return enumerator / denominator;
-    },
-    
-    displayVotes: function(page) {
-        var id = app.current_casus,
-            case_data = JSON.parse(localStorage.getItem('case_data_' + id)),
-            yes_count = case_data.yes,
-            no_count = case_data.no;
-        page.children('a').hide();
-        page.find('.yes_count').html('ja ' + yes_count).show();
-        page.find('.no_count').html(no_count + ' nee').show();
-        page.find('.no_bar').width(app.viewport.width - 15 * 8).show();
-        page.find('.yes_bar').css('width', 100 * yes_count / (yes_count + no_count) + '%').show();
-    },
-    
-    displayVoteButtons: function(page) {
-        page.children('a').show();
-        page.find('.yes_count, .no_count, .no_bar, .yes_bar').hide();
     },
     
     // Bind Event Listeners
