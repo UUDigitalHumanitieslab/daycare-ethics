@@ -237,12 +237,17 @@ var CurrentReflectionFsm = ReflectionFsm.extend({
 // CasusFsm is a bit different because it relies on app.casusListFsm for
 // data retrieval.
 var CasusFsm = PageFsm.extend({
-    is_open: true,
     archive: 'casus_list',
     initHook: function() {
-        app.casusListFsm.on('fetch', function() {
+        app.casusListFsm.on('cycle', function() {
             this.cycle(this.load());
+            this.activate();
         });
+        this.page.children('a').data('fsm', this);
+    },
+    // noop trick to ensure that all fetching is mediated by app.casusListFsm
+    fetch: function() {
+        return {done: function(){}};
     },
     load: function() {
         var list = localStorage.getItem(this.archive);
@@ -265,21 +270,21 @@ var CasusFsm = PageFsm.extend({
         this.display(data);
         this.store(data);
     },
-    activate: function() {
-        if (
-            localStorage.getItem('has_voted_' + this.id) ||
+    is_open: function() {
+        return !(
+            localStorage.getItem('has_voted_' + this.id) || this.data &&
             this.data.closure && new Date(this.data.closure) <= new Date()
-        ) {
+        );
+    },
+    activate: function() {
+        if (this.is_open()) {
             this.displayVotes();
         } else {
             this.displayVoteButtons();
         }
     },
     deactivate: function() {
-        if (
-            localStorage.getItem('has_voted_' + this.id) ||
-            this.data.closure && new Date(this.data.closure) <= new Date()
-        ) {
+        if (this.is_open()) {
             this.displayVotes();
         } else {
             this.hideVoteButtons();
@@ -311,9 +316,10 @@ var CasusFsm = PageFsm.extend({
         this.page.css('background-color', data.background || '#f9f9f9');
     },
     displayVotes: function() {
+        this.hideVoteButtons();
+        if (! this.data) return;
         var yes_count = this.data.yes,
             no_count = this.data.no;
-        this.hideVoteButtons();
         this.page.find('.yes_count').html('ja ' + yes_count).show();
         this.page.find('.no_count').html(no_count + ' nee').show();
         this.page.find('.no_bar').width(app.viewport.width - 15 * 8).show();
@@ -403,7 +409,22 @@ var app = {
             archive: 'tips',
             display: app.loadTips
         });
-        $.get(app.base + 'case/archive').done(app.loadCasusArchive);
+        app.casusListFsm = new PageFsm({
+            namespace: 'casusListFsm',
+            url: app.base + 'case/archive',
+            page: $('#plate-archive'),
+            archive: 'casus_list',
+            display: app.loadCasusArchive,
+            cycle: function(data) {
+                _.bind(PageFsm.prototype.cycle, this)(data);
+                this.emit('cycle');
+            }
+        });
+        app.currentCasusFsm = new CasusFsm({
+            namespace: 'currentCasusFsm',
+            url: app.base + 'case/',
+            page: $('#plate'),
+        });
     },
     
     renderTip: function(data) {
@@ -431,12 +452,21 @@ var app = {
     },
     
     loadCasusArchive: function(data) {
-        app.loadCasus($('#plate'), data.all[0]);
-        app.renderArchiveList(data.all, $('#plate-archive-list'), function(ev) {
-            var id = $(ev.target).data('identifier');
-            $.get(app.base + 'case/' + id).done(function(data) {
-                app.loadCasus($('#plate-archive-item'), data);
-            });
+        app.renderArchiveList(
+            data.all,
+            $('#plate-archive-list'),
+            app.archivedCasusHandler
+        );
+    },
+    
+    archivedCasusHandler: function(ev) {
+        var id = $(ev.target).data('identifier');
+        if (app.oldCasusFsm && app.oldCasusFsm.id === id) return;
+        // the next statement deletes the former app.oldReflectionFsm (if any)
+        app.oldCasusFsm = new CasusFsm({
+            namespace: 'oldCasusFsm_' + id,
+            page: $('#plate-archive-item'),
+            id: id
         });
     },
     
@@ -478,22 +508,20 @@ var app = {
     },
     
     submitVote: function(target, choice) {
-        var id = app.current_casus,
-            case_data = JSON.parse(localStorage.getItem('case_data_' + id)),
-            page = $(target).parent();
-        if (localStorage.getItem('has_voted_' + id)) return;
+        var fsm = $(target).data('fsm');
+        if (localStorage.getItem('has_voted_' + fsm.id)) return;
         if (choice === 'yes' || choice === 'no') {
             $.post(app.base + 'case/vote', {
-                'id': id,
+                'id': fsm.id,
                 'choice': choice,
                 't': localStorage.getItem('token')
             }).done(function(data) {
                 localStorage.setItem('token', data.token);
                 if (data.status === 'success') {
-                    case_data[choice] += 1;
-                    localStorage.setItem('has_voted_' + id, true);
-                    localStorage.setItem('case_data_' + id, JSON.stringify(case_data));
-                    app.displayVotes(page);
+                    fsm.data[choice] += 1;
+                    fsm.store(fsm.data);
+                    localStorage.setItem('has_voted_' + fsm.id, true);
+                    app.displayVotes(fsm.page);
                 }
             });
         }
