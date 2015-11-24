@@ -238,30 +238,28 @@ var CurrentReflectionFsm = ReflectionFsm.extend({
 // data retrieval.
 var CasusFsm = machina.Fsm.extend({
     archive: 'casus_list',
-    initialState: 'empty',
+    initialState: 'inactive',
     initialize: function() {
-        var self = this;
+        console.log('CasusFsm initialize');
         this.page.children('a').data('fsm', this);
-        app.connectivity.on('heartbeat', function() {
-            self.handle('online');
-        });
-        app.connectivity.on('no-heartbeat', function() {
-            self.handle('disconnected');
-        });
-        if (app.connectivity.state !== 'probing') {
-            self.handle(app.connectivity.state);
-        }
-        app.casusListFsm.on('handled', _.bind(this.refresh, this));
         if (app.casusListFsm.state !== 'empty') {
             this.refresh();
         }
+        app.casusListFsm.on('handled', _.bind(this.refresh, this));
     },
     refresh: function() {
-        this.cycle(this.load());
-        if (app.casusListFsm.state === 'active') {
-            this.activate();
+        console.log('CasusFsm refresh');
+        this.data = this.load();
+        if (! this.data) return;
+        this.id = this.data.id;
+        this.display(this.data);
+        if (
+            localStorage.getItem('has_voted_' + this.id) ||
+            this.data.closure && new Date(this.data.closure) <= new Date()
+        ) {
+            this.close();
         } else {
-            this.deactivate();
+            this.handle(app.casusListFsm.state);
         }
     },
     load: function() {
@@ -283,31 +281,8 @@ var CasusFsm = machina.Fsm.extend({
         }
         localStorage.setItem(this.archive, JSON.stringify(archive));
     },
-    cycle: function(data) {
-        this.data = data;
-        this.id = data.id;
-        this.display(data);
-    },
-    is_open: function() {
-        if (! this.data) return false;
-        if (localStorage.getItem('has_voted_' + this.id)) return false;
-        if (! this.data.closure) return true;
-        if (new Date(this.data.closure) <= new Date()) return true;
-        return false;
-    },
-    activate: function() {
-        if (this.is_open()) {
-            this.displayVoteButtons();
-        } else {
-            this.displayVotes();
-        }
-    },
-    deactivate: function() {
-        if (this.is_open()) {
-            this.hideVoteButtons();
-        } else {
-            this.displayVotes();
-        }
+    close: function() {
+        this.handle('close');
     },
     display: function(data) {
         this.page.find('.week-number').html(data.week);
@@ -352,15 +327,28 @@ var CasusFsm = machina.Fsm.extend({
         this.page.children('a').hide();
     },
     states: {
-        empty: {
-            online: 'active',
-            disconnected: 'inactive'
+        inactive: {
+            _onEnter: function() {
+                console.log('CasusFsm inactive');
+                this.hideVoteButtons();
+            },
+            active: 'active',
+            close: 'closed'
         },
         active: {
-            disconnected: 'inactive'
+            _onEnter: function() {
+                console.log('CasusFsm active');
+                this.displayVoteButtons();
+            },
+            inactive: 'inactive',
+            archived: 'inactive',
+            close: 'closed'
         },
-        inactive: {
-            online: 'active'
+        closed: {
+            _onEnter: function() {
+                console.log('CasusFsm closed');
+                this.displayVotes();
+            },
         }
     }
 });
@@ -447,9 +435,14 @@ var app = {
             archive: 'casus_list',
             display: app.loadCasusArchive
         });
+        app.casusListFsm.on('transition', function(info) {
+            console.log('casusListFsm ', info.toState);
+        });
+        app.casusListFsm.on('handled', function(info) {
+            console.log('casusListFsm transition done');
+        });
         app.currentCasusFsm = new CasusFsm({
             namespace: 'currentCasusFsm',
-            url: app.base + 'case/',
             page: $('#plate'),
         });
     },
@@ -548,7 +541,7 @@ var app = {
                     fsm.data[choice] += 1;
                     fsm.store(fsm.data);
                     localStorage.setItem('has_voted_' + fsm.id, true);
-                    app.displayVotes(fsm.page);
+                    fsm.close();
                 }
             });
         }
