@@ -236,22 +236,41 @@ var CurrentReflectionFsm = ReflectionFsm.extend({
 
 // CasusFsm is a bit different because it relies on app.casusListFsm for
 // data retrieval.
-var CasusFsm = PageFsm.extend({
+var CasusFsm = machina.Fsm.extend({
     archive: 'casus_list',
-    initHook: function() {
-        app.casusListFsm.on('cycle', function() {
-            this.cycle(this.load());
-            this.activate();
-        });
+    initialState: 'empty',
+    initialize: function() {
+        var self = this;
         this.page.children('a').data('fsm', this);
+        app.connectivity.on('heartbeat', function() {
+            self.handle('online');
+        });
+        app.connectivity.on('no-heartbeat', function() {
+            self.handle('disconnected');
+        });
+        if (app.connectivity.state !== 'probing') {
+            self.handle(app.connectivity.state);
+        }
+        app.casusListFsm.on('handled', _.bind(this.refresh, this));
+        if (app.casusListFsm.state !== 'empty') {
+            this.refresh();
+        }
     },
-    // noop trick to ensure that all fetching is mediated by app.casusListFsm
-    fetch: function() {
-        return {done: function(){}};
+    refresh: function() {
+        this.cycle(this.load());
+        if (app.casusListFsm.state === 'active') {
+            this.activate();
+        } else {
+            this.deactivate();
+        }
     },
     load: function() {
         var list = localStorage.getItem(this.archive);
-        return list && _.findWhere(JSON.parse(list).all, {id: this.id});
+        if (this.id) {
+            return list && _.findWhere(JSON.parse(list).all, {id: this.id});
+        } else {
+            return list && JSON.parse(list).all[0];
+        }
     },
     store: function(data) {
         var list = localStorage.getItem(this.archive);
@@ -268,26 +287,26 @@ var CasusFsm = PageFsm.extend({
         this.data = data;
         this.id = data.id;
         this.display(data);
-        this.store(data);
     },
     is_open: function() {
-        return !(
-            localStorage.getItem('has_voted_' + this.id) || this.data &&
-            this.data.closure && new Date(this.data.closure) <= new Date()
-        );
+        if (! this.data) return false;
+        if (localStorage.getItem('has_voted_' + this.id)) return false;
+        if (! this.data.closure) return true;
+        if (new Date(this.data.closure) <= new Date()) return true;
+        return false;
     },
     activate: function() {
         if (this.is_open()) {
-            this.displayVotes();
-        } else {
             this.displayVoteButtons();
+        } else {
+            this.displayVotes();
         }
     },
     deactivate: function() {
         if (this.is_open()) {
-            this.displayVotes();
-        } else {
             this.hideVoteButtons();
+        } else {
+            this.displayVotes();
         }
     },
     display: function(data) {
@@ -331,6 +350,18 @@ var CasusFsm = PageFsm.extend({
     },
     hideVoteButtons: function() {
         this.page.children('a').hide();
+    },
+    states: {
+        empty: {
+            online: 'active',
+            disconnected: 'inactive'
+        },
+        active: {
+            disconnected: 'inactive'
+        },
+        inactive: {
+            online: 'active'
+        }
     }
 });
 
@@ -414,11 +445,7 @@ var app = {
             url: app.base + 'case/archive',
             page: $('#plate-archive'),
             archive: 'casus_list',
-            display: app.loadCasusArchive,
-            cycle: function(data) {
-                _.bind(PageFsm.prototype.cycle, this)(data);
-                this.emit('cycle');
-            }
+            display: app.loadCasusArchive
         });
         app.currentCasusFsm = new CasusFsm({
             namespace: 'currentCasusFsm',
