@@ -289,6 +289,8 @@ var CasusFsm = machina.Fsm.extend({
         this.page.find('.case-text').html(data.text);
         this.page.find('.case-proposition').html(data.proposition);
         var display = this.page.find('.case-display');
+        if (this.renderedBefore && display.children.length > 0) return;
+        this.renderedBefore = true;
         display.empty();
         var image_size = Math.ceil((Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio);
         var img = $('<img>')
