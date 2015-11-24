@@ -468,6 +468,7 @@ var app = {
         // Load book tips
         $("#book-tips").empty().append(_.map(data.book, app.renderTip));
         // We need to refresh the listviews on load.
+        $('.tips-list').listview();
         $('.tips-list').listview('refresh');
     },
     
@@ -524,6 +525,7 @@ var app = {
                        .text(datum.week).appendTo(anchor);
             listElem.append(item);
         });
+        listElem.listview();        
         listElem.listview('refresh');        
     },
     
