@@ -240,7 +240,6 @@ var CasusFsm = machina.Fsm.extend({
     archive: 'casus_list',
     initialState: 'inactive',
     initialize: function() {
-        console.log('CasusFsm initialize');
         this.page.children('a').data('fsm', this);
         if (app.casusListFsm.state !== 'empty') {
             this.refresh();
@@ -248,7 +247,6 @@ var CasusFsm = machina.Fsm.extend({
         app.casusListFsm.on('handled', _.bind(this.refresh, this));
     },
     refresh: function() {
-        console.log('CasusFsm refresh');
         this.data = this.load();
         if (! this.data) return;
         this.id = this.data.id;
@@ -331,7 +329,6 @@ var CasusFsm = machina.Fsm.extend({
     states: {
         inactive: {
             _onEnter: function() {
-                console.log('CasusFsm inactive');
                 this.hideVoteButtons();
             },
             active: 'active',
@@ -339,7 +336,6 @@ var CasusFsm = machina.Fsm.extend({
         },
         active: {
             _onEnter: function() {
-                console.log('CasusFsm active');
                 this.displayVoteButtons();
             },
             inactive: 'inactive',
@@ -348,7 +344,6 @@ var CasusFsm = machina.Fsm.extend({
         },
         closed: {
             _onEnter: function() {
-                console.log('CasusFsm closed');
                 this.displayVotes();
             },
         }
@@ -436,12 +431,6 @@ var app = {
             page: $('#plate-archive'),
             archive: 'casus_list',
             display: app.loadCasusArchive
-        });
-        app.casusListFsm.on('transition', function(info) {
-            console.log('casusListFsm ', info.toState);
-        });
-        app.casusListFsm.on('handled', function(info) {
-            console.log('casusListFsm transition done');
         });
         app.currentCasusFsm = new CasusFsm({
             namespace: 'currentCasusFsm',
