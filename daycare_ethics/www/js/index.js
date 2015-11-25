@@ -286,9 +286,21 @@ var CasusFsm = machina.Fsm.extend({
         this.page.find('.week-number').html(data.week);
         this.page.find('.case-text').html(data.text);
         this.page.find('.case-proposition').html(data.proposition);
+        this.page.css('background-color', data.background || '#f9f9f9');
+        if (this.imageHandler) return;
+        var self = this;
+        if (app.connectivity.state === 'online') {
+            this.insertImage(data);
+            this.imageHandler = true;
+        } else {
+            this.imageHandler = app.connectivity.on('heartbeat', function() {
+                self.insertImage(data);
+                self.imageHandler.off();
+            });
+        }
+    },
+    insertImage: function(data) {
         var display = this.page.find('.case-display');
-        if (this.renderedBefore && display.children.length > 0) return;
-        this.renderedBefore = true;
         display.empty();
         var image_size = Math.ceil((Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio);
         var img = $('<img>')
@@ -307,7 +319,6 @@ var CasusFsm = machina.Fsm.extend({
                 img.width(img.width() / app.viewport.pixelRatio);
             });
         }
-        this.page.css('background-color', data.background || '#f9f9f9');
     },
     displayVotes: function() {
         if (! this.data) return;
