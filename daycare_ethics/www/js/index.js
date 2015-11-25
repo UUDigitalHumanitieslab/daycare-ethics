@@ -310,7 +310,6 @@ var CasusFsm = machina.Fsm.extend({
         this.page.css('background-color', data.background || '#f9f9f9');
     },
     displayVotes: function() {
-        this.hideVoteButtons();
         if (! this.data) return;
         var yes_count = this.data.yes,
             no_count = this.data.no;
@@ -321,6 +320,8 @@ var CasusFsm = machina.Fsm.extend({
     },
     displayVoteButtons: function() {
         this.page.children('a').show();
+    },
+    hideVotes: function() {
         this.page.find('.yes_count, .no_count, .no_bar, .yes_bar').hide();
     },
     hideVoteButtons: function() {
@@ -329,6 +330,7 @@ var CasusFsm = machina.Fsm.extend({
     states: {
         inactive: {
             _onEnter: function() {
+                this.hideVotes();
                 this.hideVoteButtons();
             },
             active: 'active',
@@ -336,6 +338,7 @@ var CasusFsm = machina.Fsm.extend({
         },
         active: {
             _onEnter: function() {
+                this.hideVotes();
                 this.displayVoteButtons();
             },
             inactive: 'inactive',
@@ -344,6 +347,7 @@ var CasusFsm = machina.Fsm.extend({
         },
         closed: {
             _onEnter: function() {
+                this.hideVoteButtons();
                 this.displayVotes();
             },
         }
