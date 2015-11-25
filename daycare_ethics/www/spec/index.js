@@ -21,7 +21,7 @@ describe('ConnectivityFsm', function() {
     });
     
     it('permits the request origin to be overridden', function() {
-        var overriddenFsm = new ConnectivityFsm({origin: 'http://test.com'});
+        var overriddenFsm = new ConnectivityFsm({origin: 'http://test.com/'});
         expect(overriddenFsm.requestData).not.toBe(this.fsm.requestData);
         expect(jasmine.Ajax.requests.count()).toBe(1);
         var r = jasmine.Ajax.requests.mostRecent();
@@ -51,7 +51,7 @@ describe('ConnectivityFsm', function() {
             expect(this.fired).toBe(true);
             expect(jasmine.Ajax.requests.count()).toBe(1);
             var r = jasmine.Ajax.requests.at(0);
-            expect(r.url).toBe('/ping');
+            expect(r.url).toBe('ping');
             expect(r.method).toBe('HEAD');
         });
         it('transitions the fsm to online if the server replies', function() {
