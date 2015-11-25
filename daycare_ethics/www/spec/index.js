@@ -108,6 +108,183 @@ describe('ConnectivityFsm', function() {
     });
 });
 
+describe('PageFsm', function() {
+    var testData = {color: 'green'};
+    var testSerialized = JSON.stringify(testData);
+    var Fsm = PageFsm.extend({
+        namespace: 'testPageFsm',
+        url: 'test',
+        page: $('#plate-archive'),
+        archive: 'testPageFsmData'
+    });
+    
+    beforeEach(function() {
+        jasmine.clock().install();
+        app.connectivity = new ConnectivityFsm();
+        $(_.template($('#casus-archive-format').html())())
+            .appendTo('#stage').page();
+    });
+    
+    afterEach(function() {
+        jasmine.clock().uninstall();
+    });
+    
+    it('allows instances to hook initialization behaviour', function() {
+        var testPage = new PageFsm({initHook: jasmine.createSpy('initHook')});
+        expect(testPage.initHook).toHaveBeenCalled();
+    });
+    
+    it('requires you to set a URL to fetch from', function() {
+        var testPage1 = new PageFsm();
+        // switch between the next two lines depending on jQuery.get() semantics
+        testPage1.fetch();
+        // expect(_.bind(testPage1.fetch, testPage1)).not.toThrow();
+        expect(jasmine.Ajax.requests.mostRecent().url).toBeUndefined;
+        var testPage2 = new PageFsm({url: 'backend'});
+        expect(_.bind(testPage2.fetch, testPage2)).not.toThrow();
+        expect(jasmine.Ajax.requests.mostRecent().url).toBe('backend');
+    });
+    
+    it('requires you to define what jQM page should be managed', function() {
+        var testPage1 = new PageFsm();
+        expect(_.bind(testPage1.activate, testPage1)).toThrow();
+        var testPage2 = new PageFsm({page: $('#plate-archive')});
+        expect(_.bind(testPage1.activate, testPage2)).not.toThrow();
+        expect($('#plate-archive').find('.disconnected')).toBeHidden();
+    });
+    
+    it('loads and stores data from a given localStorage entry', function() {
+        var testPage = new PageFsm({archive: 'testPageData'});
+        testPage.store(testData);
+        expect(localStorage.getItem('testPageData')).toEqual(testSerialized);
+        expect(testPage.load()).toEqual(testData);
+    });
+    
+    it('transitions immediately on established connectivity', function() {
+        spyOn(PageFsm.prototype, 'handle').and.callThrough();
+        app.connectivity.transition('online');
+        var testPage1 = new Fsm();
+        expect(PageFsm.prototype.handle.calls.count()).toBe(1);
+        app.connectivity.transition('disconnected');
+        var testPage2 = new Fsm();
+        expect(PageFsm.prototype.handle.calls.count()).toBe(2);
+        app.connectivity.transition('probing');
+        var testPage3 = new Fsm();
+        expect(PageFsm.prototype.handle.calls.count()).toBe(2);
+    });
+    
+    describe('state', function() {
+        beforeEach(function() {
+            $('#plate-archive').append('<span class="online">test</span>');
+            this.fsm = new Fsm();
+        });
+        
+        describe('empty', function() {
+            beforeEach(function() {
+                this.fsm = new Fsm();
+            });
+            it('is the default', function() {
+                expect(this.fsm.state).toBe('empty');
+            });
+            it('transitions to active on app.connectivity heartbeat', function() {
+                app.connectivity.emit('heartbeat');
+                expect(this.fsm.state).toBe('active');
+            });
+            it('transitions to archived on no-heartbeat', function() {
+                app.connectivity.emit('no-heartbeat');
+                expect(this.fsm.state).toBe('archived');
+            });
+        });
+    
+        describe('archived', function() {
+            beforeEach(function() {
+                localStorage.setItem('testPageFsmData', testSerialized);
+                spyOn(this.fsm, 'display');
+                spyOn(this.fsm, 'fetch').and.returnValue({
+                    done: function(callback) {
+                        callback(testData);
+                    }
+                });
+                this.fsm.transition('archived');
+            });
+            it('abstains from accessing the network', function() {
+                expect(this.fsm.fetch).not.toHaveBeenCalled();
+            });
+            it('... and loads data from localStorage instead', function() {
+                expect(this.fsm.display).toHaveBeenCalledWith(testData);
+            });
+            xit('only shows elements that make sense when disconnected', function() {
+                console.log($('#stage')[0].outerHTML);
+                var elements = $('#stage').find('.disconnected, .online');
+                elements.each(function(i, e) {
+                    console.log(e);
+                    console.log($(e).css('visibility'));
+                    console.log($(e).css('display'));
+                    console.log($(e).width(), $(e).height());
+                });
+                elements.parents().each(function(i, e) {
+                    console.log(e);
+                    console.log($(e).css('visibility'));
+                    console.log($(e).css('display'));
+                    console.log($(e).width(), $(e).height());
+                })
+                expect(this.fsm.page.find('.disconnected')).toBeVisible();
+                expect(this.fsm.page.find('.online')).toBeHidden();
+            });
+            it('transitions to active on heartbeat', function() {
+                app.connectivity.emit('heartbeat');
+                expect(this.fsm.state).toBe('active');
+            });
+        });
+    
+        describe('active', function() {
+            beforeEach(function() {
+                spyOn(this.fsm, 'display');
+                this.fsm.transition('active');
+            });
+            it('fetches, stores and displays new data from the network', function() {
+                var request = jasmine.Ajax.requests.mostRecent();
+                expect(request.url).toBe('test');
+                request.respondWith({
+                    status: 200,
+                    responseText: testSerialized
+                });
+                expect(this.fsm.display).toHaveBeenCalledWith(testData);
+                expect(
+                    localStorage.getItem('testPageFsmData')
+                ).toBe(testSerialized);
+            });
+            xit('only shows elements that make sense when online', function() {
+                expect(this.fsm.page.find('.disconnected')).toBeHidden();
+                expect(this.fsm.page.find('.online')).toBeVisible();
+            });
+            it('transitions to inactive on no-heartbeat', function() {
+                app.connectivity.emit('no-heartbeat');
+                expect(this.fsm.state).toBe('inactive');
+            });
+        });
+    
+        describe('inactive', function() {
+            beforeEach(function() {
+                spyOn(this.fsm, 'fetch').and.returnValue({
+                    done: function(callback) {
+                        callback(testData);
+                    }
+                });
+                this.fsm.transition('inactive');
+            });
+            xit('only shows elements that make sense when disconnected', function() {
+                expect(this.fsm.page.find('.disconnected')).toBeVisible();
+                expect(this.fsm.page.find('.online')).toBeHidden();
+            });
+            it('transitions to active on heartbeat', function() {
+                app.connectivity.emit('heartbeat');
+                expect(this.fsm.state).toBe('active');
+            });
+        });
+    });
+});
+
 describe('app', function() {
     var fakeLatestCaseData = {
         'id': 1,
