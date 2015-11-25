@@ -236,22 +236,37 @@ var CurrentReflectionFsm = ReflectionFsm.extend({
 
 // CasusFsm is a bit different because it relies on app.casusListFsm for
 // data retrieval.
-var CasusFsm = PageFsm.extend({
+var CasusFsm = machina.Fsm.extend({
     archive: 'casus_list',
-    initHook: function() {
-        app.casusListFsm.on('cycle', function() {
-            this.cycle(this.load());
-            this.activate();
-        });
+    initialState: 'inactive',
+    initialize: function() {
         this.page.children('a').data('fsm', this);
+        if (app.casusListFsm.state !== 'empty') {
+            this.refresh();
+        }
+        app.casusListFsm.on('handled', _.bind(this.refresh, this));
     },
-    // noop trick to ensure that all fetching is mediated by app.casusListFsm
-    fetch: function() {
-        return {done: function(){}};
+    refresh: function() {
+        this.data = this.load();
+        if (! this.data) return;
+        this.id = this.data.id;
+        this.display(this.data);
+        if (
+            localStorage.getItem('has_voted_' + this.id) ||
+            this.data.closure && new Date(this.data.closure) <= new Date()
+        ) {
+            this.close();
+        } else {
+            this.handle(app.casusListFsm.state);
+        }
     },
     load: function() {
         var list = localStorage.getItem(this.archive);
-        return list && _.findWhere(JSON.parse(list).all, {id: this.id});
+        if (this.id) {
+            return list && _.findWhere(JSON.parse(list).all, {id: this.id});
+        } else {
+            return list && JSON.parse(list).all[0];
+        }
     },
     store: function(data) {
         var list = localStorage.getItem(this.archive);
@@ -264,36 +279,31 @@ var CasusFsm = PageFsm.extend({
         }
         localStorage.setItem(this.archive, JSON.stringify(archive));
     },
-    cycle: function(data) {
-        this.data = data;
-        this.id = data.id;
-        this.display(data);
-        this.store(data);
-    },
-    is_open: function() {
-        return !(
-            localStorage.getItem('has_voted_' + this.id) || this.data &&
-            this.data.closure && new Date(this.data.closure) <= new Date()
-        );
-    },
-    activate: function() {
-        if (this.is_open()) {
-            this.displayVotes();
-        } else {
-            this.displayVoteButtons();
-        }
-    },
-    deactivate: function() {
-        if (this.is_open()) {
-            this.displayVotes();
-        } else {
-            this.hideVoteButtons();
-        }
+    close: function() {
+        this.handle('close');
     },
     display: function(data) {
         this.page.find('.week-number').html(data.week);
         this.page.find('.case-text').html(data.text);
         this.page.find('.case-proposition').html(data.proposition);
+        this.page.css('background-color', data.background || '#f9f9f9');
+        if (this.imageHandler) return;
+        var self = this;
+        if (app.connectivity.state === 'online') {
+            this.insertImage(data);
+            this.imageHandler = true;
+        } else {
+            this.imageHandler = app.connectivity.on('heartbeat', function() {
+                self.insertImage(data);
+                self.imageHandler.off();
+            });
+            this.page.find('.case-display').empty().html(
+                '<p>afbeelding verschijnt wanneer je<br>' +
+                'verbinding maakt met internet</p>'
+            );
+        }
+    },
+    insertImage: function(data) {
         var display = this.page.find('.case-display');
         display.empty();
         var image_size = Math.ceil((Math.min(500, app.viewport.width) - 20) * app.viewport.pixelRatio);
@@ -313,10 +323,8 @@ var CasusFsm = PageFsm.extend({
                 img.width(img.width() / app.viewport.pixelRatio);
             });
         }
-        this.page.css('background-color', data.background || '#f9f9f9');
     },
     displayVotes: function() {
-        this.hideVoteButtons();
         if (! this.data) return;
         var yes_count = this.data.yes,
             no_count = this.data.no;
@@ -327,10 +335,37 @@ var CasusFsm = PageFsm.extend({
     },
     displayVoteButtons: function() {
         this.page.children('a').show();
+    },
+    hideVotes: function() {
         this.page.find('.yes_count, .no_count, .no_bar, .yes_bar').hide();
     },
     hideVoteButtons: function() {
         this.page.children('a').hide();
+    },
+    states: {
+        inactive: {
+            _onEnter: function() {
+                this.hideVotes();
+                this.hideVoteButtons();
+            },
+            active: 'active',
+            close: 'closed'
+        },
+        active: {
+            _onEnter: function() {
+                this.hideVotes();
+                this.displayVoteButtons();
+            },
+            inactive: 'inactive',
+            archived: 'inactive',
+            close: 'closed'
+        },
+        closed: {
+            _onEnter: function() {
+                this.hideVoteButtons();
+                this.displayVotes();
+            },
+        }
     }
 });
 
@@ -414,15 +449,10 @@ var app = {
             url: app.base + 'case/archive',
             page: $('#plate-archive'),
             archive: 'casus_list',
-            display: app.loadCasusArchive,
-            cycle: function(data) {
-                _.bind(PageFsm.prototype.cycle, this)(data);
-                this.emit('cycle');
-            }
+            display: app.loadCasusArchive
         });
         app.currentCasusFsm = new CasusFsm({
             namespace: 'currentCasusFsm',
-            url: app.base + 'case/',
             page: $('#plate'),
         });
     },
@@ -448,6 +478,7 @@ var app = {
         // Load book tips
         $("#book-tips").empty().append(_.map(data.book, app.renderTip));
         // We need to refresh the listviews on load.
+        $('.tips-list').listview();
         $('.tips-list').listview('refresh');
     },
     
@@ -504,6 +535,7 @@ var app = {
                        .text(datum.week).appendTo(anchor);
             listElem.append(item);
         });
+        listElem.listview();        
         listElem.listview('refresh');        
     },
     
@@ -521,7 +553,7 @@ var app = {
                     fsm.data[choice] += 1;
                     fsm.store(fsm.data);
                     localStorage.setItem('has_voted_' + fsm.id, true);
-                    app.displayVotes(fsm.page);
+                    fsm.close();
                 }
             });
         }

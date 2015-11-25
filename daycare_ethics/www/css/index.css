@@ -78,6 +78,13 @@ a {
     top:        calc(50% - 126px);
 }
 
+.case-display p {
+    margin-top: 3em;
+    font-style: italic;
+    text-align: center;
+    font-size:  small;
+}
+
 .captcha-challenge {
     padding:    1em 0;
     color:      #008;
