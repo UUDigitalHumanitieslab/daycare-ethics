@@ -297,6 +297,10 @@ var CasusFsm = machina.Fsm.extend({
                 self.insertImage(data);
                 self.imageHandler.off();
             });
+            this.page.find('.case-display').empty().html(
+                '<p>afbeelding verschijnt wanneer je<br>' +
+                'verbinding maakt met internet</p>'
+            );
         }
     },
     insertImage: function(data) {
