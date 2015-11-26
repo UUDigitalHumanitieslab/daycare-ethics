@@ -111,18 +111,18 @@ describe('ConnectivityFsm', function() {
 describe('PageFsm', function() {
     var testData = {color: 'green'};
     var testSerialized = JSON.stringify(testData);
-    var Fsm = PageFsm.extend({
-        namespace: 'testPageFsm',
-        url: 'test',
-        page: $('#plate-archive'),
-        archive: 'testPageFsmData'
-    });
     
     beforeEach(function() {
         jasmine.clock().install();
         app.connectivity = new ConnectivityFsm();
         $(_.template($('#casus-archive-format').html())())
             .appendTo('#stage').page();
+        this.Fsm = PageFsm.extend({
+            namespace: 'testPageFsm',
+            url: 'test',
+            page: $('#plate-archive'),
+            archive: 'testPageFsmData'
+        });
     });
     
     afterEach(function() {
@@ -163,25 +163,25 @@ describe('PageFsm', function() {
     it('transitions immediately on established connectivity', function() {
         spyOn(PageFsm.prototype, 'handle').and.callThrough();
         app.connectivity.transition('online');
-        var testPage1 = new Fsm();
+        var testPage1 = new this.Fsm();
         expect(PageFsm.prototype.handle.calls.count()).toBe(1);
         app.connectivity.transition('disconnected');
-        var testPage2 = new Fsm();
+        var testPage2 = new this.Fsm();
         expect(PageFsm.prototype.handle.calls.count()).toBe(2);
         app.connectivity.transition('probing');
-        var testPage3 = new Fsm();
+        var testPage3 = new this.Fsm();
         expect(PageFsm.prototype.handle.calls.count()).toBe(2);
     });
     
     describe('state', function() {
         beforeEach(function() {
             $('#plate-archive').append('<span class="online">test</span>');
-            this.fsm = new Fsm();
+            this.fsm = new this.Fsm();
         });
         
         describe('empty', function() {
             beforeEach(function() {
-                this.fsm = new Fsm();
+                this.fsm = new this.Fsm();
             });
             it('is the default', function() {
                 expect(this.fsm.state).toBe('empty');
@@ -213,21 +213,7 @@ describe('PageFsm', function() {
             it('... and loads data from localStorage instead', function() {
                 expect(this.fsm.display).toHaveBeenCalledWith(testData);
             });
-            xit('only shows elements that make sense when disconnected', function() {
-                console.log($('#stage')[0].outerHTML);
-                var elements = $('#stage').find('.disconnected, .online');
-                elements.each(function(i, e) {
-                    console.log(e);
-                    console.log($(e).css('visibility'));
-                    console.log($(e).css('display'));
-                    console.log($(e).width(), $(e).height());
-                });
-                elements.parents().each(function(i, e) {
-                    console.log(e);
-                    console.log($(e).css('visibility'));
-                    console.log($(e).css('display'));
-                    console.log($(e).width(), $(e).height());
-                })
+            it('only shows elements that make sense when disconnected', function() {
                 expect(this.fsm.page.find('.disconnected')).toBeVisible();
                 expect(this.fsm.page.find('.online')).toBeHidden();
             });
@@ -254,7 +240,7 @@ describe('PageFsm', function() {
                     localStorage.getItem('testPageFsmData')
                 ).toBe(testSerialized);
             });
-            xit('only shows elements that make sense when online', function() {
+            it('only shows elements that make sense when online', function() {
                 expect(this.fsm.page.find('.disconnected')).toBeHidden();
                 expect(this.fsm.page.find('.online')).toBeVisible();
             });
@@ -273,7 +259,7 @@ describe('PageFsm', function() {
                 });
                 this.fsm.transition('inactive');
             });
-            xit('only shows elements that make sense when disconnected', function() {
+            it('only shows elements that make sense when disconnected', function() {
                 expect(this.fsm.page.find('.disconnected')).toBeVisible();
                 expect(this.fsm.page.find('.online')).toBeHidden();
             });
