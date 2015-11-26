@@ -311,7 +311,7 @@ describe('ReflectionFsm', function() {
             suffix: '',
             back: 'stage'
         })).appendTo('#stage').page();
-        this.Fsm = ReflectionFsm.extend({
+        this.fsm = new ReflectionFsm({
             namespace: 'testReflectionFsm',
             url: 'test',
             page: $('#mirror'),
@@ -331,7 +331,6 @@ describe('ReflectionFsm', function() {
     });
     
     it('validates the reply forms on initialization', function() {
-        var fsm = new this.Fsm();
         expect(
             $('#stage')
             .find('.reflection-response, .reflection-captcha')
@@ -341,23 +340,20 @@ describe('ReflectionFsm', function() {
     });
     
     it('can load data from a dedicated localStorage key', function() {
-        var fsm = new this.Fsm();
         localStorage.setItem('testReflectionFsmData', testSerialized);
-        expect(fsm.load()).toEqual(testData);
+        expect(this.fsm.load()).toEqual(testData);
     });
     
     it('may fall back to localStorage.reflection_list', function() {
         var testList = JSON.stringify({all: [testData]});
-        var fsm = new this.Fsm();
         localStorage.setItem('reflection_list', testList);
-        expect(fsm.load()).toEqual(testData);
+        expect(this.fsm.load()).toEqual(testData);
     });
     
     it('stores new responses when available', function() {
-        var fsm = new this.Fsm();
         var date = (new Date()).toISOString();
-        fsm.data = _.clone(testData);
-        fsm.update(date, [
+        this.fsm.data = _.clone(testData);
+        this.fsm.update(date, [
             {
                 'id': 3,
                 'up': 0,
@@ -413,9 +409,8 @@ describe('ReflectionFsm', function() {
     });
 
     it('populates a page with reflection data', function() {
-        var fsm = new this.Fsm();
         spyOn(app, 'appendReply').and.callThrough();
-        fsm.display(testData);
+        this.fsm.display(testData);
         expect($('#mirror .week-number')).toContainText('10');
         expect($('#mirror .reflection-text')).toContainText('some dummy text');
         expect(app.appendReply.calls.count()).toBe(2);
@@ -426,12 +421,11 @@ describe('ReflectionFsm', function() {
     });
 
     it('warns the user if a closure date is set', function() {
-        var fsm = new this.Fsm();
         var msec = $.now() + 24 * 60 * 60 * 1000; // one day ahead
         var date = (new Date(msec)).toISOString().slice(0, 10);
         var customData = _.clone(testData);
         customData.closure = date;
-        fsm.display(customData);
+        this.fsm.display(customData);
         $('#stage, #mirror').show();
         expect($('#mirror .reflection-response')).toBeVisible();
         expect($('#mirror .reflection-closed-notice')).toBeHidden();
@@ -440,12 +434,11 @@ describe('ReflectionFsm', function() {
     });
 
     it('warns the user when replying is no longer possible', function() {
-        var fsm = new this.Fsm();
         var msec = $.now() - 24 * 60 * 60 * 1000; // one day prior
         var date = (new Date(msec)).toISOString().slice(0, 10);
         var customData = _.clone(testData);
         customData.closure = date;
-        fsm.display(customData);
+        this.fsm.display(customData);
         expect($('#mirror .reflection-response')).toBeHidden();
         expect($('#mirror .reflection-closed-notice')).toBeVisible();
         expect($('#mirror .reflection-closure-announce')).toBeHidden();
