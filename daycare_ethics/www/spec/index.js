@@ -5,6 +5,34 @@
 
 'use strict';
 
+var fakeReflectionData = {
+    'token': 'abcdefghijk',
+    'id': 2,
+    'title': 'testreflection',
+    'publication': '2015-03-02',
+    'week': '10',
+    'closure': null,
+    'text': 'some dummy text',
+    'responses': [
+        {
+            'id': 1,
+            'up': 0,
+            'down': 15,
+            'submission': '2015-03-02',
+            'pseudonym': 'malbolge',
+            'message': '&lt;script&gt;wreakHavoc();&lt;/script&gt;'
+        },
+        {
+            'id': 2,
+            'up': 1,
+            'down': 10,
+            'submission': '2015-03-03',
+            'pseudonym': 'victim',
+            'message': 'help me'
+        }
+    ]
+};
+
 beforeEach(function() {
     app.scope = $('#stage');
     jasmine.Ajax.install();
@@ -271,6 +299,159 @@ describe('PageFsm', function() {
     });
 });
 
+describe('ReflectionFsm', function() {
+    var testData = fakeReflectionData;
+    var testSerialized = JSON.stringify(testData);
+    
+    beforeEach(function() {
+        jasmine.clock().install();
+        app.connectivity = new ConnectivityFsm();
+        $(_.template($('#reflection-format').html())({
+            pageid: 'mirror',
+            suffix: '',
+            back: 'stage'
+        })).appendTo('#stage').page();
+        this.Fsm = ReflectionFsm.extend({
+            namespace: 'testReflectionFsm',
+            url: 'test',
+            page: $('#mirror'),
+            archive: 'testReflectionFsmData',
+            id: 2
+        });
+    });
+    
+    afterEach(function() {
+        jasmine.clock().uninstall();
+    });
+    
+    it('inherits from PageFsm', function() {
+        expect(
+            Object.getPrototypeOf(ReflectionFsm.prototype)
+        ).toBe(PageFsm.prototype);
+    });
+    
+    it('validates the reply forms on initialization', function() {
+        var fsm = new this.Fsm();
+        expect(
+            $('#stage')
+            .find('.reflection-response, .reflection-captcha')
+            .find('[aria-required]')
+            .length
+        ).toBe(3);
+    });
+    
+    it('can load data from a dedicated localStorage key', function() {
+        var fsm = new this.Fsm();
+        localStorage.setItem('testReflectionFsmData', testSerialized);
+        expect(fsm.load()).toEqual(testData);
+    });
+    
+    it('may fall back to localStorage.reflection_list', function() {
+        var testList = JSON.stringify({all: [testData]});
+        var fsm = new this.Fsm();
+        localStorage.setItem('reflection_list', testList);
+        expect(fsm.load()).toEqual(testData);
+    });
+    
+    it('stores new responses when available', function() {
+        var fsm = new this.Fsm();
+        var date = (new Date()).toISOString();
+        fsm.data = _.clone(testData);
+        fsm.update(date, [
+            {
+                'id': 3,
+                'up': 0,
+                'down': 0,
+                'submission': '2015-04-04',
+                'pseudonym': 'test123',
+                'message': 'I agree'
+            }, {
+                'id': 4,
+                'up': 2,
+                'down': 1,
+                'submission': '2015-06-06',
+                'pseudonym': 'test123',
+                'message': 'at second thought, I don\'t'
+            }
+        ]);
+        expect(
+            JSON.parse(localStorage.getItem('testReflectionFsmData'))
+        ).toEqual(_.assign(_.clone(testData), {
+            since: date,
+            responses: [
+                {
+                    'id': 1,
+                    'up': 0,
+                    'down': 15,
+                    'submission': '2015-03-02',
+                    'pseudonym': 'malbolge',
+                    'message': '&lt;script&gt;wreakHavoc();&lt;/script&gt;'
+                }, {
+                    'id': 2,
+                    'up': 1,
+                    'down': 10,
+                    'submission': '2015-03-03',
+                    'pseudonym': 'victim',
+                    'message': 'help me'
+                }, {
+                    'id': 3,
+                    'up': 0,
+                    'down': 0,
+                    'submission': '2015-04-04',
+                    'pseudonym': 'test123',
+                    'message': 'I agree'
+                }, {
+                    'id': 4,
+                    'up': 2,
+                    'down': 1,
+                    'submission': '2015-06-06',
+                    'pseudonym': 'test123',
+                    'message': 'at second thought, I don\'t'
+                }
+            ]
+        }));
+    });
+
+    it('populates a page with reflection data', function() {
+        var fsm = new this.Fsm();
+        spyOn(app, 'appendReply').and.callThrough();
+        fsm.display(testData);
+        expect($('#mirror .week-number')).toContainText('10');
+        expect($('#mirror .reflection-text')).toContainText('some dummy text');
+        expect(app.appendReply.calls.count()).toBe(2);
+        expect($('#mirror .reflection-discussion > *')).toHaveLength(2);
+        expect($('#mirror .reflection-response')).toBeVisible();
+        expect($('#mirror .reflection-closed-notice')).toBeHidden();
+        expect($('#mirror .reflection-closure-announce')).toBeHidden();
+    });
+
+    it('warns the user if a closure date is set', function() {
+        var fsm = new this.Fsm();
+        var msec = $.now() + 24 * 60 * 60 * 1000; // one day ahead
+        var date = (new Date(msec)).toISOString().slice(0, 10);
+        var customData = _.clone(testData);
+        customData.closure = date;
+        fsm.display(customData);
+        $('#stage, #mirror').show();
+        expect($('#mirror .reflection-response')).toBeVisible();
+        expect($('#mirror .reflection-closed-notice')).toBeHidden();
+        expect($('#mirror .reflection-closure-announce')).toBeVisible();
+        expect($('#mirror .reflection-closure-date')).toContainText(date);
+    });
+
+    it('warns the user when replying is no longer possible', function() {
+        var fsm = new this.Fsm();
+        var msec = $.now() - 24 * 60 * 60 * 1000; // one day prior
+        var date = (new Date(msec)).toISOString().slice(0, 10);
+        var customData = _.clone(testData);
+        customData.closure = date;
+        fsm.display(customData);
+        expect($('#mirror .reflection-response')).toBeHidden();
+        expect($('#mirror .reflection-closed-notice')).toBeVisible();
+        expect($('#mirror .reflection-closure-announce')).toBeHidden();
+    });
+});
+
 describe('app', function() {
     var fakeLatestCaseData = {
         'id': 1,
@@ -284,33 +465,6 @@ describe('app', function() {
         'background': '#998877',
         'yes': 10,
         'no': 10
-    };
-    var fakeReflectionData = {
-        'token': 'abcdefghijk',
-        'id': 2,
-        'title': 'testreflection',
-        'publication': '2015-03-02',
-        'week': '10',
-        'closure': null,
-        'text': 'some dummy text',
-        'responses': [
-            {
-                'id': 1,
-                'up': 0,
-                'down': 15,
-                'submission': '2015-03-02',
-                'pseudonym': 'malbolge',
-                'message': '&lt;script&gt;wreakHavoc();&lt;/script&gt;'
-            },
-            {
-                'id': 2,
-                'up': 1,
-                'down': 10,
-                'submission': '2015-03-03',
-                'pseudonym': 'victim',
-                'message': 'help me'
-            }
-        ]
     };
     var fakeTipsData = {
         'labour': [
@@ -367,9 +521,6 @@ describe('app', function() {
             expect(app.findDimensions).toHaveBeenCalled();
             expect(app.preloadContent).toHaveBeenCalled();
             expect(app.bindEvents).toHaveBeenCalled();
-        });
-        it('should validate the forms', function() {
-            expect($('#stage').find('.reflection-response, .reflection-captcha').find('[aria-required]').length).toBe(6);
         });
     });
     
@@ -462,44 +613,9 @@ describe('app', function() {
             app.insertPages();
             this.date = $.now();
         });
-        it('populates a page with reflection data', function() {
-            spyOn(app, 'appendReply').and.callThrough();
-            app.loadReflection($('#mirror'), fakeReflectionData);
-            expect($('#mirror .week-number')).toContainText('10');
-            expect($('#mirror .reflection-text')).toContainText('some dummy text');
-            expect(app.appendReply.calls.count()).toBe(2);
-            expect($('#mirror .reflection-discussion > *')).toHaveLength(2);
-            $('#stage, #mirror').show();
-            expect($('#mirror .reflection-response')).toBeVisible();
-            expect($('#mirror .reflection-closed-notice')).toBeHidden();
-            expect($('#mirror .reflection-closure-announce')).toBeHidden();
-        });
         it('sets the token if provided', function() {
             app.loadReflection($('#mirror'), fakeReflectionData);
             expect(localStorage.getItem('token')).toBe('abcdefghijk');
-        });
-        it('warns the user if a closure date is set', function() {
-            this.date += 24 * 60 * 60 * 1000; // one day ahead
-            var date = (new Date(this.date)).toISOString().slice(0, 10)
-            var customFakeData = _.clone(fakeReflectionData);
-            customFakeData.closure = date;
-            app.loadReflection($('#mirror'), customFakeData);
-            $('#stage, #mirror').show();
-            expect($('#mirror .reflection-response')).toBeVisible();
-            expect($('#mirror .reflection-closed-notice')).toBeHidden();
-            expect($('#mirror .reflection-closure-announce')).toBeVisible();
-            expect($('#mirror .reflection-closure-date')).toContainText(date);
-        });
-        it('warns the user when replying is no longer possible', function() {
-            this.date -= 24 * 60 * 60 * 1000; // one day prior
-            var date = (new Date(this.date)).toISOString().slice(0, 10)
-            var customFakeData = _.clone(fakeReflectionData);
-            customFakeData.closure = date;
-            app.loadReflection($('#mirror'), customFakeData);
-            $('#stage, #mirror').show();
-            expect($('#mirror .reflection-response')).toBeHidden();
-            expect($('#mirror .reflection-closed-notice')).toBeVisible();
-            expect($('#mirror .reflection-closure-announce')).toBeHidden();
         });
     });
     
