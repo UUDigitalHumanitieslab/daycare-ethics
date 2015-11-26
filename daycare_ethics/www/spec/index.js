@@ -445,6 +445,63 @@ describe('ReflectionFsm', function() {
     });
 });
 
+describe('CurrentReflectionFsm', function() {
+    var testData = fakeReflectionData;
+    var testSerialized = JSON.stringify(testData);
+    
+    beforeEach(function() {
+        jasmine.clock().install();
+        app.connectivity = new ConnectivityFsm();
+        app.base = '';
+        $(_.template($('#reflection-format').html())({
+            pageid: 'mirror',
+            suffix: '',
+            back: 'stage'
+        })).appendTo('#stage').page();
+        this.fsm = new CurrentReflectionFsm({
+            namespace: 'testCurrentReflectionFsm',
+            page: $('#mirror')
+        });
+    });
+    
+    afterEach(function() {
+        jasmine.clock().uninstall();
+    });
+    
+    it('inherits from ReflectionFsm', function() {
+        expect(
+            Object.getPrototypeOf(CurrentReflectionFsm.prototype)
+        ).toBe(ReflectionFsm.prototype);
+    });
+    
+    it('always fetches reflection/ relative to app.base', function() {
+        this.fsm.fetch();
+        expect(
+            jasmine.Ajax.requests.mostRecent().url
+        ).toBe('reflection/');
+        app.base = 'here/';
+        this.fsm.fetch();
+        expect(
+            jasmine.Ajax.requests.mostRecent().url
+        ).toBe('here/reflection/');
+    });
+    
+    it('sends the token during fetch, if available', function() {
+        localStorage.setItem('token', '1234567890');
+        this.fsm.fetch();
+        expect(
+            jasmine.Ajax.requests.mostRecent().url
+        ).toBe('reflection/?t=1234567890');
+    });
+    
+    it('loads data from the most recent reflection', function() {
+        expect(this.fsm.load()).toBeFalsy();
+        localStorage.setItem('latest_reflection', '2');
+        localStorage.setItem('reflection_data_2', testSerialized);
+        expect(this.fsm.load()).toEqual(testData);
+    });
+});
+
 describe('app', function() {
     var fakeLatestCaseData = {
         'id': 1,
