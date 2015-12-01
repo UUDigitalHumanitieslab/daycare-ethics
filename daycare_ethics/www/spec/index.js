@@ -5,6 +5,20 @@
 
 'use strict';
 
+var fakeLatestCaseData = {
+    'id': 1,
+    'title': 'testcasus',
+    'publication': '2015-03-02',
+    'week': '10',
+    'closure': null,
+    'text': 'some dummy text',
+    'proposition': 'difficult question',
+    'picture': 10,
+    'background': '#998877',
+    'yes': 10,
+    'no': 10
+};
+
 var fakeReflectionData = {
     'token': 'abcdefghijk',
     'id': 2,
@@ -518,20 +532,227 @@ describe('CurrentReflectionFsm', function() {
     });
 });
 
+describe('CasusFsm', function() {
+    var testData = fakeLatestCaseData;
+    var testSerialized = JSON.stringify({all: [testData]});
+    
+    beforeEach(function() {
+        jasmine.clock().install();
+        app.connectivity = new ConnectivityFsm();
+        app.base = '';
+        $(_.template($('#casus-archive-format').html())())
+            .appendTo('#stage').page();
+        $(_.template($('#casus-format').html())({
+            pageid: 'plate',
+            back: 'test'
+        })).appendTo('#stage').page();
+        app.casusListFsm = new PageFsm({
+            namespace: 'testCasusListFsm',
+            url: 'test',
+            page: $('#plate-archive'),
+            archive: 'casus_list',
+            display: app.loadCasusArchive
+        });
+        this.Fsm = CasusFsm.extend({
+            namespace: 'testCasusFsm',
+            page: $('#plate'),
+        });
+    });
+    
+    afterEach(function() {
+        jasmine.clock().uninstall();
+    });
+    
+    it('requires you to define what jQM page should be managed', function() {
+        expect(function() {
+            var fsm = new CasusFsm({namespace: 'testCasusFsm'});
+        }).toThrow();
+        expect(function() {
+            var fsm = new CasusFsm({
+                namespace: 'testCasusFsm',
+                page: $('#plate'),
+            });
+        }).not.toThrow();
+    });
+    
+    it('loads and stores from localStorage.casus_list', function() {
+        var fsm = new this.Fsm();
+        fsm.store(testData);
+        expect(
+            JSON.parse(localStorage.getItem('casus_list')).all[0]
+        ).toEqual(testData);
+        expect(fsm.load()).toEqual(testData);
+    });
+    
+    it('depends on app.casusListFsm for state', function() {
+        var fsm = new this.Fsm();
+        app.casusListFsm.transition('archived');
+        app.casusListFsm.emit('handled');
+        expect(fsm.state).toBe('inactive');
+        app.casusListFsm.transition('active');
+        jasmine.Ajax.requests.mostRecent().respondWith({
+            status: 200,
+            responseText: JSON.stringify({
+                all: [testData]
+            })
+        });
+        app.casusListFsm.emit('handled');
+        expect(fsm.state).toBe('active');
+        app.casusListFsm.transition('inactive');
+        app.casusListFsm.emit('handled');
+        expect(fsm.state).toBe('inactive');
+    });
+    
+    it('transitions immediately on established state', function() {
+        spyOn(CasusFsm.prototype, 'refresh').and.callThrough();
+        app.casusListFsm.transition('archived');
+        var fsm1 = new this.Fsm();
+        expect(CasusFsm.prototype.refresh.calls.count()).toBe(1);
+        app.casusListFsm.transition('active');
+        jasmine.Ajax.requests.mostRecent().respondWith({
+            status: 200,
+            responseText: JSON.stringify({
+                all: [testData]
+            })
+        });
+        var fsm2 = new this.Fsm();
+        expect(CasusFsm.prototype.refresh.calls.count()).toBe(2);
+        app.casusListFsm.transition('inactive');
+        var fsm3 = new this.Fsm();
+        expect(CasusFsm.prototype.refresh.calls.count()).toBe(3);
+        app.casusListFsm.transition('empty');
+        var fsm4 = new this.Fsm();
+        expect(CasusFsm.prototype.refresh.calls.count()).toBe(3);
+    });
+    
+    describe('display', function() {
+        it('populates a page with casus data', function() {
+            app.viewport = {
+                width: 500,
+                height: 500,
+                pixelRatio: 1
+            }
+            var fsm = new this.Fsm();
+            fsm.display(testData);
+            expect($('#plate .week-number')).toContainText('10');
+            expect(
+                $('#plate .case-text')
+            ).toContainText('some dummy text');
+            expect(
+                $('#plate .case-proposition')
+            ).toContainText('difficult question');
+            expect($('#plate')).toHaveCss({
+                'background-color': 'rgb(153, 136, 119)'
+            });
+        });
+        it('tries to load the image exactly once', function() {
+            var fsm = new this.Fsm();
+            spyOn(fsm, 'insertImage');
+            fsm.display(testData);
+            app.connectivity.emit('heartbeat');
+            fsm.display(testData);
+            app.connectivity.emit('heartbeat');
+            expect(fsm.insertImage.calls.count()).toBe(1);
+        });
+    });
+    
+    describe('state', function() {
+        beforeEach(function() {
+            this.fsm = new this.Fsm();
+            localStorage.setItem('casus_list', testSerialized);
+            this.fsm.refresh();
+        });
+        
+        it('transitions to closed if user voted before', function() {
+            localStorage.setItem('has_voted_1', true);
+            this.fsm.refresh();
+            expect(this.fsm.state).toBe('closed');
+        });
+        
+        it('transitions to closed if the casus closed', function() {
+            var expired = _.assign(_.clone(testData), {
+                closure: '2015-06-01'
+            });
+            localStorage.setItem('casus_list', JSON.stringify({
+                all: [expired]
+            }));
+            this.fsm.refresh();
+            expect(this.fsm.state).toBe('closed');
+        });
+        
+        describe('inactive', function() {
+            it('is the default', function() {
+                expect(this.fsm.state).toBe('inactive');
+            });
+            it('hides vote stats and buttons', function() {
+                expect(this.fsm.page.children('a')).toBeHidden();
+                expect(this.fsm.page.find(
+                    '.yes_count, .no_count, .no_bar, .yes_bar'
+                )).toBeHidden();
+            });
+        });
+        
+        describe('active', function() {
+            it('hides vote stats and shows the buttons', function() {
+                this.fsm.transition('active');
+                expect(this.fsm.page.children('a')).toBeVisible();
+                expect(this.fsm.page.find(
+                    '.yes_count, .no_count, .no_bar, .yes_bar'
+                )).toBeHidden();
+            });
+        });
+        
+        describe('closed', function() {
+            it('is the sink that cannot be escaped', function() {
+                this.fsm.transition('closed');
+                jasmine.clock().tick(5001);
+                expect(app.connectivity.state).toBe('disconnected');
+                expect(app.casusListFsm.state).toBe('archived');
+                expect(this.fsm.state).toBe('closed');
+                app.connectivity.transition('probing');
+                expect(this.fsm.state).toBe('closed');
+                expect(
+                    jasmine.Ajax.requests.mostRecent().url
+                ).toBe('ping');
+                jasmine.Ajax.requests.mostRecent().respondWith({
+                    status: 200
+                });
+                expect(app.connectivity.state).toBe('online');
+                expect(this.fsm.state).toBe('closed');
+                expect(
+                    jasmine.Ajax.requests.mostRecent().url
+                ).toBe('test');
+                jasmine.Ajax.requests.mostRecent().respondWith({
+                    status: 200,
+                    responseText: testSerialized
+                });
+                expect(app.casusListFsm.state).toBe('active');
+                expect(this.fsm.state).toBe('closed');
+                app.connectivity.transition('probing');
+                expect(this.fsm.state).toBe('closed');
+                jasmine.clock().tick(5001);
+                expect(app.connectivity.state).toBe('disconnected');
+                expect(app.casusListFsm.state).toBe('inactive');
+                expect(this.fsm.state).toBe('closed');
+                this.fsm.handle('archived');
+                expect(this.fsm.state).toBe('closed');
+                this.fsm.handle('active');
+                expect(this.fsm.state).toBe('closed');
+                this.fsm.handle('inactive');
+                expect(this.fsm.state).toBe('closed');
+            });
+            it('shows vote stats and hides the buttons', function() {
+                this.fsm.transition('closed');
+                expect(this.fsm.page.children('a')).toBeHidden();
+                expect(this.fsm.page.find(
+                    '.yes_count, .no_count, .no_bar, .yes_bar'
+                )).toBeVisible();
+            });
+        });
+    });
+});
+
 describe('app', function() {
-    var fakeLatestCaseData = {
-        'id': 1,
-        'title': 'testcasus',
-        'publication': '2015-03-02',
-        'week': '10',
-        'closure': null,
-        'text': 'some dummy text',
-        'proposition': 'difficult question',
-        'picture': null,
-        'background': '#998877',
-        'yes': 10,
-        'no': 10
-    };
     var fakeTipsData = {
         'labour': [
             { 'title': 'labourtest1' },
@@ -653,13 +874,6 @@ describe('app', function() {
     describe('loadCasus', function() {
         beforeEach(function() {
             app.insertPages();
-        });
-        it('populates a page with casus data', function() {
-            app.loadCasus($('#plate'), fakeLatestCaseData);
-            expect($('#plate .week-number')).toContainText('10');
-            expect($('#plate .case-text')).toContainText('some dummy text');
-            expect($('#plate .case-proposition')).toContainText('difficult question');
-            expect($('#plate')).toHaveCss({'background-color': 'rgb(153, 136, 119)'});
         });
         it('displays the votes if the user voted before', function() {
             localStorage.setItem('has_voted_1', true);
