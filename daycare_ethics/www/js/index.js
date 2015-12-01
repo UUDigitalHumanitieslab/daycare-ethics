@@ -216,7 +216,8 @@ var CurrentReflectionFsm = ReflectionFsm.extend({
         var id = localStorage.getItem('latest_reflection');
         if (!id) return false;
         this.archive = 'reflection_data_' + id;
-        return JSON.parse(localStorage.getItem(this.archive));
+        this.data = JSON.parse(localStorage.getItem(this.archive));
+        return this.data;
     },
     store: function(data) {
         localStorage.setItem('latest_reflection', data.id);

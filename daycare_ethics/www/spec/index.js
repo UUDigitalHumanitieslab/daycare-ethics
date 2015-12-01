@@ -44,6 +44,37 @@ var fakeReflectionData = {
             'pseudonym': 'victim',
             'message': 'help me'
         }
+    ],
+    'since': 'never'
+};
+
+var fakeTipsData = {
+    'labour': [
+        { 'title': 'labourtest1' },
+        {
+            'title': 'labourtest2',
+            'text': 'you can do something with this tip'
+        }
+    ],
+    'site': [
+        {
+            'href': 'http://www.example.com',
+            'title': 'sitetest'
+        }
+    ],
+    'book': [
+        {
+            'title': 'interesting book',
+            'author': 'interesting author'
+        },
+        {
+            'title': 'amusing book',
+            'author': 'amusing author'
+        },
+        {
+            'title': 'annoying book',
+            'author': 'annoying author'
+        }
     ]
 };
 
@@ -744,45 +775,23 @@ describe('CasusFsm', function() {
             it('shows vote stats and hides the buttons', function() {
                 this.fsm.transition('closed');
                 expect(this.fsm.page.children('a')).toBeHidden();
-                expect(this.fsm.page.find(
-                    '.yes_count, .no_count, .no_bar, .yes_bar'
-                )).toBeVisible();
+                var yes_count = this.fsm.page.find('.yes_count');
+                var no_count = this.fsm.page.find('.no_count');
+                var no_bar = this.fsm.page.find('.no_bar');
+                var yes_bar = this.fsm.page.find('.yes_bar');
+                expect(yes_count).toBeVisible();
+                expect(yes_count).toHaveHtml('ja 10');
+                expect(no_count).toBeVisible();
+                expect(no_count).toHaveHtml('10 nee');
+                expect(no_bar).toBeVisible();
+                expect(yes_bar).toBeVisible();
+                expect(yes_bar.width() / no_bar.width()).toBeCloseTo(.5, 2);
             });
         });
     });
 });
 
 describe('app', function() {
-    var fakeTipsData = {
-        'labour': [
-            { 'title': 'labourtest1' },
-            {
-                'title': 'labourtest2',
-                'text': 'you can do something with this tip'
-            }
-        ],
-        'site': [
-            {
-                'href': 'http://www.example.com',
-                'title': 'sitetest'
-            }
-        ],
-        'book': [
-            {
-                'title': 'interesting book',
-                'author': 'interesting author'
-            },
-            {
-                'title': 'amusing book',
-                'author': 'amusing author'
-            },
-            {
-                'title': 'annoying book',
-                'author': 'annoying author'
-            }
-        ]
-    };
-    
     describe('initialize', function() {
         beforeEach(function() {
             spyOn(app, 'insertPages').and.callThrough();
@@ -847,55 +856,18 @@ describe('app', function() {
     });
     
     describe('preloadContent', function() {
-        xit('fetches data from the server and passes them to other functions', function() {
-            spyOn(app, 'loadReflection');
-            spyOn(app, 'loadTips');
-            spyOn(app, 'loadCasusArchive');
-            spyOn(app, 'loadReflectionArchive');
+        it('creates a bunch of member page-bound FSMs', function() {
             app.preloadContent();
-            var requests = jasmine.Ajax.requests;
-            expect(requests.count()).toBe(4);
-            expect(requests.at(0).url).toBe(app.base + '/reflection/');
-            expect(requests.at(1).url).toBe(app.base + '/tips/');
-            expect(requests.at(2).url).toBe(app.base + '/case/archive');
-            expect(requests.at(3).url).toBe(app.base + '/reflection/archive');
-            requests.at(0).respondWith({responseText: ''});
-            requests.at(1).respondWith({responseText: ''});
-            requests.at(2).respondWith({responseText: ''});
-            requests.at(3).respondWith({responseText: ''});
-            expect(app.loadReflection).toHaveBeenCalled();
-            expect(app.loadTips).toHaveBeenCalled();
-            expect(app.loadCasusArchive).toHaveBeenCalled();
-            expect(app.loadReflectionArchive).toHaveBeenCalled();
-            
-        });
-    });
-    
-    describe('loadCasus', function() {
-        beforeEach(function() {
-            app.insertPages();
-        });
-        it('displays the votes if the user voted before', function() {
-            localStorage.setItem('has_voted_1', true);
-            spyOn(app, 'displayVotes');
-            app.loadCasus($('#plate'), fakeLatestCaseData);
-            expect(app.displayVotes).toHaveBeenCalled();
-        });
-        it('provides voting buttons otherwise', function() {
-            spyOn(app, 'displayVoteButtons');
-            app.loadCasus($('#plate'), fakeLatestCaseData);
-            expect(app.displayVoteButtons).toHaveBeenCalled();
-        });
-    });
-    
-    describe('loadReflection', function() {
-        beforeEach(function() {
-            app.insertPages();
-            this.date = $.now();
-        });
-        it('sets the token if provided', function() {
-            app.loadReflection($('#mirror'), fakeReflectionData);
-            expect(localStorage.getItem('token')).toBe('abcdefghijk');
+            expect(app.currentReflectionFsm)
+                .toEqual(jasmine.any(CurrentReflectionFsm));
+            expect(app.reflectionListFsm)
+                .toEqual(jasmine.any(PageFsm));
+            expect(app.tipsFsm)
+                .toEqual(jasmine.any(PageFsm));
+            expect(app.casusListFsm)
+                .toEqual(jasmine.any(PageFsm));
+            expect(app.currentCasusFsm)
+                .toEqual(jasmine.any(CasusFsm));
         });
     });
     
@@ -967,24 +939,16 @@ describe('app', function() {
                 fakeLatestCaseData
             ]};
             _.assign(fakeData.all[0], { 'id': 2, 'week': '11' });
-            spyOn(app, 'loadCasus');
             spyOn(app, 'renderArchiveList').and.callThrough();
+            spyOn(app, 'archivedCasusHandler').and.callThrough();
             app.loadCasusArchive(fakeData);
-        });
-        it('forwards the most recent casus to loadCasus', function() {
-            expect(app.loadCasus).toHaveBeenCalled();
         });
         it('defers to renderArchiveList', function() {
             expect(app.renderArchiveList).toHaveBeenCalled();
         });
-        xit('... and installs click handlers to load data', function() {
-            $('#plate-archive-list:first-child a').click();
-            console.log(jasmine.Ajax.requests);
-            expect(jasmine.Ajax.requests.mostRecent().url).toBe(app.base + '/case/2');
-            jasmine.Ajax.requests.mostRecent().respondWith({
-                'responseText': ''
-            });
-            expect(app.loadCasus).toHaveBeenCalled();
+        it('... and installs click handlers to load data', function() {
+            $($('#plate-archive-list a')[0]).click();
+            expect(app.oldCasusFsm).toEqual(jasmine.any(CasusFsm));
         });
     });
     
@@ -1003,14 +967,10 @@ describe('app', function() {
         it('defers to renderArchiveList', function() {
             expect(app.renderArchiveList).toHaveBeenCalled();
         });
-        xit('... and installs click handlers to load data', function() {
-            $('#mirror-archive-list:first-child a').click();
-            console.log(jasmine.Ajax.requests);
-            expect(jasmine.Ajax.requests.mostRecent().url).toBe(app.base + '/reflection/3');
-            jasmine.Ajax.requests.mostRecent().respondWith({
-                'responseText': ''
-            });
-            expect(app.loadReflection).toHaveBeenCalled();
+        it('... and installs click handlers to load data', function() {
+            $($('#mirror-archive-list a')[0]).click();
+            expect(app.oldReflectionFsm)
+                .toEqual(jasmine.any(ReflectionFsm));
         });
     });
     
@@ -1045,19 +1005,30 @@ describe('app', function() {
     
     describe('submitVote', function() {
         beforeEach(function() {
-            app.insertPages();
-            app.loadCasus($('#plate'), fakeLatestCaseData);
+            localStorage.setItem('casus_list', JSON.stringify({
+                all: [fakeLatestCaseData]
+            }));
+            $('#stage').append(
+                _.template($('#casus-archive-format').html())()
+            );
+            app.initialize();
+            jasmine.Ajax.requests.mostRecent().respondWith({
+                status: 400
+            });
             localStorage.setItem('token', 'qwertyuiop');
-            spyOn(app, 'displayVotes');
+            spyOn(app.currentCasusFsm, 'displayVotes');
         });
         it('accepts "yes" votes and displays the results', function() {
+            expect(app.connectivity.state).toBe('disconnected');
+            expect(app.casusListFsm.state).toBe('archived');
+            expect(app.currentCasusFsm.state).toBe('inactive');
             app.submitVote($('#plate .vote-btn-yes'), 'yes');
-            var requests = jasmine.Ajax.requests;
-            expect(requests.count()).toBe(1);
-            var post = requests.at(0);
+            var post = jasmine.Ajax.requests.mostRecent();
             expect(post.method).toBe('POST');
-            expect(post.url).toBe(app.base + '/case/vote');
-            expect(post.requestHeaders['Content-Type']).toBe('application/x-www-form-urlencoded; charset=UTF-8');
+            expect(post.url).toBe(app.base + 'case/vote');
+            expect(post.requestHeaders['Content-Type']).toBe(
+                'application/x-www-form-urlencoded; charset=UTF-8'
+            );
             expect(post.params).toBe('id=1&choice=yes&t=qwertyuiop');
             post.respondWith({
                 'status': 200,
@@ -1068,25 +1039,25 @@ describe('app', function() {
                 'contentType': 'application/json'
             });
             expect(localStorage.getItem('token')).toBe('1234567890');
-            expect(app.displayVotes).toHaveBeenCalledWith($('#plate'));
+            expect(app.currentCasusFsm.displayVotes)
+                .toHaveBeenCalled();
         });
         it('also accepts "no" votes', function() {
             app.submitVote($('#plate .vote-btn-no'), 'no');
-            var requests = jasmine.Ajax.requests;
-            expect(requests.count()).toBe(1);
-            var post = requests.at(0);
+            var post = jasmine.Ajax.requests.mostRecent();
             expect(post.method).toBe('POST');
-            expect(post.url).toBe(app.base + '/case/vote');
-            expect(post.requestHeaders['Content-Type']).toBe('application/x-www-form-urlencoded; charset=UTF-8');
+            expect(post.url).toBe(app.base + 'case/vote');
+            expect(post.requestHeaders['Content-Type']).toBe(
+                'application/x-www-form-urlencoded; charset=UTF-8'
+            );
             expect(post.params).toBe('id=1&choice=no&t=qwertyuiop');
         });
         it('remembers that you have voted before', function() {
             expect(localStorage.getItem('has_voted_1')).toBeFalsy();
             app.submitVote($('#plate .vote-btn-yes'), 'yes');
             expect(localStorage.getItem('has_voted_1')).toBeFalsy();
-            var requests = jasmine.Ajax.requests;
-            expect(requests.count()).toBe(1);
-            var post = requests.at(0);
+            var unchanged = jasmine.Ajax.requests.count();
+            var post = jasmine.Ajax.requests.mostRecent();
             post.respondWith({
                 'status': 200,
                 'responseText': JSON.stringify({
@@ -1096,8 +1067,9 @@ describe('app', function() {
                 'contentType': 'application/json'
             });
             expect(localStorage.getItem('has_voted_1')).toBeTruthy();
+            expect(app.currentCasusFsm.state).toBe('closed');
             app.submitVote($('#plate .vote-btn-no'), 'no');
-            expect(requests.count()).toBe(1);
+            expect(jasmine.Ajax.requests.count()).toBe(unchanged);
         });
         it('rejects votes other than "yes" or "no"', function() {
             app.submitVote($('#plate .vote-btn-yes'), 'y');
@@ -1106,43 +1078,61 @@ describe('app', function() {
             app.submitVote($('#plate .vote-btn-yes'), 'nope');
             app.submitVote($('#plate .vote-btn-yes'), 'YEAH');
             app.submitVote($('#plate .vote-btn-yes'), 'nay');
-            expect(jasmine.Ajax.requests.count()).toBe(0);
+            expect(jasmine.Ajax.requests.count()).toBe(1);
             expect(localStorage.getItem('has_voted_1')).toBeFalsy();
         });
     });
     
     describe('submitReply', function() {
         beforeEach(function() {
-            app.insertPages();
-            app.loadReflection($('#mirror'), fakeReflectionData);
+            localStorage.setItem('latest_reflection', '2');
+            localStorage.setItem(
+                'reflection_data_2',
+                JSON.stringify(fakeReflectionData)
+            );
+            app.initialize();
+            jasmine.Ajax.requests.mostRecent().respondWith({
+                status: 400
+            });
             localStorage.setItem('token', 'qwertyuiop');
-            localStorage.setItem('last_retrieve', 'never');
             this.form = $('#mirror .reflection-response');
             this.form.find('[name="p"]').val('tester');
             this.form.find('[name="r"]').val('this is a test response');
-            app.submitReply(this.form);
+            _.bind(
+                app.submitReply,
+                app.currentReflectionFsm
+            )(this.form);
             spyOn(app, 'appendReply');
         });
         it('submits reflection replies to the server', function() {
+            expect(app.connectivity.state).toBe('disconnected');
+            expect(app.currentReflectionFsm.state).toBe('archived');
+            expect(app.currentReflectionFsm.data).toEqual(fakeReflectionData);
+            $('#mirror').show();
             expect(this.form).toBeHidden();
-            var requests = jasmine.Ajax.requests;
-            expect(requests.count()).toBe(1);
-            var post = requests.at(0);
+            var post = jasmine.Ajax.requests.mostRecent();
             expect(post.method).toBe('POST');
-            expect(post.url).toBe(app.base + '/reflection/2/reply');
-            expect(post.requestHeaders['Content-Type'])
-                .toBe('application/x-www-form-urlencoded; charset=UTF-8');
-            expect(post.params)
-                .toBe('p=tester&r=this+is+a+test+response&t=qwertyuiop&last-retrieve=never&ca=');
+            expect(post.url).toBe(app.base + 'reflection/2/reply');
+            expect(post.requestHeaders['Content-Type']).toBe(
+                'application/x-www-form-urlencoded; charset=UTF-8'
+            );
+            expect(post.params).toBe(
+                'p=tester&r=this+is+a+test+response&' +
+                't=qwertyuiop&last-retrieve=never&ca='
+            );
         });
         it('appends the reply and resets the form on success', function() {
-            var post = jasmine.Ajax.requests.at(0);
+            var post = jasmine.Ajax.requests.mostRecent();
             post.respondWith({
                 'status': 200,
                 'contentType': 'application/json',
                 'responseText': JSON.stringify({
                     'status': 'success',
-                    'token': '1234567890'
+                    'token': '1234567890',
+                    'new': [{
+                        pseudonym: 'tester',
+                        message: 'this is a test response'
+                    }]
                 })
             });
             expect(localStorage.getItem('token')).toBe('1234567890');
@@ -1154,8 +1144,7 @@ describe('app', function() {
             expect(this.form).toBeVisible();
         });
         it('updates the thread and offers a retry in case of ninjas', function() {
-            var post = jasmine.Ajax.requests.at(0);
-            $('<p>').addClass('reply-submitted').appendTo('#mirror');
+            var post = jasmine.Ajax.requests.mostRecent();
             post.respondWith({
                 'status': 200,
                 'contentType': 'application/json',
@@ -1167,8 +1156,7 @@ describe('app', function() {
                 })
             });
             expect(localStorage.getItem('token')).toBe('1234567890');
-            expect(localStorage.getItem('last_retrieve')).toBe('now');
-            expect($('#mirror .reply-submitted')).not.toBeInDOM();
+            expect(app.currentReflectionFsm.data.since).toBe('now');
             expect(app.appendReply.calls.count()).toBe(2);
             expect(this.form.find('[name="r"]'))
                 .toHaveValue('this is a test response');
@@ -1176,7 +1164,7 @@ describe('app', function() {
             expect($('#mirror .ninja-message')).toBeVisible();
         });
         it('presents a captcha challenge on server request', function() {
-            var post = jasmine.Ajax.requests.at(0);
+            var post = jasmine.Ajax.requests.mostRecent();
             post.respondWith({
                 'status': 200,
                 'contentType': 'application/json',
@@ -1196,7 +1184,7 @@ describe('app', function() {
                 .toHaveText('banana banana banana');
         });
         it('notifies the user if the thread has been closed', function() {
-            var post = jasmine.Ajax.requests.at(0);
+            var post = jasmine.Ajax.requests.mostRecent();
             var announcement = $('#mirror .reflection-closure-announce');
             announcement.show();
             post.respondWith({
@@ -1215,7 +1203,7 @@ describe('app', function() {
             expect($('#mirror .reflection-closed-notice')).toBeVisible();
         });
         it('offers a retry if the submitted form was invalid', function() {
-            var post = jasmine.Ajax.requests.at(0);
+            var post = jasmine.Ajax.requests.mostRecent();
             post.respondWith({
                 'status': 400,
                 'contentType': 'application/json',
@@ -1233,10 +1221,16 @@ describe('app', function() {
     
     describe('submitCaptcha', function() {
         beforeEach(function() {
-            app.insertPages();
-            app.loadReflection($('#mirror'), fakeReflectionData);
+            localStorage.setItem('latest_reflection', '2');
+            localStorage.setItem(
+                'reflection_data_2',
+                JSON.stringify(fakeReflectionData)
+            );
+            app.initialize();
+            jasmine.Ajax.requests.mostRecent().respondWith({
+                status: 400
+            });
             localStorage.setItem('token', 'qwertyuiop');
-            localStorage.setItem('last_retrieve', 'never');
             this.form = $('#mirror .reflection-response');
             this.form.find('[name="p"]').val('tester');
             this.form.find('[name="r"]').val('this is a test response');
@@ -1247,20 +1241,23 @@ describe('app', function() {
             var captcha = $('#mirror .reflection-captcha');
             var response = captcha.find('[name="ca"]');
             response.val('banana banana banana');
-            app.submitCaptcha(captcha);
+            _.bind(
+                app.submitCaptcha,
+                app.currentReflectionFsm
+            )(captcha);
             expect($('#mirror .captcha-popup').parent())
                 .toHaveClass('ui-popup-hidden');
             expect(response).toHaveValue('');
             expect(app.submitReply).toHaveBeenCalledWith(this.form);
-            var requests = jasmine.Ajax.requests;
-            expect(requests.count()).toBe(1);
-            var post = requests.at(0);
+            var post = jasmine.Ajax.requests.mostRecent();
             expect(post.method).toBe('POST');
-            expect(post.url).toBe(app.base + '/reflection/2/reply');
+            expect(post.url).toBe(app.base + 'reflection/2/reply');
             expect(post.requestHeaders['Content-Type'])
                 .toBe('application/x-www-form-urlencoded; charset=UTF-8');
-            expect(post.params)
-                .toBe('p=tester&r=this+is+a+test+response&t=qwertyuiop&last-retrieve=never&ca=banana+banana+banana');
+            expect(post.params).toBe(
+                'p=tester&r=this+is+a+test+response&t=qwertyuiop&' +
+                'last-retrieve=never&ca=banana+banana+banana'
+            );
         });
     });
     
@@ -1275,11 +1272,11 @@ describe('app', function() {
                 app.appendReply($('#mirror'), r);
             });
             expect($('.reply-1')).toBeInDOM();
-            expect($('.reply-1')).toContainHtml('<span class="reply-date">2015-03-02</span><span class="reply-nick">malbolge</span><span class="reply-content">&lt;script&gt;wreakHavoc();&lt;/script&gt;</span><br><a href="#" class="reply-vote ui-btn ui-icon-plus ui-btn-icon-left">leerzaam</a><a href="#" class="reply-vote ui-btn ui-icon-minus ui-btn-icon-right">ongewenst</a>');
+            expect($('.reply-1')).toContainHtml('<span class="reply-date">2015-03-02</span><span class="reply-nick">malbolge</span><span class="reply-content">&lt;script&gt;wreakHavoc();&lt;/script&gt;</span><br><a href="#" class="reply-vote online ui-btn ui-icon-plus ui-btn-icon-left">leerzaam</a><a href="#" class="reply-vote online ui-btn ui-icon-minus ui-btn-icon-right">ongewenst</a>');
             expect($('.reply-1 > h3')).toBeInDOM();
             expect($('.reply-1 > h3')).toContainHtml('<span class="reply-date">2015-03-02</span> <span class="reply-nick">spam</span>');
             expect($('.reply-2')).toBeInDOM();
-            expect($('.reply-2')).toHaveHtml('<h3 class="reply-synopsis" style="display: none;"><span class="reply-date">2015-03-03</span> <span class="reply-nick">victim</span></h3><span class="reply-date">2015-03-03</span><span class="reply-nick">victim</span><span class="reply-content">help me</span><br><a href="#" class="reply-vote ui-btn ui-icon-plus ui-btn-icon-left">leerzaam</a><a href="#" class="reply-vote ui-btn ui-icon-minus ui-btn-icon-right">ongewenst</a>');
+            expect($('.reply-2')).toHaveHtml('<h3 class="reply-synopsis" style="display: none;"><span class="reply-date">2015-03-03</span> <span class="reply-nick">victim</span></h3><span class="reply-date">2015-03-03</span><span class="reply-nick">victim</span><span class="reply-content">help me</span><br><a href="#" class="reply-vote online ui-btn ui-icon-plus ui-btn-icon-left">leerzaam</a><a href="#" class="reply-vote online ui-btn ui-icon-minus ui-btn-icon-right">ongewenst</a>');
             $('.reply-1 .reply-vote.ui-icon-minus').click();
             expect(app.submitReplyVote).toHaveBeenCalledWith(1, 'down');
             $('.reply-2 .reply-vote.ui-icon-plus').click();
@@ -1289,17 +1286,22 @@ describe('app', function() {
 
     describe('submitReplyVote', function() {
         beforeEach(function() {
-            app.insertPages();
-            app.loadReflection($('#mirror'), fakeReflectionData);
+            localStorage.setItem('latest_reflection', '2');
+            localStorage.setItem(
+                'reflection_data_2',
+                JSON.stringify(fakeReflectionData)
+            );
+            app.initialize();
+            jasmine.Ajax.requests.mostRecent().respondWith({
+                status: 400
+            });
             localStorage.setItem('token', 'qwertyuiop');
         });
         it('communicates thread moderation votes with the server', function() {
             app.submitReplyVote(2, 'up');
-            var requests = jasmine.Ajax.requests;
-            expect(requests.count()).toBe(1);
-            var post = requests.at(0);
+            var post = jasmine.Ajax.requests.mostRecent();
             expect(post.method).toBe('POST');
-            expect(post.url).toBe(app.base + '/reply/2/moderate/');
+            expect(post.url).toBe(app.base + 'reply/2/moderate/');
             expect(post.requestHeaders['Content-Type'])
                 .toBe('application/x-www-form-urlencoded; charset=UTF-8');
             expect(post.params).toBe('choice=up&t=qwertyuiop');
@@ -1324,7 +1326,7 @@ describe('app', function() {
             app.submitReplyVote(2, 'no');
             app.submitReplyVote(2, 'UP');
             app.submitReplyVote(2, 'DOWN');
-            expect(jasmine.Ajax.requests.count()).toBe(0);
+            expect(jasmine.Ajax.requests.count()).toBe(1);
         });
     });
 
@@ -1379,56 +1381,21 @@ describe('app', function() {
         });
     });
 
-    describe('displayVotes', function() {
-        beforeEach(function() {
-            app.insertPages();
-            this.page = $('#plate');
-            app.loadCasus(this.page, fakeLatestCaseData);
-        });
-        it('hides the vote buttons and displays the yes/no ratio', function() {
-            var yes_count = this.page.find('.yes_count');
-            var no_count = this.page.find('.no_count');
-            var no_bar = this.page.find('.no_bar');
-            var yes_bar = this.page.find('.yes_bar');
-            app.displayVotes(this.page);
-            expect(this.page.children('a')).toBeHidden();
-            expect(yes_count).toBeVisible();
-            expect(yes_count).toHaveHtml('ja 10');
-            expect(no_count).toBeVisible();
-            expect(no_count).toHaveHtml('10 nee');
-            expect(no_bar).toBeVisible();
-            expect(yes_bar).toBeVisible();
-            expect(yes_bar.width() / no_bar.width()).toBeCloseTo(.5, 2);
-        });
-    });
-
-    describe('displayVoteButtons', function() {
-        beforeEach(function() {
-            app.insertPages();
-            this.page = $('#plate');
-            app.loadCasus(this.page, fakeLatestCaseData);
-            app.displayVotes(this.page);
-        });
-        it('hides the yes/no ratio and displays the vote buttons', function() {
-            var anchors = this.page.children('a');
-            expect(anchors).toBeHidden();
-            app.displayVoteButtons(this.page);
-            expect(anchors).toBeVisible();
-            expect(this.page.find('.yes_count')).toBeHidden();
-            expect(this.page.find('.no_count')).toBeHidden();
-            expect(this.page.find('.no_bar')).toBeHidden();
-            expect(this.page.find('.yes_bar')).toBeHidden();
-        });
-    });
-
     describe('bindEvents', function() {
         var emulateDeviceReady = function(callback) {
             helper.trigger(window.document, 'deviceready');
             callback();
         };
         beforeEach(function(done) {
-            app.insertPages();
-            app.loadCasus($('#plate'), fakeLatestCaseData);
+            localStorage.setItem('casus_list', JSON.stringify({
+                all: [fakeLatestCaseData]
+            }));
+            $(_.template($('#casus-archive-format').html())())
+                .appendTo('#stage').page();
+            app.initialize();
+            jasmine.Ajax.requests.mostRecent().respondWith({
+                status: 400
+            });
             spyOn(app, 'submitVote');
             spyOn(app, 'onDeviceReady');
             app.bindEvents();
