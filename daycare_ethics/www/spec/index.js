@@ -208,9 +208,6 @@ describe('PageFsm', function() {
         });
         
         describe('empty', function() {
-            beforeEach(function() {
-                this.fsm = new this.Fsm();
-            });
             it('is the default', function() {
                 expect(this.fsm.state).toBe('empty');
             });
