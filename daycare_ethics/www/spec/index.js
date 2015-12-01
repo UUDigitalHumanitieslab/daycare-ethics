@@ -500,6 +500,25 @@ describe('CurrentReflectionFsm', function() {
         localStorage.setItem('reflection_data_2', testSerialized);
         expect(this.fsm.load()).toEqual(testData);
     });
+    
+    it('stores the most recent reflection by reference', function() {
+        this.fsm.store(testData);
+        expect(localStorage.getItem('latest_reflection')).toBe('2');
+        expect(
+            localStorage.getItem('reflection_data_2')
+        ).toBe(testSerialized);
+    });
+    
+    it('stores and displays the data on cycle', function() {
+        spyOn(this.fsm, 'display');
+        spyOn(this.fsm, 'store');
+        var stripped = _.omit(testData, 'token');
+        this.fsm.cycle(_.clone(testData));
+        expect(this.fsm.data).toEqual(stripped);
+        expect(this.fsm.display).toHaveBeenCalledWith(stripped);
+        expect(this.fsm.store).toHaveBeenCalledWith(stripped);
+        expect(localStorage.getItem('token')).toBe(testData.token);
+    });
 });
 
 describe('app', function() {
