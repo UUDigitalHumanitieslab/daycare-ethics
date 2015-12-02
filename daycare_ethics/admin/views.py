@@ -142,6 +142,7 @@ class ResponsesView(ModelView, ActionsMixin):
 class TipsView(ModelView):
     column_list = ('what', 'author', 'title', 'update')
     column_labels = {'update': 'Last update'}
+    column_default_sort = ('update', True)
     form_columns = ('what', 'author', 'title', 'text', 'href')
     form_args = {
         'text': {

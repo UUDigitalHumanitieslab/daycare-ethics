@@ -17,6 +17,15 @@ from ..util import image_variants
 from db import db
 
 
+class Session(db.Model):
+    """ Server-side storage medium for the sessions. """
+    token   = db.Column(db.String(30), primary_key=True)
+                                # 30 = ..server.security.KEY_LENGTH
+                                # (not imported here because of circularity)
+    expires = db.Column(db.DateTime)
+    payload = db.Column(db.PickleType)
+
+
 class Picture (db.Model):
     """ Image or video for illustration of a case or brain teaser.
     """

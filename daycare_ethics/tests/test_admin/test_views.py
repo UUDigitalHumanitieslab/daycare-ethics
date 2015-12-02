@@ -1,5 +1,6 @@
 # (c) 2014, 2015 Digital Humanities Lab, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
+# Credits: Jeremy Allen helped to fix issues. (http://stackoverflow.com/a/32597959/1166087)
 
 from datetime import datetime
 import os

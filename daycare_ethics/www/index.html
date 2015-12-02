@@ -36,11 +36,11 @@
             <a href="#" data-rel="back" data-icon="carat-l"><%= back %></a>
             <span class="ui-title" />
         </div>
-        <h3>Casus van week <span class="week-number"></span></h3>
+        <h3>Casus van week <span class="week-number">0</span></h3>
         <div class="ui-grid-a flex-col">
             <div class="case-display ui-block-a"></div>
             <div class="ui-block-b">
-                <p class="case-text"></p>
+                <p class="case-text">Maak verbinding met het internet om casus binnen te halen.</p>
                 <p class="case-proposition"></p>
             </div>
         </div>
@@ -58,10 +58,10 @@
             <a href="#" data-rel="back" data-icon="carat-l"><%= back %></a>
             <span class="ui-title" />
         </div>
-        <h3>Reflectie van week <span class="week-number"></span></h3>
-        <p class="reflection-text"></p>
+        <h3>Reflectie van week <span class="week-number">0</span></h3>
+        <p class="reflection-text">Maak verbinding met het internet om reflecties binnen te halen.</p>
         <div class="reflection-discussion"></div>
-        <form class="reflection-response">
+        <form class="reflection-response online">
             <label for="form-field-p<%= suffix %>">Schuilnaam:</label>
             <input type="text" inputmode="verbatim" maxlength="30" required spellcheck="false" id="form-field-p<%= suffix %>" name="p">
             <label for="form-field-r<%= suffix %>">Reactie:</label>
@@ -132,6 +132,7 @@
     </div>
     <h3>Lijst van casus</h3>
     <p>(op weeknummer)</p>
+    <p class="disconnected">Verbind met internet om de lijst te verversen.</p>
     <ul data-role="listview" data-inset="true" id="plate-archive-list">
     </ul>
 </div>
@@ -143,6 +144,7 @@
     </div>
     <h3>Lijst van reflecties</h3>
     <p>(op weeknummer)</p>
+    <p class="disconnected">Verbind met internet om de lijst te verversen.</p>
     <ul data-role="listview" data-inset="true" id="mirror-archive-list">
     </ul>
 </div>
@@ -152,6 +154,7 @@
         <a href="#shelf" data-icon="carat-l">Extra</a>
         <span class="ui-title" />
     </div>
+	<span class="disconnected">Verbind met internet om de laatste tips te zien.</span>
     <h4>Tips bij de beroepscode</h4>
     <ul data-role="listview" data-inset="true" id="labour-code-tips" class="tips-list"></ul>
     <h4>Links</h4>
@@ -181,6 +184,7 @@
 <script src="js/messages_nl.min.js"></script>
 <script src="js/index.js"></script>
 <script>
+    app.origin = 'https://doordenkertjes.hum.uu.nl/';
     app.initialize();
 </script>
 
