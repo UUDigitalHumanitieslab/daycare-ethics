@@ -29,21 +29,30 @@
         <icon src="www/res/icon/android/icon-48-mdpi.png" density="mdpi" />
         <icon src="www/res/icon/android/icon-72-hdpi.png" density="hdpi" />
         <icon src="www/res/icon/android/icon-96-xhdpi.png" density="xhdpi" />
-        <splash src="www/res/screen/android/screen-ldpi-portrait.jpg" density="port-ldpi" />
-        <splash src="www/res/screen/android/screen-mdpi-portrait.jpg" density="port-mdpi" />
-        <splash src="www/res/screen/android/screen-hdpi-portrait.jpg" density="port-hdpi" />
-        <splash src="www/res/screen/android/screen-xhdpi-portrait.jpg" density="port-xhdpi" />
+        <splash src="www/res/screen/android/portrait_ldpi.png" density="port-ldpi" />
+        <splash src="www/res/screen/android/portrait_mdpi.png" density="port-mdpi" />
+        <splash src="www/res/screen/android/portrait_hdpi.png" density="port-hdpi" />
+        <splash src="www/res/screen/android/portrait_xhdpi.png" density="port-xhdpi" />
+        <splash src="www/res/screen/android/landscape.png" density="land-ldpi" />
+        <splash src="www/res/screen/android/landscape.png" density="land-mdpi" />
+        <splash src="www/res/screen/android/landscape.png" density="land-hdpi" />
+        <splash src="www/res/screen/android/landscape.png" density="land-xhdpi" />
     </platform>
     <platform name="ios">
         <icon src="www/res/icon/ios/icon-57.png" height="57" width="57" />
         <icon src="www/res/icon/ios/icon-72.png" height="72" width="72" />
         <icon src="www/res/icon/ios/icon-57-2x.png" height="114" width="114" />
         <icon src="www/res/icon/ios/icon-72-2x.png" height="144" width="144" />
-        <splash src="www/res/screen/ios/screen-iphone-portrait.jpg" width="320" height="480" />
-        <splash src="www/res/screen/ios/screen-iphone-portrait-2x.jpg" width="640" height="960" />
-        <splash src="www/res/screen/ios/screen-iphone-portrait-568h-2x.jpg" width="640" height="768" />
-        <splash src="www/res/screen/ios/screen-ipad-portrait.jpg" width="768" height="1136" />
-        <splash src="www/res/screen/ios/screen-ipad-landscape.jpg" width="1024" height="1024" />
+        <splash src="www/res/screen/ios/portrait_iphone.png" width="320" height="480" />
+        <splash src="www/res/screen/ios/portrait_iphone_2x.png" width="640" height="960" />
+        <splash src="www/res/screen/ios/portrait_iphone568_2x.png" width="640" height="1136" />
+        <splash src="www/res/screen/ios/portrait_iphone667_2x.png" width="750" height="1334" />
+        <splash src="www/res/screen/ios/portrait_iphone736_3x.png" width="1242" height="2208" />
+        <splash src="www/res/screen/ios/landscape_iphone736_3x.png" width="2208" height="1242" />
+        <splash src="www/res/screen/ios/portrait_ipad.png" width="768" height="1024" />
+        <splash src="www/res/screen/ios/portrait_ipad_2x.png" width="1536" height="2048" />
+        <splash src="www/res/screen/ios/landscape_ipad.png" width="1024" height="768" />
+        <splash src="www/res/screen/ios/landscape_ipad_2x.png" width="2048" height="1536" />
     </platform>
     <access origin="*" />
 </widget>
