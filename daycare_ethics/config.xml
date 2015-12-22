@@ -33,10 +33,10 @@
         <splash src="res/screen/android/portrait_mdpi.png" density="port-mdpi" />
         <splash src="res/screen/android/portrait_hdpi.png" density="port-hdpi" />
         <splash src="res/screen/android/portrait_xhdpi.png" density="port-xhdpi" />
-        <splash src="res/screen/android/landscape.png" density="land-ldpi" />
-        <splash src="res/screen/android/landscape.png" density="land-mdpi" />
-        <splash src="res/screen/android/landscape.png" density="land-hdpi" />
-        <splash src="res/screen/android/landscape.png" density="land-xhdpi" />
+        <splash src="res/screen/android/landscape_ldpi.png" density="land-ldpi" />
+        <splash src="res/screen/android/landscape_mdpi.png" density="land-mdpi" />
+        <splash src="res/screen/android/landscape_hdpi.png" density="land-hdpi" />
+        <splash src="res/screen/android/landscape_xhdpi.png" density="land-xhdpi" />
     </platform>
     <platform name="ios">
         <icon src="res/icon/ios/icon-57.png" height="57" width="57" />
