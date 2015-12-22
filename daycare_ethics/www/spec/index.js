@@ -1417,6 +1417,25 @@ describe('app', function() {
             expect(app.onDeviceReady).toHaveBeenCalled();
         });
     });
+    
+    describe('catchExternalLinks', function() {
+        it('intercepts clicks on _blank links and handles them through window.open instead', function() {
+            var anchor = $('<a>');
+            anchor.attr({
+                target: '_blank',
+                href: 'http://www.test.com/'
+            }).appendTo('#stage');
+            spyOn(window, 'open');
+            var event = spyOnEvent(anchor, 'click');
+            app.catchExternalLinks($('#stage'));
+            anchor.click();
+            expect(event).toHaveBeenPrevented();
+            expect(window.open).toHaveBeenCalledWith(
+                'http://www.test.com/',
+                '_blank'
+            );
+        });
+    });
 
     describe('onDeviceReady', function() {
         it('should report that it fired', function() {

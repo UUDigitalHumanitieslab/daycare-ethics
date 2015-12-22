@@ -481,6 +481,7 @@ var app = {
         // We need to refresh the listviews on load.
         $('.tips-list').listview();
         $('.tips-list').listview('refresh');
+        app.catchExternalLinks($('#links-tips'));
     },
     
     loadCasusArchive: function(data) {
@@ -702,6 +703,14 @@ var app = {
         return enumerator / denominator;
     },
     
+    catchExternalLinks: function(element) {
+        element.find('a[target="_blank"]').click(function(event) {
+            event.preventDefault();
+            window.open(event.target.href, '_blank');
+        });
+
+    },
+    
     // Bind Event Listeners
     // Bind any events that are required on startup. Common events are:
     // 'load', 'deviceready', 'offline', and 'online'.
@@ -712,10 +721,7 @@ var app = {
         $('.vote-btn-no').on('mousedown touchstart', function(event) {
             app.submitVote(event.target, 'no');
         });
-        $('a[target="_blank"]').click(function(event) {
-            event.preventDefault();
-            window.open(event.target.href, '_blank');
-        });
+        app.catchExternalLinks($('#shelf, #about'));
         document.addEventListener('deviceready', this.onDeviceReady, false);
     },
     
