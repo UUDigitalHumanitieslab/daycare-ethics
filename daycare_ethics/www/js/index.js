@@ -109,6 +109,7 @@ var PageFsm = machina.Fsm.extend({
     },
     store: function(data) {
         localStorage.setItem(this.archive, JSON.stringify(data));
+        this.emit('stored');
     },
     display: function(data) {},
     cycle: function(data) {
@@ -245,7 +246,9 @@ var CasusFsm = machina.Fsm.extend({
         if (app.casusListFsm.state !== 'empty') {
             this.refresh();
         }
-        app.casusListFsm.on('handled', _.bind(this.refresh, this));
+        var handler = _.bind(this.refresh, this);
+        app.casusListFsm.on('handled', handler);
+        app.casusListFsm.on('stored', handler);
     },
     refresh: function() {
         this.data = this.load();
