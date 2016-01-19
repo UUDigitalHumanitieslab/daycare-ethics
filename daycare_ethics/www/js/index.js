@@ -724,7 +724,6 @@ var app = {
         $('.vote-btn-no').on('mousedown touchstart', function(event) {
             app.submitVote(event.target, 'no');
         });
-        app.catchExternalLinks($('#shelf, #about'));
         document.addEventListener('deviceready', this.onDeviceReady, false);
     },
     
@@ -733,6 +732,7 @@ var app = {
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
+        app.catchExternalLinks($('#shelf, #about'));
         window.open = cordova.InAppBrowser.open;
     },
     
