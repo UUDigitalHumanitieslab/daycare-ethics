@@ -713,6 +713,11 @@ var app = {
         });
     },
     
+    openInExternalApp: function(event) {
+        event.preventDefault();
+        cordova.plugins.disusered.open(event.target.href);
+    },
+    
     // Bind Event Listeners
     // Bind any events that are required on startup. Common events are:
     // 'load', 'deviceready', 'offline', and 'online'.
@@ -733,6 +738,8 @@ var app = {
         app.receivedEvent('deviceready');
         app.catchExternalLinks($('#shelf, #about'));
         window.open = cordova.InAppBrowser.open;
+        $('#shelf a[target="_blank"], #about a[href^="mailto:"]')
+            .click(app.openInExternalApp);
     },
     
     // Update DOM on a Received Event
