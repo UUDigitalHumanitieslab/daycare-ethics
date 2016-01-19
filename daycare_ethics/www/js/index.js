@@ -711,7 +711,6 @@ var app = {
             event.preventDefault();
             window.open(event.target.href, '_blank');
         });
-
     },
     
     // Bind Event Listeners
