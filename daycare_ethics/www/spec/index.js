@@ -647,13 +647,13 @@ describe('CasusFsm', function() {
             })
         });
         var fsm2 = new this.Fsm();
-        expect(CasusFsm.prototype.refresh.calls.count()).toBe(2);
+        expect(CasusFsm.prototype.refresh.calls.count()).toBe(3);
         app.casusListFsm.transition('inactive');
         var fsm3 = new this.Fsm();
-        expect(CasusFsm.prototype.refresh.calls.count()).toBe(3);
+        expect(CasusFsm.prototype.refresh.calls.count()).toBe(4);
         app.casusListFsm.transition('empty');
         var fsm4 = new this.Fsm();
-        expect(CasusFsm.prototype.refresh.calls.count()).toBe(3);
+        expect(CasusFsm.prototype.refresh.calls.count()).toBe(4);
     });
     
     describe('display', function() {
@@ -1438,6 +1438,19 @@ describe('app', function() {
     });
 
     describe('onDeviceReady', function() {
+        beforeEach(function() {
+            window.cordova = {
+                InAppBrowser: {
+                    open: function(){}
+                }
+            };
+        });
+        
+        afterEach(function() {
+            delete window.cordova;
+            delete window.open;
+        });
+        
         it('should report that it fired', function() {
             spyOn(app, 'receivedEvent');
             app.onDeviceReady();
