@@ -709,7 +709,7 @@ var app = {
     catchExternalLinks: function(element) {
         element.find('a[target="_blank"]').click(function(event) {
             event.preventDefault();
-            window.open(event.target.href, '_blank');
+            window.open(this.href, '_blank');
         });
     },
     
