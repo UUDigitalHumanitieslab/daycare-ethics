@@ -736,7 +736,7 @@ var app = {
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
-        app.catchExternalLinks($('#shelf, #about'));
+        app.catchExternalLinks($('#about'));
         window.open = cordova.InAppBrowser.open;
         $('#shelf a[target="_blank"], #about a[href^="mailto:"]')
             .click(app.openInExternalApp);
