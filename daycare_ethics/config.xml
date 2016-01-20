@@ -54,5 +54,6 @@
         <splash src="res/screen/ios/landscape_ipad.png" width="1024" height="768" />
         <splash src="res/screen/ios/landscape_ipad_2x.png" width="2048" height="1536" />
     </platform>
-    <access origin="*" />
+    <access origin="https://doordenkertjes.hum.uu.nl" />
+    <access origin="https://ssl.gstatic.com" />
 </widget>
