@@ -18,6 +18,7 @@ class FixtureConfiguration (object):
     CAPTCHA_DATA = join(dirname(__file__), 'data', 'test_captcha.json')
     SECRET_KEY = 'psiodfnvpsdojfnvpaosihrgt'
     TESTING = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 class BaseFixture (TestCase):
