@@ -647,13 +647,13 @@ describe('CasusFsm', function() {
             })
         });
         var fsm2 = new this.Fsm();
-        expect(CasusFsm.prototype.refresh.calls.count()).toBe(2);
+        expect(CasusFsm.prototype.refresh.calls.count()).toBe(3);
         app.casusListFsm.transition('inactive');
         var fsm3 = new this.Fsm();
-        expect(CasusFsm.prototype.refresh.calls.count()).toBe(3);
+        expect(CasusFsm.prototype.refresh.calls.count()).toBe(4);
         app.casusListFsm.transition('empty');
         var fsm4 = new this.Fsm();
-        expect(CasusFsm.prototype.refresh.calls.count()).toBe(3);
+        expect(CasusFsm.prototype.refresh.calls.count()).toBe(4);
     });
     
     describe('display', function() {
@@ -1417,8 +1417,40 @@ describe('app', function() {
             expect(app.onDeviceReady).toHaveBeenCalled();
         });
     });
+    
+    describe('catchExternalLinks', function() {
+        it('intercepts clicks on _blank links and handles them through window.open instead', function() {
+            var anchor = $('<a>');
+            anchor.attr({
+                target: '_blank',
+                href: 'http://www.test.com/'
+            }).appendTo('#stage');
+            spyOn(window, 'open');
+            var event = spyOnEvent(anchor, 'click');
+            app.catchExternalLinks($('#stage'));
+            anchor.click();
+            expect(event).toHaveBeenPrevented();
+            expect(window.open).toHaveBeenCalledWith(
+                'http://www.test.com/',
+                '_blank'
+            );
+        });
+    });
 
     describe('onDeviceReady', function() {
+        beforeEach(function() {
+            window.cordova = {
+                InAppBrowser: {
+                    open: function(){}
+                }
+            };
+        });
+        
+        afterEach(function() {
+            delete window.cordova;
+            delete window.open;
+        });
+        
         it('should report that it fired', function() {
             spyOn(app, 'receivedEvent');
             app.onDeviceReady();

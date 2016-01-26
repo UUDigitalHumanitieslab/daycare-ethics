@@ -109,6 +109,7 @@ var PageFsm = machina.Fsm.extend({
     },
     store: function(data) {
         localStorage.setItem(this.archive, JSON.stringify(data));
+        this.emit('stored');
     },
     display: function(data) {},
     cycle: function(data) {
@@ -245,7 +246,9 @@ var CasusFsm = machina.Fsm.extend({
         if (app.casusListFsm.state !== 'empty') {
             this.refresh();
         }
-        app.casusListFsm.on('handled', _.bind(this.refresh, this));
+        var handler = _.bind(this.refresh, this);
+        app.casusListFsm.on('handled', handler);
+        app.casusListFsm.on('stored', handler);
     },
     refresh: function() {
         this.data = this.load();
@@ -481,6 +484,7 @@ var app = {
         // We need to refresh the listviews on load.
         $('.tips-list').listview();
         $('.tips-list').listview('refresh');
+        app.catchExternalLinks($('#links-tips'));
     },
     
     loadCasusArchive: function(data) {
@@ -702,6 +706,18 @@ var app = {
         return enumerator / denominator;
     },
     
+    catchExternalLinks: function(element) {
+        element.find('a[target="_blank"]').click(function(event) {
+            event.preventDefault();
+            window.open(this.href, '_blank');
+        });
+    },
+    
+    openInExternalApp: function(event) {
+        event.preventDefault();
+        cordova.plugins.disusered.open(event.target.href);
+    },
+    
     // Bind Event Listeners
     // Bind any events that are required on startup. Common events are:
     // 'load', 'deviceready', 'offline', and 'online'.
@@ -720,6 +736,10 @@ var app = {
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
+        app.catchExternalLinks($('#about'));
+        window.open = cordova.InAppBrowser.open;
+        $('#shelf a[target="_blank"], #about a[href^="mailto:"]')
+            .click(app.openInExternalApp);
     },
     
     // Update DOM on a Received Event

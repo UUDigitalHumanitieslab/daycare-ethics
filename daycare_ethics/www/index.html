@@ -13,11 +13,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com https://doordenkertjes.hum.uu.nl; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'">
 <link rel="icon" type="image/png" href="favicon.png" />
 <link rel="apple-touch-icon-precomposed" href="icon.png" />
 <link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css" />
 <link rel="stylesheet" type="text/css" href="css/index.css" />
-<link rel="stylesheet" type="text/css" href="css/highres.css" media="(-webkit-min-device-pixel-ratio: 2), (min--moz-device-pixel-ratio: 2), (-o-min-device-pixel-ratio: 2/1), (min-device-pixel-ratio: 2), (min-resolution: 192dpi), (min-resolution: 2dppx)" />
+<link rel="stylesheet" type="text/css" href="css/highres.css" media="(-webkit-min-device-pixel-ratio: 2), (min--moz-device-pixel-ratio: 2), (-o-min-device-pixel-ratio: 2/1), (min-resolution: 2dppx), (min-resolution: 192dpi)" />
 <script src="js/jquery-2.1.4.min.js"></script>
 <script src="js/jquery.mobile-1.4.5.min.js"></script>
 <title>Doordenkertjes &mdash; Ethiek in de kinderopvang</title>
@@ -34,7 +35,7 @@
     <div data-role="page" id="<%= pageid %>">
         <div data-role="header">
             <a href="#" data-rel="back" data-icon="carat-l"><%= back %></a>
-            <span class="ui-title" />
+            <span class="ui-title"></span>
         </div>
         <h3>Casus van week <span class="week-number">0</span></h3>
         <div class="ui-grid-a flex-col">
@@ -56,7 +57,7 @@
     <div data-role="page" id="<%= pageid %>">
         <div data-role="header">
             <a href="#" data-rel="back" data-icon="carat-l"><%= back %></a>
-            <span class="ui-title" />
+            <span class="ui-title"></span>
         </div>
         <h3>Reflectie van week <span class="week-number">0</span></h3>
         <p class="reflection-text">Maak verbinding met het internet om reflecties binnen te halen.</p>
@@ -102,7 +103,7 @@
 <div data-role="page" id="shelf">
     <div data-role="header">
         <a href="#home" data-icon="carat-l">Doordenkertjes</a>
-        <span class="ui-title" />
+        <span class="ui-title"></span>
     </div>
     <h3>Extra</h3>
     <ul data-role="listview" data-inset="true">
@@ -116,7 +117,7 @@
 <div data-role="page" id="archive">
     <div data-role="header">
         <a href="#shelf" data-icon="carat-l">Extra</a>
-        <span class="ui-title" />
+        <span class="ui-title"></span>
     </div>
     <h3>Archief</h3>
     <ul data-role="listview" data-inset="true">
@@ -128,7 +129,7 @@
 <div data-role="page" id="plate-archive">
     <div data-role="header">
         <a href="#archive" data-icon="carat-l">Archief</a>
-        <span class="ui-title" />
+        <span class="ui-title"></span>
     </div>
     <h3>Lijst van casus</h3>
     <p>(op weeknummer)</p>
@@ -140,7 +141,7 @@
 <div data-role="page" id="mirror-archive">
     <div data-role="header">
         <a href="#archive" data-icon="carat-l">Archief</a>
-        <span class="ui-title" />
+        <span class="ui-title"></span>
     </div>
     <h3>Lijst van reflecties</h3>
     <p>(op weeknummer)</p>
@@ -152,7 +153,7 @@
 <div data-role="page" id="links-tips">
     <div data-role="header">
         <a href="#shelf" data-icon="carat-l">Extra</a>
-        <span class="ui-title" />
+        <span class="ui-title"></span>
     </div>
 	<span class="disconnected">Verbind met internet om de laatste tips te zien.</span>
     <h4>Tips bij de beroepscode</h4>
@@ -166,7 +167,7 @@
 <div data-role="page" id="about">
     <div data-role="header">
         <a href="#shelf" data-icon="carat-l">Extra</a>
-        <span class="ui-title" />
+        <span class="ui-title"></span>
     </div>
     <h3>Colofon</h3>
     <h4>Doordenkertjes: Ethiek in de kinderopvang</h4>
