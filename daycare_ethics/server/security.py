@@ -1,4 +1,4 @@
-# (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+# (c) 2014, 2015 Digital Humanities Lab, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
@@ -15,8 +15,6 @@ from flask import current_app, session, request, jsonify, abort, json
 QUARANTINE_TIME = timedelta(minutes=30)
 AUTHENTICATION_TIME = timedelta(minutes=2)
 HUMAN_LAG = timedelta(milliseconds=200)
-KEY_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-KEY_LENGTH = 30
 NORMALS = 7
 ODDBALLS = 3
 
@@ -24,10 +22,6 @@ ODDBALLS = 3
 def init_app(app):
     data = json.load(open(app.config['CAPTCHA_DATA']))
     app.captcha_data = map(set, data.values())
-
-
-def generate_key(generator):
-    return ''.join((generator.choice(KEY_CHARS) for i in range(KEY_LENGTH)))
 
 
 def init_captcha():
@@ -79,11 +73,8 @@ def captcha_safe():
 
 
 def verify_natural():
-    if ( not request.is_xhr
-         or 'User-Agent' not in request.headers
-         or request.headers['User-Agent'] == ''
-         or 'Referer' not in request.headers
-         or request.headers['Referer'] == '' ):
+    if ( 'User-Agent' not in request.headers
+         or request.headers['User-Agent'] == '' ):
         session['tainted'] = True
         abort(400)
     if 'tainted' in session:
@@ -91,8 +82,7 @@ def verify_natural():
 
 
 def tokenize_response(response, request_start):
-    key = generate_key(SystemRandom())
-    session['token'] = key
+    key = session.renew_token()
     session['last-request'] = request_start
     if isinstance(response, tuple):
         if len(response) == 3:
@@ -107,17 +97,7 @@ def session_enable(view):
     @wraps(view)
     def wrap(**kwargs):
         now = datetime.today()
-        if not 'token' in session:
-            verify_natural()
-            return tokenize_response(view(**kwargs), now)
-        response = view(**kwargs)
-        if isinstance(response, tuple):
-            if len(response) == 3:
-                return jsonify(**response[0]), response[1], response[2]
-            if len(response) == 2:
-                return jsonify(**response[0]), response[1]
-            return jsonify(**response[0])
-        return jsonify(**response)
+        return tokenize_response(view(**kwargs), now)
     return wrap
 
 

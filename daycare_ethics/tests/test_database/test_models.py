@@ -1,4 +1,4 @@
-# (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+# (c) 2014, 2015 Digital Humanities Lab, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 from datetime import datetime
@@ -18,6 +18,15 @@ class SQLADeclaredAttrTestCase(TestCase):
 
 
 class ModelsAreCreatedTestCase(BaseFixture):
+    def test_session_exists(self):
+        ses = Session(token='1234567890')
+        with self.request_context():
+            db.session.add(ses)
+            db.session.commit()
+            first = db.session.query(Session).first()
+        self.assertEqual(first.token, '1234567890')
+        self.assertEqual(first, ses)
+
     def test_picture_exists(self):
         pic = Picture(mime_type='image/jpeg', name='Test', path='test/test.jpeg')
         with self.request_context():

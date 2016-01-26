@@ -1,4 +1,4 @@
-# (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+# (c) 2014, 2015 Digital Humanities Lab, Utrecht University
 # Authors: Julian Gonggrijp, j.gonggrijp@uu.nl,
 #          Martijn van der Klis, m.h.vanderklis@uu.nl
 
@@ -7,8 +7,9 @@
 """
 
 from datetime import date, datetime, timedelta
+from functools import wraps
 
-from flask import send_from_directory, jsonify, current_app, abort, request, escape, session
+from flask import send_from_directory, jsonify, current_app, abort, request, escape, session, make_response
 
 from ..util import image_variants, TARGET_WIDTHS
 from ..database.models import *
@@ -21,12 +22,28 @@ ISOFORMAT = '%Y-%m-%d %H:%M:%S.%f'
 POST_INTERVAL = timedelta(minutes=10)
 
 
+def allow_crossdomain(view):
+    @wraps(view)
+    def wrap(**kwargs):
+        response = make_response(view(**kwargs))
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+    return wrap
+
+
+@public.route('/ping', methods=['HEAD'])
+@allow_crossdomain
+def ping():
+    return current_app.response_class()
+
+
 @public.route('/')
 def index():
     return send_from_directory(public.static_folder, 'index.html')
 
 
 @public.route('/media/<int:id>/<int:width>')
+@allow_crossdomain
 def media(id, width):
     try:
         image = Picture.query.filter_by(id=id).one().path
@@ -41,6 +58,7 @@ def media(id, width):
 
 
 @public.route('/case/')
+@allow_crossdomain
 def current_casus():
     latest_casus = available_casus().first()
     if not latest_casus or not latest_casus.publication:
@@ -49,6 +67,7 @@ def current_casus():
 
 
 @public.route('/case/<int:id>')
+@allow_crossdomain
 def retrieve_casus(id):
     casus = Case.query.get_or_404(id)
     if not casus.publication or casus.publication > date.today():
@@ -86,11 +105,13 @@ def available_casus():
 
 
 @public.route('/case/archive')
+@allow_crossdomain
 def casus_archive():
     return jsonify(all=map(casus2dict, available_casus().all()))
 
 
 @public.route('/case/vote', methods=['POST'])
+@allow_crossdomain
 @session_protect
 def vote_casus():
     now = datetime.today()
@@ -119,6 +140,7 @@ def vote_casus():
 
 
 @public.route('/reflection/')
+@allow_crossdomain
 @session_enable
 def current_reflection():
     latest_reflection = available_reflection().first()
@@ -128,6 +150,7 @@ def current_reflection():
 
 
 @public.route('/reflection/<int:id>/')
+@allow_crossdomain
 def retrieve_reflection(id):
     reflection = BrainTeaser.query.get_or_404(id)
     if not reflection.publication or reflection.publication > date.today():
@@ -188,11 +211,13 @@ def reflection_replies(id, since=None):
 
 
 @public.route('/reflection/archive')
+@allow_crossdomain
 def reflection_archive():
     return jsonify(all=map(reflection2dict, available_reflection()))
 
 
 @public.route('/reflection/<int:id>/reply', methods=['POST'])
+@allow_crossdomain
 @session_protect
 def reply_to_reflection(id):
     now = datetime.today()
@@ -213,12 +238,12 @@ def reply_to_reflection(id):
     if ( 'last-reply' in session and
          now - session['last-reply'] < POST_INTERVAL and
          not 'captcha-answer' in session ):
-        return dict(status='captcha', **init_captcha())
+        return dict(status='captcha', since=str(now), **init_captcha())
     # code below does not enforce quarantine period.
     # in order to make it happen, return {status: quarantine} if not 
     # captcha_safe.
     if (not captcha_safe() or 'captcha-quarantine' in session):
-        return dict(status='captcha', **init_captcha())
+        return dict(status='captcha', since=str(now), **init_captcha())
     db.session.add(Response(
         brain_teaser=topic,
         submission=now,
@@ -227,10 +252,15 @@ def reply_to_reflection(id):
     ))
     db.session.commit()
     session['last-reply'] = now
-    return {'status': 'success'}
+    return {
+        'status': 'success',
+        'since': str(now),
+        'new': reflection_replies(id, now),
+    }
 
 
 @public.route('/reply/<int:id>/moderate/', methods=['POST'])
+@allow_crossdomain
 @session_protect
 def moderate_reply(id):
     if 'choice' not in request.form:
@@ -266,6 +296,7 @@ def tip2dict(tip):
 
 
 @public.route('/tips/')
+@allow_crossdomain
 def retrieve_tips():
     sorted_tips = Tip.query.order_by(Tip.update.desc())
     labour_code = map(tip2dict, sorted_tips.filter_by(what='labour code').all())

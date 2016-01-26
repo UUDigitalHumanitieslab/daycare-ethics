@@ -1,5 +1,6 @@
-# (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+# (c) 2014, 2015 Digital Humanities Lab, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
+# Credits: Jeremy Allen helped to fix issues. (http://stackoverflow.com/a/32597959/1166087)
 
 from datetime import datetime, timedelta
 
@@ -9,6 +10,25 @@ from ..common_fixtures import BaseFixture
 from ...database.models import *
 from ...database.db import db
 from ...server.views import *
+
+
+class AllowCrossDomainTestCase(BaseFixture):
+    def test_allow_crossdomain(self):
+        @self.app.route('/test')
+        @allow_crossdomain
+        def test():
+            return 'success'
+        response = self.client.get('/test')
+        self.assertEqual(response.headers['Access-Control-Allow-Origin'], '*')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, 'success')
+
+
+class PingTestCase (BaseFixture):
+    def test_ping(self):
+        response = self.client.head('/ping')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers['Access-Control-Allow-Origin'], '*')
 
 
 class IndexTestCase (BaseFixture):
@@ -59,6 +79,7 @@ class CasusTestCase (BaseFixture):
     def test_current_casus(self):
         response = self.client.get('/case/')
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers['Access-Control-Allow-Origin'], '*')
         self.assertIn('json', response.mimetype)
         response_object = json.loads(response.data)
         self.assertEqual(response_object['title'], 'casus3')
@@ -67,6 +88,7 @@ class CasusTestCase (BaseFixture):
     def test_retrieve_casus(self):
         response1 = self.client.get('/case/1')
         self.assertEqual(response1.status_code, 200)
+        self.assertEqual(response1.headers['Access-Control-Allow-Origin'], '*')
         self.assertIn('json', response1.mimetype)
         response1_object = json.loads(response1.data)
         self.assertEqual(response1_object['title'], 'casus1')
@@ -99,6 +121,7 @@ class CasusTestCase (BaseFixture):
     def test_casus_archive(self):
         response = self.client.get('/case/archive')
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers['Access-Control-Allow-Origin'], '*')
         self.assertIn('json', response.mimetype)
         response_object = json.loads(response.data)
         with self.request_context():
@@ -136,9 +159,9 @@ class CasusTestCase (BaseFixture):
             }, headers={
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
-                'X-Requested-With': 'XMLHttpRequest',
             })
             self.assertEqual(response2.status_code, 200)
+            self.assertEqual(response2.headers['Access-Control-Allow-Origin'], '*')
             self.assertIn('json', response2.mimetype)
             response_data = json.loads(response2.data)
             self.assertEqual(response_data['status'], 'success')
@@ -180,9 +203,9 @@ class ReflectionTestCase (BaseFixture):
         response = self.client.get('/reflection/', headers={
             'User-Agent': 'Flask test client',
             'Referer': 'unittest',
-            'X-Requested-With': 'XMLHttpRequest',
         })
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers['Access-Control-Allow-Origin'], '*')
         self.assertIn('json', response.mimetype)
         response_object = json.loads(response.data)
         self.assertEqual(response_object['title'], 'reflection3')
@@ -191,6 +214,7 @@ class ReflectionTestCase (BaseFixture):
     def test_retrieve_reflection(self):
         response1 = self.client.get('/reflection/1/')
         self.assertEqual(response1.status_code, 200)
+        self.assertEqual(response1.headers['Access-Control-Allow-Origin'], '*')
         self.assertIn('json', response1.mimetype)
         response1_object = json.loads(response1.data)
         self.assertEqual(response1_object['title'], 'reflection1')
@@ -244,6 +268,7 @@ class ReflectionTestCase (BaseFixture):
     def test_reflection_archive(self):
         response = self.client.get('/reflection/archive')
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers['Access-Control-Allow-Origin'], '*')
         self.assertIn('json', response.mimetype)
         response_object = json.loads(response.data)
         with self.request_context():
@@ -290,15 +315,17 @@ class ReflectionTestCase (BaseFixture):
             }, headers={
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
-                'X-Requested-With': 'XMLHttpRequest',
             })
             self.assertEqual(response2.status_code, 200)
+            self.assertEqual(response2.headers['Access-Control-Allow-Origin'], '*')
             self.assertIn('json', response2.mimetype)
             response_data = json.loads(response2.data)
             self.assertEqual(response_data['status'], 'success')
             self.assertEqual(response_data['token'], session['token'])
             
-            with c.session_transaction() as s:
+            with c.session_transaction(method='POST', data={
+                't': session['token'],
+            }) as s:
                 s['token'] = token
                 s['last-request'] = datetime.now() - timedelta(milliseconds=201)
             
@@ -309,16 +336,18 @@ class ReflectionTestCase (BaseFixture):
             }, headers={
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
-                'X-Requested-With': 'XMLHttpRequest',
             })
             self.assertEqual(response3.status_code, 200)
+            self.assertEqual(response3.headers['Access-Control-Allow-Origin'], '*')
             self.assertIn('json', response3.mimetype)
             response_data = json.loads(response3.data)
             self.assertEqual(response_data['status'], 'captcha')
             self.assertEqual(response_data['token'], session['token'])
             
             answer = ' '.join(session['captcha-answer'])
-            with c.session_transaction() as s:
+            with c.session_transaction(method='POST', data={
+                't': session['token'],
+            }) as s:
                 s['token'] = token
                 s['last-request'] = datetime.now() - timedelta(milliseconds=201)
             
@@ -330,15 +359,17 @@ class ReflectionTestCase (BaseFixture):
             }, headers={
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
-                'X-Requested-With': 'XMLHttpRequest',
             })
             self.assertEqual(response4.status_code, 200)
+            self.assertEqual(response4.headers['Access-Control-Allow-Origin'], '*')
             self.assertIn('json', response4.mimetype)
             response_data = json.loads(response4.data)
             self.assertEqual(response_data['status'], 'success')
             self.assertEqual(response_data['token'], session['token'])
             
-            with c.session_transaction() as s:
+            with c.session_transaction(method='POST', data={
+                't': session['token'],
+            }) as s:
                 s['token'] = token
                 s['last-request'] = datetime.now() - timedelta(milliseconds=201)
             
@@ -350,9 +381,9 @@ class ReflectionTestCase (BaseFixture):
             }, headers={
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
-                'X-Requested-With': 'XMLHttpRequest',
             })
             self.assertEqual(response5.status_code, 200)
+            self.assertEqual(response5.headers['Access-Control-Allow-Origin'], '*')
             self.assertIn('json', response5.mimetype)
             response_data = json.loads(response5.data)
             self.assertEqual(response_data['status'], 'ninja')
@@ -390,9 +421,9 @@ class ReflectionTestCase (BaseFixture):
             }, headers={
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
-                'X-Requested-With': 'XMLHttpRequest',
             })
             self.assertEqual(response2.status_code, 200)
+            self.assertEqual(response2.headers['Access-Control-Allow-Origin'], '*')
             self.assertIn('json', response2.mimetype)
             response_data = json.loads(response2.data)
             self.assertEqual(response_data['status'], 'success')
@@ -462,6 +493,7 @@ class TipsTestCase (BaseFixture):
         with self.client as c:
             response1 = c.get('/tips/')
             self.assertEqual(response1.status_code, 200)
+            self.assertEqual(response1.headers['Access-Control-Allow-Origin'], '*')
             self.assertIn('json', response1.mimetype)
             response1_data = json.loads(response1.data)
             self.assertEqual(response1_data['labour'][0]['id'], 2)
@@ -475,6 +507,7 @@ class TipsTestCase (BaseFixture):
             db.session.commit()
             response2 = c.get('/tips/')
             self.assertEqual(response2.status_code, 200)
+            self.assertEqual(response2.headers['Access-Control-Allow-Origin'], '*')
             self.assertIn('json', response2.mimetype)
             response2_data = json.loads(response2.data)
             self.assertEqual(response2_data['labour'][0]['id'], 2)

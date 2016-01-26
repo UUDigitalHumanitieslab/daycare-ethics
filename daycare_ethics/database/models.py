@@ -1,4 +1,4 @@
-# (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+# (c) 2014, 2015 Digital Humanities Lab, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
@@ -15,6 +15,15 @@ from sqlalchemy.event import listens_for
 
 from ..util import image_variants
 from db import db
+
+
+class Session(db.Model):
+    """ Server-side storage medium for the sessions. """
+    token   = db.Column(db.String(30), primary_key=True)
+                                # 30 = ..server.security.KEY_LENGTH
+                                # (not imported here because of circularity)
+    expires = db.Column(db.DateTime)
+    payload = db.Column(db.PickleType)
 
 
 class Picture (db.Model):

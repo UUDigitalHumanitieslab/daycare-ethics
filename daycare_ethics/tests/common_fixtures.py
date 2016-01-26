@@ -1,4 +1,4 @@
-# (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+# (c) 2014, 2015 Digital Humanities Lab, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
@@ -18,6 +18,7 @@ class FixtureConfiguration (object):
     CAPTCHA_DATA = join(dirname(__file__), 'data', 'test_captcha.json')
     SECRET_KEY = 'psiodfnvpsdojfnvpaosihrgt'
     TESTING = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 class BaseFixture (TestCase):

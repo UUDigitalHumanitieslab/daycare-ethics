@@ -1,8 +1,8 @@
-# (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+# (c) 2014, 2015 Digital Humanities Lab, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
+# Credits: Jeremy Allen helped to fix issues. (http://stackoverflow.com/a/32597959/1166087)
 
 from datetime import datetime, timedelta
-from random import SystemRandom
 
 from flask import json, session
 
@@ -18,18 +18,6 @@ class BasicsTestCase (BaseFixture):
             set(u'Paris London Berlin Madrid Amsterdam Dublin Stockholm Utrecht'.split()),
         ])
     
-    def test_generate_key(self):
-        rng = SystemRandom()
-        keys = [generate_key(rng) for i in range(10)]
-        
-        # probabilistic test: this one may fail at most once during your 
-        # lifetime (p = 7.6e-53).
-        self.assertEqual(len(set(keys)), 10)
-        
-        for k in keys:
-            self.assertRegexpMatches(k, '[a-zA-Z0-9]{30}')
-            self.assertEqual(len(k), KEY_LENGTH)
-
     def test_init_captcha(self):
         with self.request_context():
             now = datetime.today()
@@ -70,8 +58,10 @@ class BasicsTestCase (BaseFixture):
 class AuthorizeCaptchaTestCase (BaseFixture):
     def setUp(self):
         super(AuthorizeCaptchaTestCase, self).setUp()
+        self.token = '1234567'
         with self.client as c:
             with c.session_transaction() as s:
+                s['token'] = self.token
                 s['captcha-expires'] = datetime.today() + timedelta(minutes=10)
                 s['captcha-answer'] = u'one two three'.split()
         @self.app.route('/test', methods=['POST'])
@@ -79,30 +69,40 @@ class AuthorizeCaptchaTestCase (BaseFixture):
             return '', 200 if authorize_captcha() else 400
     
     def test_authorize_captcha_unanswered(self):
-        self.assertEqual(self.client.post('/test').status_code, 400)
+        self.assertEqual(self.client.post('/test', data={
+            't': self.token,
+        }).status_code, 400)
     
     def test_authorize_captcha_expired(self):
         with self.client as c:
-            with c.session_transaction() as s:
+            with c.session_transaction(method='POST', data={
+                't': self.token,
+            }) as s:
                 s['captcha-expires'] = datetime.today() - timedelta(minutes=1)
             self.assertEqual(c.post('/test', data={
+                't': self.token,
                 'ca': 'one two three',
             }).status_code, 400)
     
     def test_authorize_captcha_validation(self):
-        self.assertEqual(self.client.post('/test', data={
+        response1 = self.client.post('/test', data={
             'ca': 'one two three',
-        }).status_code, 200)
+            't': self.token,
+        })
+        self.assertEqual(response1.status_code, 200)
         self.assertEqual(self.client.post('/test', data={
             'ca': 'one two four',
+            't': self.token,
         }).status_code, 400)
 
 
 class CaptchaSafeTestCase (BaseFixture):
     def setUp(self):
         super(CaptchaSafeTestCase, self).setUp()
+        self.token = '1234567'
         with self.client as c:
             with c.session_transaction() as s:
+                s['token'] = self.token
                 s['captcha-expires'] = datetime.today() + timedelta(minutes=10)
                 s['captcha-answer'] = u'one two three'.split()
         @self.app.route('/test', methods=['POST'])
@@ -113,14 +113,17 @@ class CaptchaSafeTestCase (BaseFixture):
         with self.client as c:
             self.assertEqual(c.post('/test', data={
                 'ca': 'one two three',
+                't': self.token,
             }).status_code, 200)
-            self.assertEqual(len(session), 0)
+            self.assertEqual(len(session), 1)
     
     def test_captcha_safe_unauthorized(self):
         with self.client as c:
             now = datetime.today()
-            self.assertEqual(c.post('/test').status_code, 400)
-            self.assertEqual(len(session), 2)
+            self.assertEqual(c.post('/test', data={
+                't': self.token,
+            }).status_code, 400)
+            self.assertEqual(len(session), 3)
             self.assertIn('captcha-quarantine', session)
             self.assertTrue(session.permanent)
             timegap = session['captcha-quarantine'] - now - QUARANTINE_TIME
@@ -130,27 +133,42 @@ class CaptchaSafeTestCase (BaseFixture):
     def test_captcha_safe_inquarantine(self):
         with self.client as c:
             quarantine = datetime.today().replace(microsecond=0) + QUARANTINE_TIME
-            with c.session_transaction() as s:
+            with c.session_transaction(method='POST', data={
+                't': self.token,
+            }) as s:
                 s.clear()
+                s['token'] = self.token
                 s['captcha-quarantine'] = quarantine
-            self.assertEqual(c.post('/test').status_code, 400)
+            self.assertEqual(c.post('/test', data={
+                't': self.token,
+            }).status_code, 400)
             self.assertIn('captcha-quarantine', session)
             self.assertEqual(session['captcha-quarantine'], quarantine)
     
     def test_captcha_safe_outofquarantine(self):
         with self.client as c:
             quarantine = datetime.today().replace(microsecond=0) - timedelta(minutes=10)
-            with c.session_transaction() as s:
+            with c.session_transaction(method='POST', data={
+                't': self.token,
+            }) as s:
                 s.clear()
+                s['token'] = self.token
                 s['captcha-quarantine'] = quarantine
-            self.assertEqual(c.post('/test').status_code, 200)
+            self.assertEqual(c.post('/test', data={
+                't': self.token,
+            }).status_code, 200)
             self.assertNotIn('captcha-quarantine', session)
     
     def test_captcha_safe_default(self):
         with self.client as c:
-            with c.session_transaction() as s:
+            with c.session_transaction(method='POST', data={
+                't': self.token,
+            }) as s:
                 s.clear()
-            self.assertEqual(c.post('/test').status_code, 200)
+                s['token'] = self.token
+            self.assertEqual(c.post('/test', data={
+                't': self.token,
+            }).status_code, 200)
 
 
 class VerifyNaturalTestCase (BaseFixture):
@@ -162,26 +180,34 @@ class VerifyNaturalTestCase (BaseFixture):
             return '', 200
     
     def test_verify_natural(self):
+        token = '1234567'
         with self.client as c:
-            for flags in range(16):  # lo2hi: xhr, user agent, referer, tainted
+            with c.session_transaction() as s:
+                s['token'] = token
+            for flags in range(4):  # lo2hi: user agent, tainted
                 headerfields = {}
-                with c.session_transaction() as s:
+                with c.session_transaction(method='POST', data={
+                    't': token,
+                }) as s:
                     s.clear()
+                    s['token'] = token
                 if flags & 1:
-                    headerfields['X-Requested-With'] = 'XMLHttpRequest'
-                if flags & 2:
                     headerfields['User-Agent'] = 'Flask test client'
-                if flags & 4:
-                    headerfields['Referer'] = 'unittest'
-                if flags & 8:
-                    with c.session_transaction() as s:
+                if flags & 2:
+                    with c.session_transaction(method='POST', data={
+                        't': token,
+                    }) as s:
                         s['tainted'] = True
-                status = c.post('/test', headers=headerfields).status_code
+                status = c.post('/test', headers=headerfields, data={
+                    't': token,
+                }).status_code
                 tainted = 'tainted' in session
-                if flags == 7:
-                    self.assertTrue(status == 200 and not tainted)
+                if flags == 1:
+                    self.assertFalse(tainted)
+                    self.assertEqual(status, 200)
                 else:
-                    self.assertTrue(status == 400 and tainted)
+                    self.assertTrue(tainted)
+                    self.assertEqual(status, 400)
 
 
 class TokenizeResponseTestCase (BaseFixture):
@@ -263,28 +289,13 @@ class SessionEnableTestCase (BaseFixture):
         def testview():
             return {'status': 'success'}
     
-    def test_session_enable_verification(self):
+    def test_session_enable(self):
         with self.client as c:
-            self.assertEqual(c.post('/test').status_code, 400)
-            self.assertNotIn('token', session)
-            self.assertIn('tainted', session)
-    
-    def test_session_enable_tokenization(self):
-        with self.client as c:
-            result = c.post('/test', headers={
-                'X-Requested-With': 'XMLHttpRequest',
-                'User-Agent': 'Flask test client',
-                'Referer': 'unittest',
-            })
+            result = c.post('/test')
             self.assertEqual(result.status_code, 200)
             self.assertIn('json', result.mimetype)
             content = json.loads(result.get_data())
             self.assertIn('token', content)
-            self.assertIn('token', session)
-            self.assertEqual(content['token'], session['token'])
-            
-            result2 = c.post('/test')
-            self.assertEqual(result.status_code, 200)
             self.assertIn('token', session)
             self.assertEqual(content['token'], session['token'])
 
@@ -305,12 +316,9 @@ class SessionProtectTestCase (BaseFixture):
     
     def test_session_protect_new(self):
         with self.client as c:
-            with c.session_transaction() as s:
-                s.clear()
             self.assertEqual(c.post('/test', data={
                 't': 'qwertyuiop',
             }, headers={
-                'X-Requested-With': 'XMLHttpRequest',
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
             }).status_code, 400)
@@ -328,7 +336,6 @@ class SessionProtectTestCase (BaseFixture):
         self.prepare()
         with self.client as c:
             self.assertEqual(c.post('/test', headers={
-                'X-Requested-With': 'XMLHttpRequest',
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
             }).status_code, 400)
@@ -340,7 +347,6 @@ class SessionProtectTestCase (BaseFixture):
             self.assertEqual(c.post('/test', data={
                 't': 'qwertyuio',
             }, headers={
-                'X-Requested-With': 'XMLHttpRequest',
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
             }).status_code, 400)
@@ -349,12 +355,13 @@ class SessionProtectTestCase (BaseFixture):
     def test_session_protect_delay(self):
         self.prepare()
         with self.client as c:
-            with c.session_transaction() as s:
+            with c.session_transaction(method='POST', data={
+                't': 'qwertyuiop',
+            }) as s:
                 s['last-request'] = datetime.today() + timedelta(seconds=1)
             self.assertEqual(c.post('/test', data={
                 't': 'qwertyuiop',
             }, headers={
-                'X-Requested-With': 'XMLHttpRequest',
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
             }).status_code, 400)
@@ -366,7 +373,6 @@ class SessionProtectTestCase (BaseFixture):
             result = c.post('/test', data={
                 't': 'qwertyuiop',
             }, headers={
-                'X-Requested-With': 'XMLHttpRequest',
                 'User-Agent': 'Flask test client',
                 'Referer': 'unittest',
             })

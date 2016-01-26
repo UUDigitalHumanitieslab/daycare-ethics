@@ -1,4 +1,4 @@
-# (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+# (c) 2014, 2015 Digital Humanities Lab, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 """
@@ -48,11 +48,12 @@ def TableArgsMeta(parent_class, table_args):
 
 class InnoDBSQLAlchemy (fsqla.SQLAlchemy):
     """ Subclass in order to enable TableArgsMeta. """
-    def make_declarative_base(self):
+    def make_declarative_base(self, metadata=None):
         """Creates the declarative base."""
         base = fsqla.declarative_base(
             cls=fsqla.Model,
             name='Model',
+            metadata=metadata,
             metaclass=TableArgsMeta(
                 fsqla._BoundDeclarativeMeta,
                 {'mysql_engine': 'InnoDB'} ) )

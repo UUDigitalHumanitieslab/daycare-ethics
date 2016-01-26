@@ -1,4 +1,4 @@
-# (c) 2014 Digital Humanities Lab, Faculty of Humanities, Utrecht University
+# (c) 2014, 2015 Digital Humanities Lab, Utrecht University
 # Author: Julian Gonggrijp, j.gonggrijp@uu.nl
 
 import os.path as op
@@ -142,6 +142,7 @@ class ResponsesView(ModelView, ActionsMixin):
 class TipsView(ModelView):
     column_list = ('what', 'author', 'title', 'update')
     column_labels = {'update': 'Last update'}
+    column_default_sort = ('update', True)
     form_columns = ('what', 'author', 'title', 'text', 'href')
     form_args = {
         'text': {
