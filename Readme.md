@@ -1,6 +1,6 @@
 # Doordenkertjes (Dutch for "Brain Teasers")
 
-Version 1.0
+Version 1.0.1
 Code (c) 2014-2016 Digital Humanities Lab, Utrecht University
 Illustrations (c) 2015 Birgit Gorter
 
