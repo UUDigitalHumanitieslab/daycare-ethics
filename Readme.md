@@ -1,6 +1,6 @@
 # Doordenkertjes (Dutch for "Brain Teasers")
 
-Version 1.0.1
+Version 1.0.2
 Code (c) 2014-2016 Digital Humanities Lab, Utrecht University
 Illustrations (c) 2015 Birgit Gorter
 
@@ -76,7 +76,7 @@ As above, you need a virtualenv with the required Python packages, a database, a
 
     application = create_app(config_file=path_to_config_py,
                               instance=custom_instance_folder_path )
-    
+
     # optionally add handlers to application.logger here
 
 The instructions for logging can also be found in the Flask documentation.
